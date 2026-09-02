@@ -80,10 +80,14 @@ foreach ($files as $file) {
         continue;
     }
     echo "-> migration $version\n";
-    Db::tx(function () use ($file, $version) {
-        run_sql_file($file);
-        Db::insert('schema_migrations', ['version' => $version, 'applied_at' => date('Y-m-d H:i:s')]);
-    });
+    // NB: no transaction - DDL (CREATE/ALTER TABLE) implicitly commits in MySQL,
+    // so a wrapping tx would have nothing left to commit.
+    run_sql_file($file);
+    Db::q(
+        'INSERT INTO schema_migrations (version, applied_at) VALUES (?, ?)
+         ON DUPLICATE KEY UPDATE applied_at = VALUES(applied_at)',
+        [$version, date('Y-m-d H:i:s')]
+    );
     $pending++;
 }
 echo $pending === 0 ? "   no pending migrations\n" : "   $pending migration(s) applied\n";

@@ -80,6 +80,23 @@ export async function runBoot(term, { skip = false } = {}) {
   push('');
   push('|08dialing ' + phone + ' ...');
 
+  const maint = !!(conn && conn.connection && conn.connection.maintenance);
+
+  // ---- maintenance: engaged tone, no carrier ----
+  if (maint) {
+    push('|08[ dial tone ]');
+    await sleep(FAST ? 5 : 500);
+    push('|08[ tones sent ]');
+    await sleep(FAST ? 5 : 500);
+    push('|08[ ringing ... ]');
+    await sleep(FAST ? 5 : 700);
+    push('');
+    push('|11[ BUSY - the line is engaged ]');
+    push('|12NO CARRIER');
+    sound.startBusy();
+    return sessionP;
+  }
+
   // ---- the modem itself ----
   const stageText = {
     dialtone: '|08[ dial tone ]',

@@ -45,7 +45,13 @@ final class ApiController
         }
 
         $engine = new Engine($session, $req);
-        $frame  = $engine->boot();
+
+        // Maintenance mode: everyone below staff (rank 80) gets a busy signal.
+        $maintenance = Config::bool('maintenance', false) && $engine->rank() < 80;
+
+        $frame = $maintenance
+            ? $this->busyFrame($session, $engine)
+            : $engine->boot();
         $session->save();
 
         $baud  = Config::int('baud', Config::int('terminal.baud', 57600));
@@ -60,11 +66,14 @@ final class ApiController
                 'nodes_total'  => Config::int('nodes', Config::int('terminal.nodes', 8)),
                 'nodes_free'   => Session::nodesFree(),
                 'baud'         => $baud,
+                'maintenance'  => $maintenance,
+                'maintenance_msg' => $maintenance ? Config::setting('maintenance_msg', 'The board is down for maintenance.') : '',
                 'telnet_host'  => Config::setting('telnet_host', (string) Config::get('telnet_host', 'bbs.thugs.red')),
                 'site_name'    => Config::setting('site_name', 'THUGS(red) BBS'),
                 'sound_default' => Config::bool('sound_default', false),
-                'cols'         => Config::int('term_cols', Config::int('terminal.cols', 132)),
-                'rows'         => Config::int('term_rows', Config::int('terminal.rows', 50)),
+                'cols'         => Config::termCols(),
+                'rows'         => Config::termRows(),
+                'font_scale'   => Config::fontScale(),
                 'crt'          => [
                     'intensity'  => (float) Config::setting('crt_intensity', '0.85'),
                     'scanlines'  => Config::bool('crt_scanlines', true),
@@ -79,6 +88,18 @@ final class ApiController
         ]);
     }
 
+    private function busyFrame(Session $session, Engine $engine): array
+    {
+        $msg = Config::setting('maintenance_msg', 'The board is down for maintenance.');
+        $f = \Bbs\Bbs\Frame::make('screen')->title('Busy')->mode('pager')
+            ->meta(['busy' => true])->blank()->blank()
+            ->pipe('|12   ░▒▓  BUSY  ▓▒░')->blank()
+            ->pipe('|11   NO CARRIER - the line is engaged.')->blank()
+            ->block('|07   ' . wordwrap($msg, 66, "\n   ", true))->blank()
+            ->pipe('|08   Hang up and redial in a while. (Reload the page to retry.)');
+        return $engine->finishPublic($f);
+    }
+
     /** POST /api/action - one keystroke / form submit / command. */
     public function action(Request $req): Response
     {
@@ -88,6 +109,11 @@ final class ApiController
         }
 
         $engine = new Engine($session, $req);
+
+        if (Config::bool('maintenance', false) && $engine->rank() < 80) {
+            return Response::json($this->busyFrame($session, $engine));
+        }
+
         $in = [
             'key'   => (string) $req->input('key', ''),
             'input' => (string) $req->input('input', ''),

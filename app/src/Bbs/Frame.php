@@ -34,12 +34,12 @@ final class Frame
 
     public static function width(): int
     {
-        return max(80, Config::int('term_cols', Config::int('terminal.cols', 132)));
+        return Config::termCols();
     }
 
     public static function height(): int
     {
-        return max(24, Config::int('term_rows', Config::int('terminal.rows', 40)));
+        return Config::termRows();
     }
 
     /** Rows available for list content, leaving `$chrome` lines for header/footer. */

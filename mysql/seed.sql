@@ -29,6 +29,7 @@ INSERT INTO settings (`key`,`value`,`type`,`label`,`category`) VALUES
  ('registration_open','1','bool','Allow new user registration','system'),
  ('guest_browsing','1','bool','Let guests read public areas','system'),
  ('crt_intensity','0.85','string','CRT effect intensity 0..1','appearance'),
+ ('font_scale','1.0','string','Font scaling (0.1-3.0; bigger = larger text, fewer columns)','appearance'),
  ('crt_scanlines','1','bool','Scanline overlay','appearance'),
  ('crt_flicker','1','bool','Phosphor flicker','appearance'),
  ('crt_curvature','1','bool','Barrel distortion','appearance'),
@@ -42,6 +43,8 @@ INSERT INTO settings (`key`,`value`,`type`,`label`,`category`) VALUES
  ('news_feeds_entertainment',"https://variety.com/feed/\nhttps://www.polygon.com/rss/index.xml",'text','Entertainment news RSS feeds','news'),
  ('news_max_per_cat','80','int','Max cached items per category','news'),
  ('chat_idle_secs','90','int','Seconds before a chatter is considered gone','chat'),
+ ('maintenance','0','bool','Maintenance mode (non-staff hear a busy tone)','system'),
+ ('maintenance_msg','The board is down for maintenance. The SysOp is elbow-deep in it. Dial back a bit later.','text','Message shown during maintenance','system'),
  ('ticker_sources','custom,news,oneliners','string','Bottom crawl: which feeds, in order (custom,news,oneliners)','ticker'),
  ('ticker_custom',"Welcome to THUGS(red) BBS - leave a message, sign the wall, play a door game.\nType the letter in [brackets] to move around. ESC backs out.\nYour IP shows up as a phone number. That is on purpose.",'text','Bottom crawl: custom messages, one per line','ticker'),
  ('ticker_news_count','4','int','Bottom crawl: number of latest news headlines (0 = none)','ticker'),
@@ -247,6 +250,35 @@ INSERT INTO screens (slug,title,kind,content_type,body) VALUES
 ('board.header','Message Boards','template','pipe',
 '|08== |14MESSAGE BASE|08  -  conference: |11{{conference_name}}|08 ==============================|07'),
 
+('bulletin.rules','Board Rules','template','pipe',
+'|08== |14BOARD RULES|08 =====================================================
+
+|07  1. Be excellent to each other. The SysOp reads everything.
+|07  2. No spam, no warez dumps, no illegal content.
+|07  3. ANSI art in messages is encouraged. Keep it under 80 wide.
+|07  4. One account per person. Share nicely on the nodes.
+|07  5. Have fun. This is a hobby board.
+
+|08  Breaking these gets you a friendly warning, then a not-so-friendly ban.'),
+
+('bulletin.nodes','Node Information','template','pipe',
+'|08== |14NODE INFO|08 ========================================================
+
+|07  {{nodes_total}} nodes, {{baud}} baud emulated.
+|07  Your session times out after 60 minutes idle.
+|07  Chat is on node channel #main - press C from Communication.
+
+|07  Calling from: |12{{phone}}|07  on node |14{{node}}|07.'),
+
+('bulletin.scene','The Scene','template','pipe',
+'|08== |14THE SCENE|08 ========================================================
+
+|07  This board keeps the flame lit for the dial-up era.
+|07  See the Links Directory -> Retro / BBS Scene for pack archives,
+|07  textfile collections, the demoscene and other still-running boards.
+
+|15  ANSI is a lifestyle, not a file format.'),
+
 ('nonode','No Free Nodes','template','pipe',
 '|11   ALL LINES BUSY|07
 
@@ -274,67 +306,67 @@ DELETE mi FROM menu_items mi JOIN menus m ON m.id = mi.menu_id
 
 INSERT INTO menu_items (menu_id,sort,hotkey,label,description,action,target,min_permission,min_role_rank)
 SELECT m.id, x.sort, x.hotkey, x.label, x.descr, x.action, x.target, x.perm, x.rank FROM menus m JOIN (
-  -- ============ MAIN ============
-  SELECT 'main' mslug, 10 sort,'M' hotkey,'Message Base' label,'Read and post messages' descr,'menu' action,'messages' target, NULL perm, 0 rank UNION ALL
-  SELECT 'main', 20,'F','File Libraries','Browse and download files','menu','files',NULL,0 UNION ALL
-  SELECT 'main', 30,'N','News Wire','IT / Hacking / Tech / Entertainment','menu','news',NULL,0 UNION ALL
-  SELECT 'main', 40,'C','Communication','Chat, one-liners, user list','menu','comms',NULL,0 UNION ALL
-  SELECT 'main', 50,'G','Game Room','Door games and high scores','menu','games',NULL,0 UNION ALL
-  SELECT 'main', 60,'V','Voting Booth','Cast your vote','module','poll',NULL,0 UNION ALL
-  SELECT 'main', 70,'I','System Information','About this board','screen','sys.info',NULL,0 UNION ALL
-  SELECT 'main', 75,'S','Statistics','Board and caller stats','module','stats',NULL,0 UNION ALL
-  SELECT 'main', 80,'T','SysOp Ticket','Page the SysOp / support','module','ticket',NULL,0 UNION ALL
-  SELECT 'main', 85,'W','Who / SysOps','Staff roster','module','sysops',NULL,0 UNION ALL
-  SELECT 'main', 90,'A','Account','Your profile and settings','module','account',NULL,0 UNION ALL
-  SELECT 'main', 95,'#','SysOp Area','Board administration','menu','sysop','admin.access',80 UNION ALL
-  SELECT 'main', 99,'','-','','divider','',NULL,0 UNION ALL
-  SELECT 'main',100,'?','Help','How to drive this thing','screen','help.main',NULL,0 UNION ALL
-  SELECT 'main',110,'O','Goodbye / Log off','Hang up the modem','logoff','',NULL,0 UNION ALL
-  -- ============ MESSAGES ============
-  SELECT 'messages',10,'L','List Boards','Pick a message board','module','msg.boards',NULL,0 UNION ALL
-  SELECT 'messages',20,'R','Read Messages','Read the current board','module','msg.read',NULL,0 UNION ALL
-  SELECT 'messages',30,'P','Post Message','Start a new thread','module','msg.post','message.post',10 UNION ALL
-  SELECT 'messages',40,'S','Scan New','New messages since last call','module','msg.scan',NULL,0 UNION ALL
-  SELECT 'messages',50,'F','Find','Full-text search the message base','module','msg.find',NULL,0 UNION ALL
-  SELECT 'messages',60,'N','Change Conference','Join another conference','module','msg.conf',NULL,0 UNION ALL
-  SELECT 'messages',90,'X','Back','Return to main menu','menu','main',NULL,0 UNION ALL
-  -- ============ FILES ============
-  SELECT 'files',10,'L','List Areas','Pick a file area','module','file.areas',NULL,0 UNION ALL
-  SELECT 'files',20,'B','Browse Files','List files in current area','module','file.list',NULL,0 UNION ALL
-  SELECT 'files',30,'F','Find File','Search the file catalogue','module','file.find',NULL,0 UNION ALL
-  SELECT 'files',40,'U','Upload','Contribute a file','module','file.upload','file.upload',30 UNION ALL
-  SELECT 'files',50,'Y','Library','Text-files & reference library','module','file.library',NULL,0 UNION ALL
-  SELECT 'files',90,'X','Back','Return to main menu','menu','main',NULL,0 UNION ALL
-  -- ============ NEWS ============
-  SELECT 'news',10,'I','IT News','The Register & friends','module','news.it',NULL,0 UNION ALL
-  SELECT 'news',20,'H','Hacking News','BleepingComputer, Krebs','module','news.hacking',NULL,0 UNION ALL
-  SELECT 'news',30,'T','Tech News','Ars Technica, Hacker News','module','news.tech',NULL,0 UNION ALL
-  SELECT 'news',40,'E','Entertainment','Variety, Polygon','module','news.entertainment',NULL,0 UNION ALL
-  SELECT 'news',90,'X','Back','Return to main menu','menu','main',NULL,0 UNION ALL
-  -- ============ COMMS ============
-  SELECT 'comms',10,'C','Node Chat','Talk to other callers live','module','chat','chat.use',10 UNION ALL
-  SELECT 'comms',20,'O','One-liners','Read / sign the wall','module','oneliners',NULL,0 UNION ALL
-  SELECT 'comms',30,'U','User List','Everyone who has an account','module','users.list',NULL,0 UNION ALL
-  SELECT 'comms',40,'W','Whos Online','Callers connected right now','module','users.online',NULL,0 UNION ALL
-  SELECT 'comms',50,'S','Send a Comment','Private note to the SysOp','module','ticket',NULL,0 UNION ALL
-  SELECT 'comms',90,'X','Back','Return to main menu','menu','main',NULL,0 UNION ALL
-  -- ============ GAMES ============
-  SELECT 'games',10,'D','Door Games','Pick a game to play','module','game.list',NULL,0 UNION ALL
-  SELECT 'games',20,'H','High Scores','Hall of fame','module','game.scores',NULL,0 UNION ALL
-  SELECT 'games',90,'X','Back','Return to main menu','menu','main',NULL,0 UNION ALL
-  -- ============ SYSOP ============
-  SELECT 'sysop',10,'U','Users & Roles','Accounts, RBAC, bans','module','admin.users','admin.users',80 UNION ALL
-  SELECT 'sysop',20,'M','Message Admin','Boards, conferences, prune','module','admin.messages','admin.content',80 UNION ALL
-  SELECT 'sysop',30,'F','File Admin','Areas & upload approvals','module','admin.files','admin.content',80 UNION ALL
-  SELECT 'sysop',40,'N','News & Feeds','RSS sources, refresh now','module','admin.news','admin.content',80 UNION ALL
-  SELECT 'sysop',45,'P','Polls','Create / close voting booths','module','admin.polls','admin.content',80 UNION ALL
-  SELECT 'sysop',50,'S','Screens & Menus','Edit ANSI screens and menu tree','module','admin.screens','admin.screens',80 UNION ALL
-  SELECT 'sysop',60,'G','Global Config','Every setting, live','module','admin.config','admin.config',100 UNION ALL
-  SELECT 'sysop',65,'D','Discord Hooks','Webhooks & events','module','admin.discord','admin.integrations',100 UNION ALL
-  SELECT 'sysop',70,'T','Tickets','Answer support tickets','module','admin.tickets','ticket.manage',80 UNION ALL
-  SELECT 'sysop',80,'A','Audit Log','Everything that happened','module','admin.audit','admin.audit',80 UNION ALL
-  SELECT 'sysop',85,'C','Call Log','Who dialled in','module','admin.calls','admin.calls',80 UNION ALL
-  SELECT 'sysop',90,'X','Back','Return to main menu','menu','main',NULL,0
+  SELECT 'comms' mslug,10 sort,'C' hotkey,'Node Chat' label,'Talk to other callers live' descr,'module' action,'chat' target,'chat.use' perm,10 rank UNION ALL
+  SELECT 'comms' mslug,20 sort,'O' hotkey,'One-liners' label,'Read / sign the wall' descr,'module' action,'oneliners' target,NULL perm,0 rank UNION ALL
+  SELECT 'comms' mslug,30 sort,'U' hotkey,'User List' label,'Everyone who has an account' descr,'module' action,'users.list' target,NULL perm,0 rank UNION ALL
+  SELECT 'comms' mslug,40 sort,'W' hotkey,'Whos Online' label,'Callers connected right now' descr,'module' action,'users.online' target,NULL perm,0 rank UNION ALL
+  SELECT 'comms' mslug,50 sort,'L' hotkey,'Last Callers' label,'Recent dial-ins' descr,'module' action,'lastcallers' target,NULL perm,0 rank UNION ALL
+  SELECT 'comms' mslug,60 sort,'S' hotkey,'Send a Comment' label,'Private note to the SysOp' descr,'module' action,'ticket' target,NULL perm,0 rank UNION ALL
+  SELECT 'comms' mslug,90 sort,'X' hotkey,'Back' label,'Return to main menu' descr,'menu' action,'main' target,NULL perm,0 rank UNION ALL
+  SELECT 'files' mslug,10 sort,'L' hotkey,'List Areas' label,'Pick a file area' descr,'module' action,'file.areas' target,NULL perm,0 rank UNION ALL
+  SELECT 'files' mslug,20 sort,'B' hotkey,'Browse Files' label,'List files in current area' descr,'module' action,'file.list' target,NULL perm,0 rank UNION ALL
+  SELECT 'files' mslug,30 sort,'F' hotkey,'Find File' label,'Search the file catalogue' descr,'module' action,'file.find' target,NULL perm,0 rank UNION ALL
+  SELECT 'files' mslug,40 sort,'U' hotkey,'Upload' label,'Contribute a file' descr,'module' action,'file.upload' target,'file.upload' perm,30 rank UNION ALL
+  SELECT 'files' mslug,50 sort,'Y' hotkey,'Library' label,'Text-files & reference library' descr,'module' action,'file.library' target,NULL perm,0 rank UNION ALL
+  SELECT 'files' mslug,90 sort,'X' hotkey,'Back' label,'Return to main menu' descr,'menu' action,'main' target,NULL perm,0 rank UNION ALL
+  SELECT 'games' mslug,10 sort,'D' hotkey,'Door Games' label,'Pick a game to play' descr,'module' action,'game.list' target,NULL perm,0 rank UNION ALL
+  SELECT 'games' mslug,20 sort,'H' hotkey,'High Scores' label,'Hall of fame' descr,'module' action,'game.scores' target,NULL perm,0 rank UNION ALL
+  SELECT 'games' mslug,90 sort,'X' hotkey,'Back' label,'Return to main menu' descr,'menu' action,'main' target,NULL perm,0 rank UNION ALL
+  SELECT 'main' mslug,10 sort,'M' hotkey,'Message Base' label,'Read and post messages' descr,'menu' action,'messages' target,NULL perm,0 rank UNION ALL
+  SELECT 'main' mslug,20 sort,'F' hotkey,'File Libraries' label,'Browse and download files' descr,'menu' action,'files' target,NULL perm,0 rank UNION ALL
+  SELECT 'main' mslug,30 sort,'N' hotkey,'News Wire' label,'IT / Hacking / Tech / Entertainment' descr,'menu' action,'news' target,NULL perm,0 rank UNION ALL
+  SELECT 'main' mslug,40 sort,'K' hotkey,'Links Directory' label,'Curated links: AI, OSINT, red/blue team, ...' descr,'module' action,'links' target,NULL perm,0 rank UNION ALL
+  SELECT 'main' mslug,50 sort,'C' hotkey,'Communication' label,'Chat, one-liners, user list' descr,'menu' action,'comms' target,NULL perm,0 rank UNION ALL
+  SELECT 'main' mslug,60 sort,'G' hotkey,'Game Room' label,'16 door games and high scores' descr,'menu' action,'games' target,NULL perm,0 rank UNION ALL
+  SELECT 'main' mslug,70 sort,'V' hotkey,'Voting Booth' label,'Cast your vote' descr,'module' action,'poll' target,NULL perm,0 rank UNION ALL
+  SELECT 'main' mslug,80 sort,'B' hotkey,'Bulletins' label,'Notices from the SysOp' descr,'module' action,'bulletins' target,NULL perm,0 rank UNION ALL
+  SELECT 'main' mslug,89 sort,'' hotkey,'-' label,'' descr,'divider' action,'' target,NULL perm,0 rank UNION ALL
+  SELECT 'main' mslug,100 sort,'I' hotkey,'System Information' label,'About this board' descr,'screen' action,'sys.info' target,NULL perm,0 rank UNION ALL
+  SELECT 'main' mslug,110 sort,'S' hotkey,'Statistics' label,'Board and caller stats' descr,'module' action,'stats' target,NULL perm,0 rank UNION ALL
+  SELECT 'main' mslug,120 sort,'U' hotkey,'What\'s New' label,'New messages, files and headlines' descr,'module' action,'whatsnew' target,NULL perm,0 rank UNION ALL
+  SELECT 'main' mslug,130 sort,'E' hotkey,'Fortune Cookie' label,'A little wisdom from the wire' descr,'module' action,'fortune' target,NULL perm,0 rank UNION ALL
+  SELECT 'main' mslug,140 sort,'T' hotkey,'SysOp Ticket' label,'Page the SysOp / support' descr,'module' action,'ticket' target,NULL perm,0 rank UNION ALL
+  SELECT 'main' mslug,150 sort,'W' hotkey,'Who / SysOps' label,'Staff roster and who is online' descr,'module' action,'sysops' target,NULL perm,0 rank UNION ALL
+  SELECT 'main' mslug,160 sort,'A' hotkey,'Account' label,'Your profile and settings' descr,'module' action,'account' target,NULL perm,0 rank UNION ALL
+  SELECT 'main' mslug,170 sort,'#' hotkey,'SysOp Area' label,'Board administration' descr,'menu' action,'sysop' target,'admin.access' perm,80 rank UNION ALL
+  SELECT 'main' mslug,179 sort,'' hotkey,'-' label,'' descr,'divider' action,'' target,NULL perm,0 rank UNION ALL
+  SELECT 'main' mslug,190 sort,'?' hotkey,'Help' label,'How to drive this thing' descr,'screen' action,'help.main' target,NULL perm,0 rank UNION ALL
+  SELECT 'main' mslug,200 sort,'O' hotkey,'Goodbye / Log off' label,'Hang up the modem' descr,'logoff' action,'' target,NULL perm,0 rank UNION ALL
+  SELECT 'messages' mslug,10 sort,'L' hotkey,'List Boards' label,'Pick a message board' descr,'module' action,'msg.boards' target,NULL perm,0 rank UNION ALL
+  SELECT 'messages' mslug,20 sort,'R' hotkey,'Read Messages' label,'Read the current board' descr,'module' action,'msg.read' target,NULL perm,0 rank UNION ALL
+  SELECT 'messages' mslug,30 sort,'P' hotkey,'Post Message' label,'Start a new thread' descr,'module' action,'msg.post' target,'message.post' perm,10 rank UNION ALL
+  SELECT 'messages' mslug,40 sort,'S' hotkey,'Scan New' label,'New messages since last call' descr,'module' action,'msg.scan' target,NULL perm,0 rank UNION ALL
+  SELECT 'messages' mslug,50 sort,'F' hotkey,'Find' label,'Full-text search the message base' descr,'module' action,'msg.find' target,NULL perm,0 rank UNION ALL
+  SELECT 'messages' mslug,60 sort,'N' hotkey,'Change Conference' label,'Join another conference' descr,'module' action,'msg.conf' target,NULL perm,0 rank UNION ALL
+  SELECT 'messages' mslug,90 sort,'X' hotkey,'Back' label,'Return to main menu' descr,'menu' action,'main' target,NULL perm,0 rank UNION ALL
+  SELECT 'news' mslug,10 sort,'I' hotkey,'IT News' label,'The Register & friends' descr,'module' action,'news.it' target,NULL perm,0 rank UNION ALL
+  SELECT 'news' mslug,20 sort,'H' hotkey,'Hacking News' label,'BleepingComputer, Krebs' descr,'module' action,'news.hacking' target,NULL perm,0 rank UNION ALL
+  SELECT 'news' mslug,30 sort,'T' hotkey,'Tech News' label,'Ars Technica, Hacker News' descr,'module' action,'news.tech' target,NULL perm,0 rank UNION ALL
+  SELECT 'news' mslug,40 sort,'E' hotkey,'Entertainment' label,'Variety, Polygon' descr,'module' action,'news.entertainment' target,NULL perm,0 rank UNION ALL
+  SELECT 'news' mslug,90 sort,'X' hotkey,'Back' label,'Return to main menu' descr,'menu' action,'main' target,NULL perm,0 rank UNION ALL
+  SELECT 'sysop' mslug,10 sort,'U' hotkey,'Users & Roles' label,'Accounts, RBAC, bans' descr,'module' action,'admin.users' target,'admin.users' perm,80 rank UNION ALL
+  SELECT 'sysop' mslug,20 sort,'M' hotkey,'Message Admin' label,'Boards, conferences, prune' descr,'module' action,'admin.messages' target,'admin.content' perm,80 rank UNION ALL
+  SELECT 'sysop' mslug,30 sort,'F' hotkey,'File Admin' label,'Areas & upload approvals' descr,'module' action,'admin.files' target,'admin.content' perm,80 rank UNION ALL
+  SELECT 'sysop' mslug,40 sort,'N' hotkey,'News & Feeds' label,'RSS sources, refresh now' descr,'module' action,'admin.news' target,'admin.content' perm,80 rank UNION ALL
+  SELECT 'sysop' mslug,45 sort,'P' hotkey,'Polls' label,'Create / close voting booths' descr,'module' action,'admin.polls' target,'admin.content' perm,80 rank UNION ALL
+  SELECT 'sysop' mslug,50 sort,'S' hotkey,'Screens & Menus' label,'Edit ANSI screens and menu tree' descr,'module' action,'admin.screens' target,'admin.screens' perm,80 rank UNION ALL
+  SELECT 'sysop' mslug,60 sort,'G' hotkey,'Global Config' label,'Every setting, live' descr,'module' action,'admin.config' target,'admin.config' perm,100 rank UNION ALL
+  SELECT 'sysop' mslug,65 sort,'D' hotkey,'Discord Hooks' label,'Webhooks & events' descr,'module' action,'admin.discord' target,'admin.integrations' perm,100 rank UNION ALL
+  SELECT 'sysop' mslug,68 sort,'!' hotkey,'Maintenance Mode' label,'Toggle the busy-tone lockout' descr,'module' action,'admin.maint' target,'admin.config' perm,100 rank UNION ALL
+  SELECT 'sysop' mslug,70 sort,'T' hotkey,'Tickets' label,'Answer support tickets' descr,'module' action,'admin.tickets' target,'ticket.manage' perm,80 rank UNION ALL
+  SELECT 'sysop' mslug,80 sort,'A' hotkey,'Audit Log' label,'Everything that happened' descr,'module' action,'admin.audit' target,'admin.audit' perm,80 rank UNION ALL
+  SELECT 'sysop' mslug,85 sort,'C' hotkey,'Call Log' label,'Who dialled in' descr,'module' action,'admin.calls' target,'admin.calls' perm,80 rank UNION ALL
+  SELECT 'sysop' mslug,90 sort,'X' hotkey,'Back' label,'Return to main menu' descr,'menu' action,'main' target,NULL perm,0 rank
 ) x ON x.mslug = m.slug;
 
 -- ---------------------------------------------------------------------
@@ -434,3 +466,104 @@ LIMIT 1;
 UPDATE messages SET thread_id = id WHERE thread_id = 0;
 UPDATE boards b SET post_count = (SELECT COUNT(*) FROM messages m WHERE m.board_id=b.id AND m.deleted_at IS NULL),
                     last_post_at = (SELECT MAX(created_at) FROM messages m WHERE m.board_id=b.id);
+
+-- ---------------------------------------------------------------------
+--  links directory
+-- ---------------------------------------------------------------------
+INSERT INTO link_categories (slug,name,description,icon,sort) VALUES
+ ('search','Search Engines','Ways to find things without the ad-tech','?',10),
+ ('ai','AI Sites','Assistants, model hubs and playgrounds','*',20),
+ ('news','News & Zines','Tech, security and scene reading','!',30),
+ ('offensive','Hacking / Offensive','Exploitation, web, tradecraft, wordlists','#',40),
+ ('osint','OSINT','Recon, attribution and exposure checks','@',50),
+ ('blue','Blue Team / Defense','Detection, IR, hardening, threat intel','+',60),
+ ('research','Security Research','Vuln research, advisories and disclosure','$',70),
+ ('net','Networking','BGP, DNS, peering and the plumbing','~',80),
+ ('prog','Programming','Docs, references and cheat sheets','>',90),
+ ('hw','Gadgets & Hardware','Makers, boards, repair and parts','=',100),
+ ('scene','Retro / BBS Scene','ANSI, textfiles, BBS lists and the demoscene','&',110)
+ON DUPLICATE KEY UPDATE name=VALUES(name), description=VALUES(description), icon=VALUES(icon), sort=VALUES(sort);
+
+INSERT INTO links (category_id,title,url,description,added_handle,sort)
+SELECT c.id, x.title, x.url, x.descr, 'sysop', x.sort FROM link_categories c JOIN (
+  SELECT 'search' cslug,'DuckDuckGo' title,'https://duckduckgo.com/' url,'Privacy-first web search' descr,10 sort UNION ALL
+  SELECT 'search' cslug,'Startpage' title,'https://www.startpage.com/' url,'Google results, no tracking' descr,20 sort UNION ALL
+  SELECT 'search' cslug,'Brave Search' title,'https://search.brave.com/' url,'Independent index' descr,30 sort UNION ALL
+  SELECT 'search' cslug,'Marginalia Search' title,'https://search.marginalia.nu/' url,'Old-web, text-first discovery' descr,40 sort UNION ALL
+  SELECT 'search' cslug,'Mojeek' title,'https://www.mojeek.com/' url,'Independent crawler & index' descr,50 sort UNION ALL
+  SELECT 'search' cslug,'searx.be' title,'https://searx.be/' url,'Public SearXNG metasearch' descr,60 sort UNION ALL
+  SELECT 'search' cslug,'Kagi' title,'https://kagi.com/' url,'Paid, ad-free premium search' descr,70 sort UNION ALL
+  SELECT 'ai' cslug,'Claude' title,'https://claude.ai/' url,'Anthropic assistant' descr,10 sort UNION ALL
+  SELECT 'ai' cslug,'ChatGPT' title,'https://chat.openai.com/' url,'OpenAI assistant' descr,20 sort UNION ALL
+  SELECT 'ai' cslug,'Hugging Face' title,'https://huggingface.co/' url,'Models, datasets, spaces' descr,30 sort UNION ALL
+  SELECT 'ai' cslug,'Perplexity' title,'https://www.perplexity.ai/' url,'Answer engine with citations' descr,40 sort UNION ALL
+  SELECT 'ai' cslug,'Google AI Studio' title,'https://aistudio.google.com/' url,'Gemini prompt playground' descr,50 sort UNION ALL
+  SELECT 'ai' cslug,'LMArena' title,'https://lmarena.ai/' url,'Blind model comparison / leaderboard' descr,60 sort UNION ALL
+  SELECT 'ai' cslug,'Ollama' title,'https://ollama.com/' url,'Run local LLMs' descr,70 sort UNION ALL
+  SELECT 'news' cslug,'The Register' title,'https://www.theregister.com/' url,'IT news with an attitude' descr,10 sort UNION ALL
+  SELECT 'news' cslug,'Ars Technica' title,'https://arstechnica.com/' url,'Tech, science, policy' descr,20 sort UNION ALL
+  SELECT 'news' cslug,'Hacker News' title,'https://news.ycombinator.com/' url,'The orange site' descr,30 sort UNION ALL
+  SELECT 'news' cslug,'Lobsters' title,'https://lobste.rs/' url,'Computing-focused link aggregator' descr,40 sort UNION ALL
+  SELECT 'news' cslug,'Phrack' title,'http://www.phrack.org/' url,'The underground e-zine' descr,50 sort UNION ALL
+  SELECT 'news' cslug,'2600' title,'https://www.2600.com/' url,'The Hacker Quarterly' descr,60 sort UNION ALL
+  SELECT 'news' cslug,'tl;dr sec' title,'https://tldrsec.com/' url,'Weekly security newsletter' descr,70 sort UNION ALL
+  SELECT 'offensive' cslug,'Exploit-DB' title,'https://www.exploit-db.com/' url,'Public exploit archive' descr,10 sort UNION ALL
+  SELECT 'offensive' cslug,'GTFOBins' title,'https://gtfobins.github.io/' url,'Unix binaries for privesc/bypass' descr,20 sort UNION ALL
+  SELECT 'offensive' cslug,'LOLBAS' title,'https://lolbas-project.github.io/' url,'Living-off-the-land Windows binaries' descr,30 sort UNION ALL
+  SELECT 'offensive' cslug,'HackTricks' title,'https://book.hacktricks.xyz/' url,'Pentest methodology wiki' descr,40 sort UNION ALL
+  SELECT 'offensive' cslug,'PayloadsAllTheThings' title,'https://github.com/swisskyrepo/PayloadsAllTheThings' url,'Payloads & bypass cheatsheets' descr,50 sort UNION ALL
+  SELECT 'offensive' cslug,'PortSwigger Academy' title,'https://portswigger.net/web-security' url,'Free web security labs' descr,60 sort UNION ALL
+  SELECT 'offensive' cslug,'MITRE ATT&CK' title,'https://attack.mitre.org/' url,'Adversary TTP knowledge base' descr,70 sort UNION ALL
+  SELECT 'offensive' cslug,'HackerOne Hacktivity' title,'https://hackerone.com/hacktivity' url,'Disclosed bug bounty reports' descr,80 sort UNION ALL
+  SELECT 'osint' cslug,'OSINT Framework' title,'https://osintframework.com/' url,'Categorised tool directory' descr,10 sort UNION ALL
+  SELECT 'osint' cslug,'Shodan' title,'https://www.shodan.io/' url,'Search engine for exposed devices' descr,20 sort UNION ALL
+  SELECT 'osint' cslug,'Censys Search' title,'https://search.censys.io/' url,'Internet-wide host & cert scans' descr,30 sort UNION ALL
+  SELECT 'osint' cslug,'crt.sh' title,'https://crt.sh/' url,'Certificate transparency log search' descr,40 sort UNION ALL
+  SELECT 'osint' cslug,'Have I Been Pwned' title,'https://haveibeenpwned.com/' url,'Breach exposure check' descr,50 sort UNION ALL
+  SELECT 'osint' cslug,'urlscan.io' title,'https://urlscan.io/' url,'Scan & inspect suspicious URLs' descr,60 sort UNION ALL
+  SELECT 'osint' cslug,'WiGLE' title,'https://wigle.net/' url,'Wireless network geolocation' descr,70 sort UNION ALL
+  SELECT 'osint' cslug,'Wayback Machine' title,'https://web.archive.org/' url,'Historical page snapshots' descr,80 sort UNION ALL
+  SELECT 'blue' cslug,'MITRE D3FEND' title,'https://d3fend.mitre.org/' url,'Defensive countermeasure ontology' descr,10 sort UNION ALL
+  SELECT 'blue' cslug,'Sigma HQ' title,'https://github.com/SigmaHQ/sigma' url,'Generic detection rule format' descr,20 sort UNION ALL
+  SELECT 'blue' cslug,'Atomic Red Team' title,'https://atomicredteam.io/' url,'Small, portable detection tests' descr,30 sort UNION ALL
+  SELECT 'blue' cslug,'CISA KEV Catalog' title,'https://www.cisa.gov/known-exploited-vulnerabilities-catalog' url,'Known exploited vulns' descr,40 sort UNION ALL
+  SELECT 'blue' cslug,'MalwareBazaar' title,'https://bazaar.abuse.ch/' url,'Malware sample sharing' descr,50 sort UNION ALL
+  SELECT 'blue' cslug,'Wazuh' title,'https://wazuh.com/' url,'Open-source XDR/SIEM' descr,60 sort UNION ALL
+  SELECT 'blue' cslug,'TheHive Project' title,'https://thehive-project.org/' url,'Incident response platform' descr,70 sort UNION ALL
+  SELECT 'research' cslug,'Project Zero' title,'https://googleprojectzero.blogspot.com/' url,'Google\'s 0-day research blog' descr,10 sort UNION ALL
+  SELECT 'research' cslug,'PortSwigger Research' title,'https://portswigger.net/research' url,'Web security research' descr,20 sort UNION ALL
+  SELECT 'research' cslug,'GitHub Security Lab' title,'https://securitylab.github.com/' url,'Vuln research & advisories' descr,30 sort UNION ALL
+  SELECT 'research' cslug,'NVD' title,'https://nvd.nist.gov/' url,'US National Vulnerability Database' descr,40 sort UNION ALL
+  SELECT 'research' cslug,'CVE.org' title,'https://www.cve.org/' url,'CVE program & records' descr,50 sort UNION ALL
+  SELECT 'research' cslug,'oss-security' title,'https://www.openwall.com/lists/oss-security/' url,'Open-source security list' descr,60 sort UNION ALL
+  SELECT 'net' cslug,'Cloudflare Radar' title,'https://radar.cloudflare.com/' url,'Internet traffic & trends' descr,10 sort UNION ALL
+  SELECT 'net' cslug,'bgp.tools' title,'https://bgp.tools/' url,'BGP / ASN / prefix explorer' descr,20 sort UNION ALL
+  SELECT 'net' cslug,'RIPEstat' title,'https://stat.ripe.net/' url,'IP, ASN and routing data' descr,30 sort UNION ALL
+  SELECT 'net' cslug,'PeeringDB' title,'https://www.peeringdb.com/' url,'Interconnection database' descr,40 sort UNION ALL
+  SELECT 'net' cslug,'DNSViz' title,'https://dnsviz.net/' url,'Visualise & debug DNSSEC' descr,50 sort UNION ALL
+  SELECT 'net' cslug,'MXToolbox' title,'https://mxtoolbox.com/' url,'DNS / mail / blacklist checks' descr,60 sort UNION ALL
+  SELECT 'net' cslug,'Wireshark' title,'https://www.wireshark.org/' url,'The packet analyser' descr,70 sort UNION ALL
+  SELECT 'prog' cslug,'MDN Web Docs' title,'https://developer.mozilla.org/' url,'Web platform reference' descr,10 sort UNION ALL
+  SELECT 'prog' cslug,'DevDocs' title,'https://devdocs.io/' url,'Fast offline-able API docs' descr,20 sort UNION ALL
+  SELECT 'prog' cslug,'cppreference' title,'https://en.cppreference.com/' url,'C and C++ reference' descr,30 sort UNION ALL
+  SELECT 'prog' cslug,'The Rust Book' title,'https://doc.rust-lang.org/book/' url,'Learn Rust' descr,40 sort UNION ALL
+  SELECT 'prog' cslug,'Go by Example' title,'https://gobyexample.com/' url,'Annotated Go snippets' descr,50 sort UNION ALL
+  SELECT 'prog' cslug,'regex101' title,'https://regex101.com/' url,'Build & debug regex' descr,60 sort UNION ALL
+  SELECT 'prog' cslug,'crontab.guru' title,'https://crontab.guru/' url,'Cron expression editor' descr,70 sort UNION ALL
+  SELECT 'prog' cslug,'explainshell' title,'https://explainshell.com/' url,'Break down shell commands' descr,80 sort UNION ALL
+  SELECT 'hw' cslug,'Hackaday' title,'https://hackaday.com/' url,'Hardware hacks daily' descr,10 sort UNION ALL
+  SELECT 'hw' cslug,'Adafruit' title,'https://www.adafruit.com/' url,'Boards, parts, tutorials' descr,20 sort UNION ALL
+  SELECT 'hw' cslug,'SparkFun' title,'https://www.sparkfun.com/' url,'Electronics & breakouts' descr,30 sort UNION ALL
+  SELECT 'hw' cslug,'Pimoroni' title,'https://shop.pimoroni.com/' url,'Maker boards & add-ons' descr,40 sort UNION ALL
+  SELECT 'hw' cslug,'iFixit' title,'https://www.ifixit.com/' url,'Repair guides & teardowns' descr,50 sort UNION ALL
+  SELECT 'hw' cslug,'Raspberry Pi' title,'https://www.raspberrypi.com/' url,'The little board' descr,60 sort UNION ALL
+  SELECT 'hw' cslug,'Arduino' title,'https://www.arduino.cc/' url,'Open-source electronics' descr,70 sort UNION ALL
+  SELECT 'scene' cslug,'Telnet BBS Guide' title,'https://www.telnetbbsguide.com/' url,'Dial in to boards still running' descr,10 sort UNION ALL
+  SELECT 'scene' cslug,'16colo.rs' title,'https://16colo.rs/' url,'ANSI/ASCII art pack archive' descr,20 sort UNION ALL
+  SELECT 'scene' cslug,'textfiles.com' title,'http://textfiles.com/' url,'Jason Scott\'s BBS-era text archive' descr,30 sort UNION ALL
+  SELECT 'scene' cslug,'int10h Oldschool Fonts' title,'https://int10h.org/oldschool-pc-fonts/' url,'The VGA text-mode font pack' descr,40 sort UNION ALL
+  SELECT 'scene' cslug,'Demozoo' title,'https://demozoo.org/' url,'Demoscene productions database' descr,50 sort UNION ALL
+  SELECT 'scene' cslug,'pouet.net' title,'https://www.pouet.net/' url,'Demoscene community & prods' descr,60 sort UNION ALL
+  SELECT 'scene' cslug,'The BBS Documentary' title,'http://www.bbsdocumentary.com/' url,'Jason Scott, 2005' descr,70 sort
+) x ON x.cslug = c.slug
+ON DUPLICATE KEY UPDATE title=VALUES(title);

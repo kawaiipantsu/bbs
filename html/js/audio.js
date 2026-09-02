@@ -154,6 +154,26 @@ export class Sound {
     this._tone(2600, t, 0.012, { type: 'square', gain: 0.03 });
   }
 
+  /* NANP busy / engaged signal: 480 + 620 Hz, 0.5s on / 0.5s off, looping. */
+  busySignal() {
+    if (!this.ready) return;
+    const t = this.ctx.currentTime;
+    this._tone(480, t, 0.5, { gain: 0.10 });
+    this._tone(620, t, 0.5, { gain: 0.10 });
+  }
+
+  startBusy() {
+    this.stopBusy();
+    this._ensure();
+    if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
+    const cycle = () => { this.busySignal(); this._busy = setTimeout(cycle, 1000); };
+    cycle();
+  }
+
+  stopBusy() {
+    if (this._busy) { clearTimeout(this._busy); this._busy = null; }
+  }
+
   /* ---- the modem ---------------------------------------------------
      Returns a Promise that resolves when "CONNECT" would print. Fires
      opts.onEvent(name) at each stage so the boot text can sync. */

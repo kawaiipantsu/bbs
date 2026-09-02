@@ -27,6 +27,7 @@ const crt = $('#crt');
 let term;
 let controls;
 let started = false;
+let maintenance = false;
 let awaitingGoto = document.documentElement.dataset.goto || '';
 
 /* ---- gesture gate: dial in on first key/click --------------------- */
@@ -61,6 +62,16 @@ async function start(skip) {
   try {
     const payload = await runBoot(term, { skip });
     applyConnection(payload && payload.connection);
+    if (payload && payload.connection && payload.connection.maintenance) {
+      maintenance = true;
+      sound.startBusy();
+      term.renderFrame(payload.frame || {
+        mode: 'pager',
+        lines: [[{ s: '  BUSY - the board is down for maintenance.', f: 12, b: 0, o: true }]],
+      });
+      LS.set('bbs_booted', '1');
+      return;
+    }
     if (payload && payload.frame) {
       term.renderFrame(payload.frame);
       maybeGoto();
@@ -186,6 +197,9 @@ function keyboard() {
       return;
     }
     if (ev.ctrlKey && ev.key.toLowerCase() === 'l') { ev.preventDefault(); term.render(); return; }
+
+    // maintenance: the line is engaged - swallow input (F5 still reloads to retry)
+    if (maintenance) { ev.preventDefault(); return; }
 
     if (controls && !controls.isPowered()) { ev.preventDefault(); controls.powerOn(); return; }
 

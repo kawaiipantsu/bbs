@@ -34,6 +34,7 @@ final class AdminModule extends Module
         'admin.tickets'  => 'ticket.manage',
         'admin.audit'    => 'admin.audit',
         'admin.calls'    => 'admin.calls',
+        'admin.maint'    => 'admin.config',
     ];
 
     public static function slugs(): array
@@ -66,8 +67,57 @@ final class AdminModule extends Module
             'admin.messages' => $this->messages($e, $in, $key, $cmd, $st),
             'admin.files'    => $this->files($e, $in, $key, $cmd, $st),
             'admin.polls'    => $this->polls($e, $in, $key, $cmd, $st),
+            'admin.maint'    => $this->maint($e, $in, $key, $cmd, $st),
             default          => $e->exitModule(),
         };
+    }
+
+    // ===============================================================
+    //  MAINTENANCE MODE
+    // ===============================================================
+    private function maint(Engine $e, array $in, string $key, string $cmd, array &$st): Frame
+    {
+        if ($cmd === 'submit' && ($st['view'] ?? '') === 'msg') {
+            Db::q('UPDATE settings SET `value` = ? WHERE `key` = ?', [(string) ($in['data']['msg'] ?? ''), 'maintenance_msg']);
+            AuditLog::record('admin.maint.msg', 'setting', 'maintenance_msg', 'edited');
+            Context::bustStats();
+            $st['view'] = '';
+            return $this->maint($e, ['cmd' => 'render'], '', '', $st)->sound('beep');
+        }
+        if ($f = $this->back($e, $key, $st)) {
+            return $f;
+        }
+        $on = Config::bool('maintenance', false);
+        if ($key === 'T') {
+            $on = !$on;
+            Db::q('UPDATE settings SET `value` = ? WHERE `key` = ?', [$on ? '1' : '0', 'maintenance']);
+            AuditLog::record('admin.maint.toggle', 'setting', 'maintenance', $on ? 'ENABLED' : 'disabled');
+            Context::bustStats();
+        }
+        if ($key === 'M') {
+            $st['view'] = 'msg';
+            return Frame::make('form')->title('Maintenance Message')->header('Maintenance · message')->blank()
+                ->form([['name' => 'msg', 'label' => 'Message', 'type' => 'textarea', 'max' => 600,
+                         'value' => Config::setting('maintenance_msg', '')]], 'ENTER saves · ESC cancels');
+        }
+
+        $active = (int) Db::val("SELECT COUNT(DISTINCT node) FROM sessions WHERE expires_at > NOW() AND node > 0");
+        $f = Frame::make('screen')->title('Maintenance Mode')->mode('menu')
+            ->header('SysOp · Maintenance Mode')->blank();
+        $f->pipe($on
+            ? '|12   ●  MAINTENANCE MODE IS ON  -  callers hear a busy tone.'
+            : '|10   ○  Maintenance mode is off - the board is open.');
+        $f->blank();
+        $f->pipe('|07   When on, anyone who is not staff (rank < 80) gets the dial-in')
+          ->pipe('|07   sequence ending in an engaged/busy signal that loops. Staff still')
+          ->pipe('|07   connect normally so you can work.')
+          ->blank()
+          ->pipe('|08   Current callers online: |14' . $active)
+          ->blank()
+          ->pipe('|08   Message shown:')
+          ->block('|07   "' . wordwrap(Config::setting('maintenance_msg', ''), 74, "\n   ", true) . '"')
+          ->blank();
+        return $f->footer('T toggle ' . ($on ? 'OFF' : 'ON') . ' · M edit message · Q back');
     }
 
     private function back(Engine $e, string $key, array &$st): ?Frame

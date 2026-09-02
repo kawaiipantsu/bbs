@@ -63,6 +63,39 @@ final class Config
         return is_numeric($v) ? (int) $v : $default;
     }
 
+    public static function float(string $key, float $default = 0.0): float
+    {
+        $v = self::get($key, $default);
+        return is_numeric($v) ? (float) $v : $default;
+    }
+
+    /**
+     * "Font scale" (0.1 .. 3.0) is applied by shrinking the character grid: a
+     * bigger scale means fewer columns / rows, hence bigger glyphs on the same
+     * glass. Everything that lays out to the grid width reads these, so bars,
+     * page sizes and server-side wrapping all stay consistent.
+     */
+    public static function fontScale(): float
+    {
+        $v = (float) self::setting('font_scale', '1');
+        if ($v <= 0.0) {
+            $v = 1.0;
+        }
+        return max(0.1, min(3.0, $v));
+    }
+
+    public static function termCols(): int
+    {
+        $base = self::int('term_cols', self::int('terminal.cols', 104));
+        return max(40, (int) round($base / self::fontScale()));
+    }
+
+    public static function termRows(): int
+    {
+        $base = self::int('term_rows', self::int('terminal.rows', 38));
+        return max(16, (int) round($base / self::fontScale()));
+    }
+
     /** Load overrides from the DB `settings` table (key => value). Safe to call once DB is up. */
     public static function loadSettings(): void
     {

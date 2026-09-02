@@ -14,9 +14,11 @@ use Bbs\Core\Request;
 use Bbs\Modules\AccountModule;
 use Bbs\Modules\AdminModule;
 use Bbs\Modules\ChatModule;
+use Bbs\Modules\ExtrasModule;
 use Bbs\Modules\CommunityModule;
 use Bbs\Modules\FilesModule;
 use Bbs\Modules\GamesModule;
+use Bbs\Modules\LinksModule;
 use Bbs\Modules\MessagesModule;
 use Bbs\Modules\NewsModule;
 use Bbs\Modules\PollModule;
@@ -48,6 +50,8 @@ final class Engine
         ChatModule::class,
         AccountModule::class,
         AdminModule::class,
+        LinksModule::class,
+        ExtrasModule::class,
     ];
 
     /** @var array<string,Module> resolved lazily: slug => instance */
