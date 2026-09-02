@@ -174,6 +174,70 @@ export class Sound {
     if (this._busy) { clearTimeout(this._busy); this._busy = null; }
   }
 
+  /* ---- error tones: one looping "modem data" bed per failure type -----
+     Each connection error gets its own recognisable sound that loops until
+     the next screen renders or the caller hits a key. */
+
+  /** One iteration of the bed for `type`. Returns the loop period in ms. */
+  _errorBurst(type) {
+    const t = this.ctx.currentTime;
+    switch (type) {
+      case 'carrier': {
+        // CARRIER LOST - the carrier drops and the modem retrains: a
+        // descending howl over a wash of noise, again and again.
+        this._tone(1600, t, 0.5, { type: 'sawtooth', gain: 0.06, glide: 240 });
+        this._tone(1100, t + 0.05, 0.5, { type: 'square', gain: 0.03, glide: 180 });
+        this._noise(t, 0.6, { gain: 0.09, band: 1400, q: 0.4 });
+        this._noise(t + 0.6, 0.3, { gain: 0.05, band: 600, q: 0.3 });
+        return 1400;
+      }
+      case 'nocarrier': {
+        // NO CARRIER - the three-tone Special Information Tone, looping.
+        [914, 1372, 1777].forEach((f, i) =>
+          this._tone(f, t + i * 0.33, 0.3, { type: 'sine', gain: 0.09 }));
+        this._noise(t + 1.0, 0.15, { gain: 0.03, band: 1000 });
+        return 1800;
+      }
+      case 'stale': {
+        // stale token / desync - a corrupted packet stream: fast FSK-ish
+        // chirps and bandpassed hash.
+        for (let i = 0; i < 5; i++) {
+          const f = 1000 + Math.random() * 1600;
+          this._tone(f, t + i * 0.08, 0.06, { type: 'square', gain: 0.04 });
+          this._noise(t + i * 0.08, 0.05, { gain: 0.05, band: 900 + Math.random() * 1800, q: 0.6 });
+        }
+        return 900;
+      }
+      default: {
+        // generic rejection - a short, low, unhappy buzz. Least alarming.
+        this._tone(200, t, 0.14, { type: 'square', gain: 0.06 });
+        this._tone(150, t + 0.12, 0.16, { type: 'square', gain: 0.05 });
+        this._noise(t, 0.06, { gain: 0.03, band: 400 });
+        return 1200;
+      }
+    }
+  }
+
+  /** Start (or switch) the looping error bed for `type`. */
+  errorLoop(type = 'reject') {
+    this.stopErrorLoop();
+    if (!this.ready) return;
+    this._errType = type;
+    this._errStarted = Date.now();
+    const cycle = () => {
+      // give up after ~20s so a walked-away tab goes quiet
+      if (!this.ready || Date.now() - this._errStarted > 20000) { this.stopErrorLoop(); return; }
+      const period = this._errorBurst(type) || 1400;
+      this._errLoop = setTimeout(cycle, period);
+    };
+    cycle();
+  }
+
+  stopErrorLoop() {
+    if (this._errLoop) { clearTimeout(this._errLoop); this._errLoop = null; }
+    this._errType = null;
+  }
+
   /* ---- the modem ---------------------------------------------------
      Returns a Promise that resolves when "CONNECT" would print. Fires
      opts.onEvent(name) at each stage so the boot text can sync. */

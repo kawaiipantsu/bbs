@@ -77,9 +77,11 @@ async function start(skip) {
       maybeGoto();
     } else {
       term.renderFrame({ mode: 'pager', lines: [[{ s: '  NO CARRIER - could not reach the board. Reload to redial.', f: 9, b: 0, o: true }]] });
+      sound.errorLoop('nocarrier');
     }
   } catch (e) {
     term.renderFrame({ mode: 'pager', lines: [[{ s: '  NO CARRIER - ' + (e && e.message || 'connection failed'), f: 9, b: 0 }]] });
+    sound.errorLoop('nocarrier');
   }
   LS.set('bbs_booted', '1');
 }
@@ -99,6 +101,15 @@ function applyConnection(conn) {
   term.resize();
 }
 
+// Map an error message to one of the looping "modem data" beds in audio.js.
+function errKind(msg) {
+  const m = String(msg || '').toLowerCase();
+  if (/stale|token|csrf|\b419\b|expired|reconnect|desync/.test(m)) return 'stale';
+  if (/no carrier|not reach|could not reach|not found|no route|offline|unavailable/.test(m)) return 'nocarrier';
+  if (/carrier lost|network error|connection lost|timed out|timeout|network/.test(m)) return 'carrier';
+  return 'reject';
+}
+
 function send(payload) {
   return action(payload).then(frame => {
     if (!frame) return;
@@ -106,10 +117,11 @@ function send(payload) {
       term.renderFrame({ mode: (term.frame && term.frame.mode) || 'menu',
         lines: (term.frame && term.frame.lines || []).concat([[{ s: '  ! ' + frame.error, f: 9, b: 0, o: true }]]),
         meta: term.frame && term.frame.meta || {} });
-      sound.error();
+      sound.errorLoop(errKind(frame.error));
       return;
     }
     if (frame.whoami) state.whoami = frame.whoami;
+    sound.stopErrorLoop();
     term.renderFrame(frame);
     // maintenance: keep the busy tone while busy frames come back; stop once
     // a real screen renders (a SysOp logged through).
@@ -121,7 +133,9 @@ function send(payload) {
     if (frame.meta && frame.meta.hangup) return powerOff();
     maybeGoto();
   }).catch(err => {
-    term.renderFrame({ mode: 'pager', lines: [[{ s: '  CARRIER LOST - ' + (err && err.message || 'network error'), f: 9, b: 0 }]] });
+    const msg = (err && err.message) || 'network error';
+    term.renderFrame({ mode: 'pager', lines: [[{ s: '  CARRIER LOST - ' + msg, f: 9, b: 0 }]] });
+    sound.errorLoop(errKind('carrier lost ' + msg));
   });
 }
 
@@ -216,6 +230,7 @@ function keyboard() {
     if (!term.frame) { skipBoot(); return; }
 
     ev.preventDefault();
+    sound.stopErrorLoop();   // a keystroke silences any looping error tone
     sound.key();
     term.key(ev);
   }, { passive: false });
@@ -224,6 +239,21 @@ function keyboard() {
     if (!started) start(false);
     else screenEl.focus();
   });
+
+  // Returning from another tab / minimised window can leave a request in
+  // flight that never settles, wedging term.busy=true so keystrokes are
+  // swallowed (the click sound still plays because that listener is separate).
+  // Clear the stuck state and re-arm input whenever we regain focus.
+  const revive = () => {
+    if (document.visibilityState === 'hidden') return;
+    if (term && typeof term.unstick === 'function') term.unstick();
+    else if (term) term.busy = false;
+    try { screenEl.focus(); } catch {}
+    if (term && term.frame) { try { term.render(); } catch {} }
+  };
+  document.addEventListener('visibilitychange', revive);
+  window.addEventListener('focus', revive);
+  window.addEventListener('pageshow', revive);
 }
 
 /* ---- go ------------------------------------------------------- */

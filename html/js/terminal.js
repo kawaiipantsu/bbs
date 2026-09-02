@@ -355,7 +355,20 @@ export class Terminal {
 
   _send(payload) {
     this.busy = true;
-    Promise.resolve(this.onSend(payload)).finally(() => { this.busy = false; });
+    // hard safety net: never let `busy` stay stuck if the promise hangs
+    // (e.g. a fetch left in flight while the tab was backgrounded).
+    clearTimeout(this._busyGuard);
+    this._busyGuard = setTimeout(() => { this.busy = false; }, 8000);
+    const clear = () => { clearTimeout(this._busyGuard); this.busy = false; };
+    Promise.resolve()
+      .then(() => this.onSend(payload))
+      .then(clear, clear);
+  }
+
+  /** Force-unstick input (called when the tab regains focus/visibility). */
+  unstick() {
+    clearTimeout(this._busyGuard);
+    this.busy = false;
   }
 
   _scrollBy(n) {

@@ -7,18 +7,32 @@ export const state = {
 };
 
 async function jsonFetch(path, opts = {}) {
-  const res = await fetch(path, {
-    credentials: 'same-origin',
-    ...opts,
-    headers: {
-      'Accept': 'application/json',
-      ...(opts.body ? { 'Content-Type': 'application/json' } : {}),
-      ...(state.csrf ? { 'X-CSRF': state.csrf } : {}),
-      ...(opts.headers || {}),
-    },
-  });
+  // A request left in flight while the tab is backgrounded can hang forever and
+  // wedge the UI; give every call a hard ceiling.
+  const timeoutMs = opts.timeoutMs || 15000;
+  const ctl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+  const timer = ctl ? setTimeout(() => ctl.abort(), timeoutMs) : null;
+  let res;
+  try {
+    res = await fetch(path, {
+      credentials: 'same-origin',
+      ...(ctl ? { signal: ctl.signal } : {}),
+      ...opts,
+      headers: {
+        'Accept': 'application/json',
+        ...(opts.body ? { 'Content-Type': 'application/json' } : {}),
+        ...(state.csrf ? { 'X-CSRF': state.csrf } : {}),
+        ...(opts.headers || {}),
+      },
+    });
+  } catch (e) {
+    if (timer) clearTimeout(timer);
+    return { ok: false, status: 0, data: { error: e && e.name === 'AbortError' ? 'request timed out' : (e && e.message) || 'network error' } };
+  }
+  if (timer) clearTimeout(timer);
   let data = null;
-  const text = await res.text();
+  let text = '';
+  try { text = await res.text(); } catch { text = ''; }
   try { data = text ? JSON.parse(text) : null; } catch { data = { error: text || ('HTTP ' + res.status) }; }
   if (data && data.csrf) state.csrf = data.csrf;
   if (data && data.connection && data.connection.csrf) state.csrf = data.connection.csrf;
