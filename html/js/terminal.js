@@ -89,7 +89,7 @@ export class Terminal {
     const glass = document.getElementById('glass').getBoundingClientRect();
     if (!glass.width) return;
     // keep the text well inside the glass so it clears the rounded corners
-    const M = Math.max(30, Math.round(Math.min(glass.width, glass.height) * 0.05));
+    const M = Math.max(36, Math.round(Math.min(glass.width, glass.height) * 0.06));
     const usableW = glass.width - M * 2;
     const usableH = glass.height - M * 2;
     const fontSize = usableW / (this.cols * this._k);

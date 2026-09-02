@@ -42,6 +42,11 @@ INSERT INTO settings (`key`,`value`,`type`,`label`,`category`) VALUES
  ('news_feeds_entertainment',"https://variety.com/feed/\nhttps://www.polygon.com/rss/index.xml",'text','Entertainment news RSS feeds','news'),
  ('news_max_per_cat','80','int','Max cached items per category','news'),
  ('chat_idle_secs','90','int','Seconds before a chatter is considered gone','chat'),
+ ('ticker_sources','custom,news,oneliners','string','Bottom crawl: which feeds, in order (custom,news,oneliners)','ticker'),
+ ('ticker_custom',"Welcome to THUGS(red) BBS - leave a message, sign the wall, play a door game.\nType the letter in [brackets] to move around. ESC backs out.\nYour IP shows up as a phone number. That is on purpose.",'text','Bottom crawl: custom messages, one per line','ticker'),
+ ('ticker_news_count','4','int','Bottom crawl: number of latest news headlines (0 = none)','ticker'),
+ ('ticker_oneliner_count','10','int','Bottom crawl: number of latest one-liners (0 = none)','ticker'),
+ ('ticker_speed_secs','55','int','Bottom crawl: seconds for one full loop (lower = faster)','ticker'),
  ('seo_description','THUGS(red) BBS - a fully keyboard-driven ANSI/ASCII bulletin board system rendered inside a CRT terminal. Dial in, leave a message, browse the files, play a door game.','text','Meta description','seo')
 ON DUPLICATE KEY UPDATE `label`=VALUES(`label`), `type`=VALUES(`type`), `category`=VALUES(`category`);
 

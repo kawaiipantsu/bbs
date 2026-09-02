@@ -157,11 +157,16 @@ function hud() {
 function startTicker() {
   const track = $('#ticker-track');
   const load = () => ticker().then(d => {
-    if (!d || !d.lines) return;
-    const html = d.lines.map(l =>
-      l.startsWith('NEWS:') ? '<b>' + escapeHtml(l) + '</b>' : escapeHtml(l)
-    ).join('  ···  ');
-    track.innerHTML = html + '  ···  ';
+    if (!d || !Array.isArray(d.lines) || !d.lines.length) return;
+    const sep = '<span class="sep">◆</span>';
+    let unit = d.lines.map(l =>
+      /^NEWS:/.test(l) ? '<b>' + escapeHtml(l) + '</b>' : escapeHtml(l)
+    ).join(sep) + sep;
+    // pad short boards so one copy always overflows the viewport, then double it
+    while (unit.replace(/<[^>]+>/g, '').length < 240) unit += unit;
+    track.innerHTML = unit + unit;
+    const secs = Math.max(20, Number(d.speed) || 60);
+    track.style.animationDuration = secs + 's';
   }).catch(() => {});
   load();
   setInterval(load, 120000);

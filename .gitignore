@@ -33,3 +33,4 @@ Thumbs.db
 .vscode/
 /assets/dist/
 /docs/img/*.orig
+/assets/bugs/

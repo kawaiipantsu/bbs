@@ -133,21 +133,53 @@ final class ApiController
         return Response::json($frame);
     }
 
-    /** GET /api/ticker - one-liners + latest news headline for the status crawl. */
+    /**
+     * GET /api/ticker - the bottom status crawl. Fully SysOp-controlled through
+     * the `settings` table (edit in SysOp -> Global Config):
+     *   ticker_sources        csv of custom,news,oneliners (order = display order)
+     *   ticker_custom         free text, one message per line
+     *   ticker_news_count     how many latest headlines (0 = none)
+     *   ticker_oneliner_count how many latest one-liners (0 = none)
+     *   ticker_speed_secs     seconds for one full loop (lower = faster)
+     */
     public function ticker(Request $req): Response
     {
-        $lines = array_column(
-            Db::all('SELECT body FROM oneliners WHERE deleted_at IS NULL ORDER BY id DESC LIMIT 12'),
-            'body'
-        );
-        $news = Db::val("SELECT title FROM news_items ORDER BY published_at DESC LIMIT 1");
-        if ($news) {
-            $lines[] = 'NEWS: ' . $news;
+        $sources = array_filter(array_map('trim', explode(',', Config::setting('ticker_sources', 'custom,news,oneliners'))));
+        $lines = [];
+
+        foreach ($sources as $src) {
+            if ($src === 'custom') {
+                foreach (preg_split('/[\r\n]+/', Config::setting('ticker_custom', '')) ?: [] as $l) {
+                    $l = trim($l);
+                    if ($l !== '') {
+                        $lines[] = $l;
+                    }
+                }
+            } elseif ($src === 'news') {
+                $n = max(0, Config::int('ticker_news_count', 3));
+                if ($n > 0) {
+                    foreach (Db::all('SELECT title FROM news_items ORDER BY published_at DESC, id DESC LIMIT ' . $n) as $r) {
+                        $lines[] = 'NEWS: ' . $r['title'];
+                    }
+                }
+            } elseif ($src === 'oneliners') {
+                $n = max(0, Config::int('ticker_oneliner_count', 10));
+                if ($n > 0) {
+                    foreach (Db::all('SELECT body FROM oneliners WHERE deleted_at IS NULL ORDER BY id DESC LIMIT ' . $n) as $r) {
+                        $lines[] = $r['body'];
+                    }
+                }
+            }
         }
+
         if (!$lines) {
-            $lines[] = 'Welcome to ' . Config::setting('site_name', 'THUGS(red) BBS');
+            $lines[] = Config::setting('site_tagline', '') ?: ('Welcome to ' . Config::setting('site_name', 'THUGS(red) BBS'));
         }
-        return Response::json(['lines' => $lines])->withHeader('Cache-Control', 'public, max-age=30');
+
+        return Response::json([
+            'lines' => $lines,
+            'speed' => max(20, Config::int('ticker_speed_secs', 60)),
+        ])->withHeader('Cache-Control', 'public, max-age=20');
     }
 
     /** GET /api/file/{id} - authenticated, audited download. */

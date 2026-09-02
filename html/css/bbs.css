@@ -83,6 +83,10 @@ img { max-width: 100%; }
   height: min(100dvh, calc(100vw / 1.3333));
   /* bleed pure black outward so the letterbox seam is invisible on any ratio */
   box-shadow: 0 0 22vmax 14vmax #000, 0 0 0 50vmax #000;
+  /* keep the internal FX stack (incl. #crt::after) contained so the fixed HUD
+     and ticker can always sit on top of it */
+  isolation: isolate;
+  z-index: 0;
   user-select: none;
   -webkit-user-select: none;
 }
@@ -155,7 +159,9 @@ img { max-width: 100%; }
   -webkit-font-smoothing: none;
   font-smooth: never;
   overflow: hidden;
-  border-radius: var(--glass-radius);
+  /* no border-radius here - the text is already inset well clear of the tube
+     corners, and rounding .term itself clips the first characters of each line.
+     #glass / #screen (overflow:hidden + --glass-radius) do the visual rounding. */
 }
 
 .term .row {
@@ -200,13 +206,13 @@ img { max-width: 100%; }
    HUD (outside the glass, bottom-left of the monitor)
    --------------------------------------------------------------------- */
 #hud {
-  position: absolute;
-  left: 2%;
-  bottom: -2.2rem;
+  position: fixed;
+  left: 1rem;
+  bottom: 2.4rem;
   display: flex;
   gap: .5rem;
   align-items: center;
-  z-index: 3;
+  z-index: 2147483001;
   font: 11px/1 var(--mono, monospace);
 }
 #hud button {
@@ -229,23 +235,33 @@ img { max-width: 100%; }
 #ticker {
   position: fixed;
   left: 0; right: 0; bottom: 0;
-  height: 1.5rem;
-  background: linear-gradient(180deg, rgba(14,16,19,0) 0%, rgba(5,6,10,.92) 60%);
+  height: 2rem;
+  background: linear-gradient(180deg,
+    rgba(5,6,10,0) 0%, rgba(5,6,10,.82) 38%, rgba(5,6,10,.97) 100%);
+  border-top: 1px solid rgba(226,34,59,.4);
   overflow: hidden;
-  z-index: 4;
+  /* always above the monitor photo, its vignette, the HUD gradient, everything */
+  z-index: 2147483000;
   pointer-events: none;
-  font: 12px/1.5rem var(--mono, monospace);
-  color: var(--muted);
+  font: 700 15px/2rem "BBS Terminal", var(--mono, ui-monospace, monospace);
+  color: var(--text);
+  letter-spacing: .02em;
+  text-shadow: 0 0 6px rgba(0,0,0,.95), 0 1px 0 #000;
 }
 #ticker-track {
   position: absolute;
   white-space: nowrap;
   will-change: transform;
-  padding-left: 100%;
+  /* content is rendered twice by app.js; -50% == exactly one copy, so the
+     crawl is seamless with no empty gap between repeats */
   animation: ticker-scroll 60s linear infinite;
 }
 #ticker-track b { color: var(--accent); }
-@keyframes ticker-scroll { to { transform: translateX(-100%); } }
+#ticker-track .sep { color: var(--accent); opacity: .55; margin: 0 1.4ch; }
+@keyframes ticker-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
 
 /* ---------------------------------------------------------------------
    noscript
