@@ -95,7 +95,7 @@ final class CommunityModule extends Module
     // -----------------------------------------------------------------
     private function userList(Engine $e, string $key, array &$st): Frame
     {
-        $perPage = 18;
+        $perPage = \Bbs\Bbs\Frame::pageSize(11);
         $total = (int) Db::val("SELECT COUNT(*) FROM users WHERE deleted_at IS NULL");
         $pages = max(1, (int) ceil($total / $perPage));
         $st['page'] ??= 0;

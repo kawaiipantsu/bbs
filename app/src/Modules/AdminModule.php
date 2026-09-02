@@ -109,7 +109,7 @@ final class AdminModule extends Module
         $rows = Db::all(
             "SELECT u.*, (SELECT GROUP_CONCAT(r.slug) FROM user_roles ur JOIN roles r ON r.id=ur.role_id WHERE ur.user_id=u.id) AS roles
              FROM users u WHERE u.deleted_at IS NULL AND (? = '' OR u.handle LIKE ?)
-             ORDER BY u.id LIMIT 40",
+             ORDER BY u.id LIMIT " . Frame::pageSize(8),
             [$q, $like]
         );
         if (ctype_digit($key) && $key !== '0') {
@@ -508,7 +508,7 @@ final class AdminModule extends Module
             $filter = $st['filter'];
         }
         $where = $filter === 'all' ? '1' : 'status = ' . Db::pdo()->quote($filter);
-        $rows = Db::all("SELECT * FROM sysop_tickets WHERE $where ORDER BY updated_at DESC LIMIT 30");
+        $rows = Db::all("SELECT * FROM sysop_tickets WHERE $where ORDER BY updated_at DESC LIMIT " . \Bbs\Bbs\Frame::pageSize(7));
         if (ctype_digit($key) && $key !== '0') {
             $idx = (int) $key - 1;
             if (isset($rows[$idx])) {
@@ -566,26 +566,30 @@ final class AdminModule extends Module
         if (($key === 'P' || $key === 'LEFT') && $st['page'] > 0) {
             $st['page']--;
         }
-        $per = 22;
+        $per = Frame::pageSize(7);
         $rows = Db::all(
-            'SELECT * FROM audit_log ORDER BY id DESC LIMIT ? OFFSET ?',
-            [$per, $st['page'] * $per]
+            'SELECT * FROM audit_log ORDER BY id DESC LIMIT ' . $per . ' OFFSET ' . ($st['page'] * $per)
         );
         $total = (int) Db::val('SELECT COUNT(*) FROM audit_log');
         $f = Frame::make('screen')->title('Audit Log')->mode('menu')
             ->header('SysOp · Audit Log', 'page ' . ($st['page'] + 1) . ' · ' . number_format($total) . ' events')->blank();
-        $f->pipe('|08   ' . str_pad('WHEN', 18) . str_pad('ACTOR', 16) . str_pad('ACTION', 24) . 'DETAIL');
+        $f->pipe('|08   ' . str_pad('WHEN', 18) . str_pad('ACTOR', 15) . str_pad('IP ADDRESS', 17) . str_pad('ACTION', 22) . 'DETAIL');
         $f->rule();
+        $detW = max(20, Frame::width() - 3 - 18 - 15 - 17 - 22);
         foreach ($rows as $r) {
             $f->pipe(sprintf(
-                '|08   %-18s|11%-16s|09%-24s|07%s',
+                '|08   %-18s|11%-15s|10%-17s|09%-22s|07%s',
                 date('Y-m-d H:i', strtotime($r['created_at'])),
-                mb_substr($r['actor_handle'], 0, 15),
-                mb_substr($r['action'], 0, 23),
-                mb_substr(($r['summary'] ?: $r['target_type'] . ':' . $r['target_id']), 0, 66)
+                mb_substr($r['actor_handle'], 0, 14),
+                mb_substr($r['ip'] ?: '—', 0, 16),
+                mb_substr($r['action'], 0, 21),
+                mb_substr(($r['summary'] ?: $r['target_type'] . ':' . $r['target_id']), 0, $detW)
             ));
         }
-        return $f->footer('N/P page · Q back');
+        if (!$rows) {
+            $f->pipe('|08   nothing logged yet');
+        }
+        return $f->footer('N / P page · Q back');
     }
 
     // ===============================================================
@@ -603,24 +607,30 @@ final class AdminModule extends Module
         if ($key === 'P' && $st['page'] > 0) {
             $st['page']--;
         }
-        $per = 22;
-        $rows = Db::all('SELECT * FROM call_log ORDER BY id DESC LIMIT ? OFFSET ?', [$per, $st['page'] * $per]);
+        $per = Frame::pageSize(7);
+        $rows = Db::all('SELECT * FROM call_log ORDER BY id DESC LIMIT ' . $per . ' OFFSET ' . ($st['page'] * $per));
+        $total = (int) Db::val('SELECT COUNT(*) FROM call_log');
         $f = Frame::make('screen')->title('Call Log')->mode('menu')
-            ->header('SysOp · Call Log', 'page ' . ($st['page'] + 1))->blank();
-        $f->pipe('|08   ' . str_pad('CONNECTED', 18) . str_pad('NODE', 6) . str_pad('CALLER', 16) . str_pad('DIALED FROM', 18) . str_pad('SECS', 7) . 'PAGES');
+            ->header('SysOp · Call Log', 'page ' . ($st['page'] + 1) . ' · ' . number_format($total) . ' calls')->blank();
+        $f->pipe('|08   ' . str_pad('CONNECTED', 18) . str_pad('NODE', 5) . str_pad('CALLER', 15)
+            . str_pad('IP ADDRESS', 17) . str_pad('DIALED FROM', 17) . str_pad('SECS', 7) . 'PGS');
         $f->rule();
         foreach ($rows as $r) {
             $f->pipe(sprintf(
-                '|08   %-18s|14%-6s|15%-16s|08%-18s|07%-7s%s',
+                '|08   %-18s|14%-5s|15%-15s|10%-17s|08%-17s|07%-7s%s',
                 date('Y-m-d H:i', strtotime($r['connected_at'])),
                 (string) $r['node'],
-                mb_substr($r['handle'], 0, 15),
+                mb_substr($r['handle'], 0, 14),
+                mb_substr($r['ip'] ?: '—', 0, 16),
                 $r['ip_phone'],
                 $r['seconds'] !== null ? (string) $r['seconds'] : 'live',
                 (string) $r['pages']
             ));
         }
-        return $f->footer('N/P page · Q back');
+        if (!$rows) {
+            $f->pipe('|08   no calls logged yet');
+        }
+        return $f->footer('N / P page · Q back');
     }
 
     // ===============================================================

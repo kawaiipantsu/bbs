@@ -386,7 +386,7 @@ final class MessagesModule extends Module
     {
         $st['view'] = 'threads';
         $threads = $this->threads((int) $board['id']);
-        $perPage = 15;
+        $perPage = \Bbs\Bbs\Frame::pageSize(13);
         $pages = max(1, (int) ceil(count($threads) / $perPage));
         $page = max(0, min($pages - 1, (int) ($st['page'] ?? 0)));
         $st['page'] = $page;

@@ -37,6 +37,17 @@ final class Frame
         return max(80, Config::int('term_cols', Config::int('terminal.cols', 132)));
     }
 
+    public static function height(): int
+    {
+        return max(24, Config::int('term_rows', Config::int('terminal.rows', 40)));
+    }
+
+    /** Rows available for list content, leaving `$chrome` lines for header/footer. */
+    public static function pageSize(int $chrome = 8): int
+    {
+        return max(8, self::height() - $chrome);
+    }
+
     // ---- fluent setters -------------------------------------------------
     public function view(string $v): self   { $this->view = $v; return $this; }
     public function title(string $v): self  { $this->title = $v; return $this; }
