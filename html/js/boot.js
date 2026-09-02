@@ -1,8 +1,8 @@
 /* boot.js - power-on, BIOS POST, AT modem dial-in, then "telnet bbs.thugs.red".
    Resolves with the { connection, frame } payload from /api/session. */
 
-import { sound } from './audio.js';
-import { connect } from './net.js';
+import { sound } from './audio.js?v=2';
+import { connect } from './net.js?v=2';
 
 let FAST = false;
 export function skipBoot() { FAST = true; }

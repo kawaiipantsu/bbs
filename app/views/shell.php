@@ -90,18 +90,24 @@ $jsonld = $meta['jsonld'] ?? null;
 
 <div id="ticker"><div id="ticker-track"></div></div>
 
-<?php
-// ES-module sub-imports (import './audio.js' &c.) drop the query string when
-// they resolve, so a bare /js/audio.js can go stale at the CDN edge while a
-// freshly-versioned app.js loads against it. Remap every module URL to carry
-// the same ?v= tag as the entry point.
-$__mods = ['app', 'audio', 'net', 'boot', 'terminal', 'chat', 'controls'];
-$__map  = [];
-foreach ($__mods as $__m) {
-    $__map['/js/' . $__m . '.js'] = '/js/' . $__m . '.js?v=' . $asset_v;
-}
-?>
-<script type="importmap"><?= json_encode(['imports' => $__map], JSON_UNESCAPED_SLASHES) ?></script>
+<?php /* self-heal: if a stale cached module throws "x is not a function",
+         reload once past the cache. Helps devices with no easy hard-refresh
+         (iOS Safari). The HTML itself is Cache-Control: no-cache. */ ?>
+<script>
+(function () {
+  var AV = '<?= $e($asset_v) ?>', KEY = 'bbs_reload_' + AV, tried = false;
+  try { tried = sessionStorage.getItem(KEY) === '1'; } catch (_) {}
+  window.addEventListener('error', function (e) {
+    if (tried) return;
+    var f = (e && e.filename) || '', m = (e && e.message) || '';
+    if (f.indexOf('/js/') === -1) return;
+    if (!/is not a function|is undefined|undefined is not an object|dynamically imported module|Failed to fetch/i.test(m)) return;
+    tried = true;
+    try { sessionStorage.setItem(KEY, '1'); } catch (_) {}
+    location.replace(location.pathname + (location.search ? location.search + '&' : '?') + 'cb=' + AV + '.' + Date.now());
+  }, true);
+})();
+</script>
 <script type="module" src="/js/app.js?v=<?= $e($asset_v) ?>"></script>
 </body>
 </html>

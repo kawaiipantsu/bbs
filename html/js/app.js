@@ -1,11 +1,11 @@
 /* app.js - wires the CRT, terminal, audio, boot sequence and HUD together. */
 
-import { Terminal } from './terminal.js';
-import { runBoot, skipBoot } from './boot.js';
-import { sound } from './audio.js';
-import { action, ticker, state } from './net.js';
-import { installChat } from './chat.js';
-import { installControls } from './controls.js';
+import { Terminal } from './terminal.js?v=2';
+import { runBoot, skipBoot } from './boot.js?v=2';
+import { sound } from './audio.js?v=2';
+import { action, ticker, state } from './net.js?v=2';
+import { installChat } from './chat.js?v=2';
+import { installControls } from './controls.js?v=2';
 
 const $ = sel => document.querySelector(sel);
 const LS = {
@@ -77,11 +77,11 @@ async function start(skip) {
       maybeGoto();
     } else {
       term.renderFrame({ mode: 'pager', lines: [[{ s: '  NO CARRIER - could not reach the board. Reload to redial.', f: 9, b: 0, o: true }]] });
-      sound.errorLoop('nocarrier');
+      sound.errorLoop?.('nocarrier');
     }
   } catch (e) {
     term.renderFrame({ mode: 'pager', lines: [[{ s: '  NO CARRIER - ' + (e && e.message || 'connection failed'), f: 9, b: 0 }]] });
-    sound.errorLoop('nocarrier');
+    sound.errorLoop?.('nocarrier');
   }
   LS.set('bbs_booted', '1');
 }
@@ -117,11 +117,11 @@ function send(payload) {
       term.renderFrame({ mode: (term.frame && term.frame.mode) || 'menu',
         lines: (term.frame && term.frame.lines || []).concat([[{ s: '  ! ' + frame.error, f: 9, b: 0, o: true }]]),
         meta: term.frame && term.frame.meta || {} });
-      sound.errorLoop(errKind(frame.error));
+      sound.errorLoop?.(errKind(frame.error));
       return;
     }
     if (frame.whoami) state.whoami = frame.whoami;
-    sound.stopErrorLoop();
+    sound.stopErrorLoop?.();
     term.renderFrame(frame);
     // maintenance: keep the busy tone while busy frames come back; stop once
     // a real screen renders (a SysOp logged through).
@@ -135,7 +135,7 @@ function send(payload) {
   }).catch(err => {
     const msg = (err && err.message) || 'network error';
     term.renderFrame({ mode: 'pager', lines: [[{ s: '  CARRIER LOST - ' + msg, f: 9, b: 0 }]] });
-    sound.errorLoop(errKind('carrier lost ' + msg));
+    sound.errorLoop?.(errKind('carrier lost ' + msg));
   });
 }
 
@@ -230,7 +230,7 @@ function keyboard() {
     if (!term.frame) { skipBoot(); return; }
 
     ev.preventDefault();
-    sound.stopErrorLoop();   // a keystroke silences any looping error tone
+    sound.stopErrorLoop?.();   // a keystroke silences any looping error tone
     sound.key();
     term.key(ev);
   }, { passive: false });
