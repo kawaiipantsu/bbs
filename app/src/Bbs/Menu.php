@@ -89,57 +89,61 @@ final class Menu
         }
 
         $cols = max(1, (int) $menu['columns']);
-        $cells = [];
+        $cells    = [];   // pipe-coded cell string per grid slot
+        $cellPick = [];    // grid slot -> index into $picks (or null)
+        $pick = 0;
         foreach ($items as $it) {
             if ($it['action'] === 'divider') {
-                // flush current row, add a spacer
                 while (count($cells) % $cols !== 0) {
-                    $cells[] = null;
+                    $cells[]    = null;
+                    $cellPick[] = null;
                 }
-                $cells[] = '__RULE__';
+                $cells[]    = '__RULE__';
+                $cellPick[] = null;
                 continue;
             }
-            $hot   = str_pad($it['hotkey'], 3, ' ', STR_PAD_LEFT);
-            $label = $it['label'];
-            $cells[] = '|08[|15' . trim($hot) . '|08] |07' . $label;
+            $cells[]    = '|08[|15' . trim($it['hotkey']) . '|08] |07' . $it['label'];
+            $cellPick[] = $pick++;
         }
 
-        $perCol = (int) ceil(count($cells) / $cols);
-        // lay out column-major so hotkeys read down then across (classic BBS)
-        $rows = [];
+        $cellWidth = intdiv(Frame::width() - 4, $cols);
+        $perCol    = max(1, (int) ceil(count($cells) / $cols));
+        $rowOffset = count($frame->lines);   // first grid row lands here in frame->lines
+        $positions = [];                     // pick index -> {row, col, w}
+
+        // column-major so hotkeys read down then across (classic BBS)
         for ($r = 0; $r < $perCol; $r++) {
             $line = '   ';
             for ($c = 0; $c < $cols; $c++) {
-                $idx = $c * $perCol + $r;
+                $idx  = $c * $perCol + $r;
                 $cell = $cells[$idx] ?? '';
                 if ($cell === '__RULE__') {
-                    $cell = '|08' . str_repeat('─', 34);
+                    $cell = '|08' . str_repeat('─', min(34, $cellWidth - 2));
                 }
-                $line .= self::padCell($cell, intdiv(Frame::width() - 4, $cols));
+                if (isset($cellPick[$idx]) && $cellPick[$idx] !== null) {
+                    $positions[$cellPick[$idx]] = [
+                        'row' => $rowOffset + $r,
+                        'col' => 3 + $c * $cellWidth,
+                        'w'   => $cellWidth - 1,
+                    ];
+                }
+                $line .= self::padCell($cell, $cellWidth);
             }
-            $rows[] = rtrim($line);
-        }
-        foreach ($rows as $row) {
-            $frame->pipe($row);
+            $frame->pipe(rtrim($line, ' '));
         }
 
         $frame->blank();
-        $desc = '';
-        foreach ($items as $it) {
-            if (($it['description'] ?? '') !== '' && $it['action'] !== 'divider') {
-                $desc = $it['description'];
-                break;
-            }
-        }
-        $frame->footer('Type the letter · ↑↓ move · ENTER select · ESC back');
+        $frame->footer('↑↓ move  ·  ENTER select  ·  press a letter to jump  ·  ESC back');
 
         $picks = array_values(array_filter($items, static fn ($i) => $i['action'] !== 'divider'));
         $frame->meta([
-            'items' => array_map(static fn ($i) => [
-                'hotkey'      => $i['hotkey'],
-                'label'       => $i['label'],
-                'description' => $i['description'],
-            ], $picks),
+            'items' => array_map(static function ($i, $n) use ($positions) {
+                return array_merge([
+                    'hotkey'      => $i['hotkey'],
+                    'label'       => $i['label'],
+                    'description' => $i['description'],
+                ], $positions[$n] ?? []);
+            }, $picks, array_keys($picks)),
             'menu' => $slug,
         ]);
         return $picks;

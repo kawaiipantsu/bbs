@@ -18,6 +18,31 @@ function xterm256(i) {
 
 const esc = s => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
+/* explode a row (array of runs) into one styled cell per visible column */
+function rowToCells(runs) {
+  const cells = [];
+  for (const run of runs || []) {
+    for (const ch of [...run.s]) {
+      cells.push({ ch, f: run.f, b: run.b, o: run.o, k: run.k });
+    }
+  }
+  return cells;
+}
+/* coalesce cells back into runs with identical style merged */
+function cellsToRuns(cells) {
+  const runs = [];
+  let cur = null;
+  for (const c of cells) {
+    if (cur && cur.f === c.f && cur.b === c.b && cur.o === c.o && cur.k === c.k) {
+      cur.s += c.ch;
+    } else {
+      cur = { s: c.ch, f: c.f, b: c.b, o: c.o, k: c.k };
+      runs.push(cur);
+    }
+  }
+  return runs;
+}
+
 /* client-side |NN pipe parser (used by the boot sequence) */
 export function clientPipe(str) {
   const runs = [];
@@ -153,7 +178,7 @@ export class Terminal {
 
     if (this.mode === 'form') rows = rows.concat(this._formRows());
     else if (this.mode === 'line') rows = rows.concat(this._lineRows());
-    else if (this.mode === 'menu') rows = rows.concat(this._selectorRows());
+    else if (this.mode === 'menu') rows = this._applyMenuHighlight(rows);
 
     const total = rows.length;
     const maxTop = Math.max(0, total - this.rows);
@@ -213,21 +238,46 @@ export class Terminal {
     ];
   }
 
-  /* ---- MENU selector strip ------------------------------------------ */
-  _selectorRows() {
+  /* ---- MENU highlight ---------------------------------------------------
+     Highlights the currently selected item IN PLACE: a red bar over its
+     [key] Label cell plus a ▸ marker in the margin, using the row/col the
+     server recorded in meta.items. Also keeps the selection on screen and
+     appends the item's description under the list. */
+  _applyMenuHighlight(rows) {
     const items = (this.frame.meta && this.frame.meta.items) || [];
-    if (!items.length) return [];
+    if (!items.length) return rows;
+    if (this.sel < 0) this.sel = items.length - 1;
     if (this.sel >= items.length) this.sel = 0;
+
     const it = items[this.sel];
-    return [
-      [],
-      [
-        { s: '  ► ', f: 9, b: 0, o: true, k: false },
-        { s: '[' + it.hotkey + '] ', f: 15, b: 0, o: true, k: false },
-        { s: it.label, f: 15, b: 1, o: true, k: false },
-        { s: it.description ? '  ' + it.description : '', f: 8, b: 0, o: false, k: false },
-      ],
-    ];
+    if (it && typeof it.row === 'number' && rows[it.row]) {
+      const cells = rowToCells(rows[it.row]);
+      const from = Math.max(0, it.col | 0);
+      const to = from + (it.w | 0 || 24);
+      while (cells.length < to) cells.push({ ch: ' ', f: 7, b: 0, o: false, k: false });
+      for (let i = from; i < to; i++) {
+        cells[i].b = 9;                                  // accent-dim bar
+        cells[i].f = cells[i].f === 8 || cells[i].f === 0 ? 15 : cells[i].f;
+        cells[i].o = true;
+      }
+      const m = Math.max(0, from - 2);
+      cells[m] = { ch: '▸', f: 9, b: 0, o: true, k: false };
+      rows[it.row] = cellsToRuns(cells);
+
+      // keep it visible
+      if (it.row < this.scroll) this.scroll = it.row;
+      else if (it.row >= this.scroll + this.rows - 2) this.scroll = it.row - this.rows + 3;
+      if (this.scroll < 0) this.scroll = 0;
+    }
+
+    if (it && it.description) {
+      rows = rows.concat([[], [
+        { s: '   ', f: 7, b: 0, o: false, k: false },
+        { s: it.label + ': ', f: 14, b: 0, o: true, k: false },
+        { s: it.description, f: 7, b: 0, o: false, k: false },
+      ]]);
+    }
+    return rows;
   }
 
   /* ---- FORM mode -------------------------------------------------- */
@@ -309,8 +359,7 @@ export class Terminal {
   }
 
   _scrollBy(n) {
-    const total = ((this.frame.lines || []).length)
-      + (this.mode === 'menu' ? this._selectorRows().length : 0);
+    const total = ((this.frame.lines || []).length) + (this.mode === 'menu' ? 3 : 0);
     const maxTop = Math.max(0, total - this.rows);
     this.scroll = Math.min(maxTop, Math.max(0, this.scroll + n));
     this.render();
