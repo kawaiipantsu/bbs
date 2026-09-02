@@ -32,23 +32,24 @@ AddDefaultCharset utf-8
 # ---------------------------------------------------------------------
 <IfModule mod_headers.c>
     Header always set X-Content-Type-Options "nosniff"
-    Header always set X-Frame-Options "DENY"
     Header always set Referrer-Policy "no-referrer"
-    Header always set Cross-Origin-Resource-Policy "same-origin"
-    Header always set Permissions-Policy "geolocation=(), microphone=(), camera=(), payment=(), usb=()"
     Header always unset X-Powered-By
     Header always unset Server
 
-    # Static bundle: allow same-origin embedding of fonts/audio worklets
-    <FilesMatch "\.(woff2?|ttf|otf|eot)$">
-        Header set Access-Control-Allow-Origin "same-origin"
-        Header set Cache-Control "public, max-age=31536000, immutable"
-    </FilesMatch>
-    <FilesMatch "\.(css|js|mjs)$">
-        Header set Cache-Control "public, max-age=86400"
-    </FilesMatch>
-    <FilesMatch "\.(png|jpg|jpeg|gif|svg|webp|ico)$">
+    # Public, embeddable media: OG/social card images, banners, favicons, fonts.
+    # These must be loadable from other origins so link unfurlers (Discord,
+    # Slack, X, Facebook, iMessage, ...) can fetch and display the share image.
+    <FilesMatch "\.(png|jpe?g|gif|svg|webp|ico|avif|woff2?|ttf|otf)$">
+        Header always set Access-Control-Allow-Origin "*"
+        Header always set Cross-Origin-Resource-Policy "cross-origin"
+        Header always set Timing-Allow-Origin "*"
         Header set Cache-Control "public, max-age=604800"
+    </FilesMatch>
+
+    # Scripts / styles stay same-origin only.
+    <FilesMatch "\.(css|js|mjs)$">
+        Header always set Cross-Origin-Resource-Policy "same-origin"
+        Header set Cache-Control "public, max-age=86400"
     </FilesMatch>
 </IfModule>
 

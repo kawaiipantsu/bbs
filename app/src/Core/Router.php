@@ -39,12 +39,23 @@ final class Router
 
     public function dispatch(Request $req): Response
     {
+        // HEAD is served by the matching GET handler (Apache/PHP drops the body);
+        // OPTIONS gets a bare CORS-friendly 204. Social crawlers rely on both.
+        $method = $req->method === 'HEAD' ? 'GET' : $req->method;
+        if ($req->method === 'OPTIONS') {
+            return Response::raw('', 'text/plain', 204)
+                ->withHeader('Allow', 'GET, HEAD, POST, OPTIONS')
+                ->withHeader('Access-Control-Allow-Origin', '*')
+                ->withHeader('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS')
+                ->withHeader('Access-Control-Max-Age', '86400');
+        }
+
         $allowed = [];
         foreach ($this->routes as $route) {
             if (!preg_match($route['regex'], $req->path, $m)) {
                 continue;
             }
-            if ($route['method'] !== $req->method) {
+            if ($route['method'] !== $method) {
                 $allowed[$route['method']] = true;
                 continue;
             }

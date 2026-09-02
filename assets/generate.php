@@ -96,29 +96,95 @@ copy(__DIR__ . '/favicon.svg', "$WEB/favicon.svg");
 echo "  favicon.svg -> web\n";
 
 // ---- social card factory ---------------------------------------------
+/**
+ * Composite the real CRT-monitor photo as a darkened backdrop, fade the left
+ * side to near-solid for text, then lay the brand + a little faux terminal on
+ * top. Used for the default OG card and the GitHub social image.
+ */
 function card(int $W, int $H, string $out, ?string $font): void
 {
+    global $ROOT;
     $im = imagecreatetruecolor($W, $H);
-    imagefill($im, 0, 0, c($im, BG));
-    // panel
-    imagefilledrectangle($im, 0, 0, $W, $H, c($im, BG));
+    imagealphablending($im, true);
+    imagefilledrectangle($im, 0, 0, $W, $H, c($im, SCREEN));
+
+    // ---- monitor photo backdrop (cover-fit, focus a touch above centre) ----
+    $mon = @imagecreatefrompng($ROOT . '/assets/terminal_monitor.png');
+    if ($mon) {
+        $mw = imagesx($mon);
+        $mh = imagesy($mon);
+        $scale = max($W / $mw, $H / $mh) * 1.06;
+        $dw = (int) ($mw * $scale);
+        $dh = (int) ($mh * $scale);
+        $dx = (int) (($W - $dw) / 2);
+        $dy = (int) (($H - $dh) / 2) - (int) ($H * 0.06);
+        $tmp = imagecreatetruecolor($W, $H);
+        imagecopyresampled($tmp, $mon, 0, 0, 0, 0, $W, $H, $mw, $mh); // stretch-cover fallback
+        imagecopyresampled($tmp, $mon, $dx, $dy, 0, 0, $dw, $dh, $mw, $mh);
+        // blend the photo in at ~62% over the near-black base
+        imagecopymerge($im, $tmp, 0, 0, 0, 0, $W, $H, 62);
+        imagedestroy($tmp);
+        imagedestroy($mon);
+    }
+
+    // ---- darkening + left-to-right gradient so text stays readable ----
+    for ($x = 0; $x < $W; $x++) {
+        $a = (int) (108 - 96 * ($x / $W));           // 108 -> 12 alpha
+        imagefilledrectangle($im, $x, 0, $x, $H, imagecolorallocatealpha($im, 0, 0, 0, max(8, $a)));
+    }
+    // overall vignette
+    for ($i = 0; $i < 160; $i++) {
+        imagerectangle($im, $i, $i, $W - 1 - $i, $H - 1 - $i, imagecolorallocatealpha($im, 0, 0, 0, 118 - (int) ($i / 3)));
+    }
+    // scanlines
     for ($y = 0; $y < $H; $y += 3) {
-        imageline($im, 0, $y, $W, $y, c($im, SURF));
+        imageline($im, 0, $y, $W, $y, imagecolorallocatealpha($im, 0, 0, 0, 96));
     }
-    imagefilledrectangle($im, 0, 0, $W, (int) ($H * 0.018), c($im, RED));
-    imagerectangle($im, 22, 22, $W - 23, $H - 23, c($im, LINE));
 
-    $mSize = (int) ($H * 0.42);
-    monitor($im, $W - $mSize - 60, (int) (($H - $mSize) / 2), $mSize);
+    // ---- chrome ----
+    imagefilledrectangle($im, 0, 0, $W, max(4, (int) ($H * 0.016)), c($im, RED));
+    imagesetthickness($im, 2);
+    imagerectangle($im, 24, 24, $W - 25, $H - 25, imagecolorallocatealpha($im, 0x27, 0x2c, 0x36, 40));
+    imagesetthickness($im, 1);
 
+    // ---- text (left column) ----
+    $lx = (int) ($W * 0.06);
     if ($font) {
-        imagettftext($im, max(12, $H * 0.03), 0, 56, (int) ($H * 0.20), c($im, MUTED), $font, '$ telnet bbs.thugs.red');
-        imagettftext($im, max(28, $H * 0.11), 0, 52, (int) ($H * 0.52), c($im, TEXT), $font, 'THUGS(red) BBS');
-        imagettftext($im, max(14, $H * 0.035), 0, 56, (int) ($H * 0.66), c($im, MUTED), $font, 'A keyboard-driven ANSI bulletin board, inside a CRT.');
-        imagettftext($im, max(14, $H * 0.03), 0, 56, (int) ($H * 0.88), c($im, RED), $font, 'BULLETIN  BOARD  SYSTEM');
+        imagettftext($im, max(13, $H * 0.028), 0, $lx, (int) ($H * 0.17), c($im, MUTED), $font, '$ telnet bbs.thugs.red');
+        // "THUGS(red) BBS" with (red) in the accent colour
+        $big = max(30, $H * 0.115);
+        $y1  = (int) ($H * 0.44);
+        $bb  = imagettftext($im, $big, 0, $lx, $y1, c($im, TEXT), $font, 'THUGS');
+        $x2  = $bb[2] + 6;
+        $bb2 = imagettftext($im, $big, 0, $x2, $y1, c($im, RED), $font, '(red)');
+        imagettftext($im, $big, 0, $bb2[2] + 6, $y1, c($im, TEXT), $font, ' BBS');
+        imagettftext($im, max(14, $H * 0.033), 0, $lx, (int) ($H * 0.575), c($im, TEXT), $font,
+            'A keyboard-driven ANSI board in a CRT');
+        imagettftext($im, max(12, $H * 0.026), 0, $lx, (int) ($H * 0.90), c($im, RED), $font,
+            'B U L L E T I N   B O A R D   S Y S T E M');
     } else {
-        imagestring($im, 5, 56, (int) ($H * 0.2), 'THUGS(red) BBS', c($im, TEXT));
+        imagestring($im, 5, $lx, (int) ($H * 0.4), 'THUGS(red) BBS', c($im, TEXT));
     }
+
+    // ---- faux terminal panel (lower-right) ----
+    $pw = (int) ($W * 0.38);
+    $ph = (int) ($H * 0.30);
+    $px = $W - $pw - (int) ($W * 0.055);
+    $py = (int) ($H * 0.60);
+    imagefilledrectangle($im, $px, $py, $px + $pw, $py + $ph, imagecolorallocatealpha($im, 0, 0, 0, 40));
+    imagerectangle($im, $px, $py, $px + $pw, $py + $ph, imagecolorallocatealpha($im, 0x5b, 0xe6, 0xa3, 90));
+    for ($y = $py + 2; $y < $py + $ph; $y += 3) {
+        imageline($im, $px + 1, $y, $px + $pw - 1, $y, imagecolorallocatealpha($im, 0, 0, 0, 110));
+    }
+    if ($font) {
+        $ts = max(11, $H * 0.022);
+        $tx = $px + 16;
+        imagettftext($im, $ts, 0, $tx, $py + (int) ($ph * 0.22), c($im, GREEN), $font, 'CONNECT 57600/ARQ');
+        imagettftext($im, $ts, 0, $tx, $py + (int) ($ph * 0.44), c($im, TEXT),  $font, 'THUGS(red) BBS  node 1/8');
+        imagettftext($im, $ts, 0, $tx, $py + (int) ($ph * 0.66), c($im, MUTED), $font, 'Calling from (398) 806-4788');
+        imagettftext($im, $ts, 0, $tx, $py + (int) ($ph * 0.88), c($im, GREEN), $font, '> _');
+    }
+
     imagepng($im, $out);
     imagedestroy($im);
     echo "  " . basename($out) . "\n";

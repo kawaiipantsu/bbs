@@ -132,6 +132,12 @@ final class PageController
     // -----------------------------------------------------------------
     private function page(Request $req, array $meta): Response
     {
+        // Keep every route's tags inside the sizes search engines / social
+        // cards actually render, so nothing shows up truncated.
+        $meta['title']       = $this->tidy($meta['title'] ?? $this->siteName(), 70);
+        $meta['description'] = $this->tidy($meta['description'] ?? '', 158);
+        $meta['og_description'] = $this->tidy($meta['og_description'] ?? $meta['description'], 150);
+
         $html = View::render('shell', [
             'meta'     => $meta,
             'origin'   => $this->origin(),
@@ -142,16 +148,39 @@ final class PageController
         return Response::html($html)->withHeader('Cache-Control', 'no-cache');
     }
 
+    /** Collapse whitespace, trim to $n chars on a word boundary, add an ellipsis. */
+    private function tidy(string $s, int $n): string
+    {
+        $s = trim(preg_replace('/\s+/', ' ', $s) ?? $s);
+        if (mb_strlen($s) <= $n) {
+            return $s;
+        }
+        $cut = mb_substr($s, 0, $n - 1);
+        $sp  = mb_strrpos($cut, ' ');
+        if ($sp !== false && $sp > $n - 20) {
+            $cut = mb_substr($cut, 0, $sp);
+        }
+        return rtrim($cut, " .,;:-") . '…';
+    }
+
     private function baseMeta(): array
     {
+        // ~55 char title, ~150 char description keep social/SERP previews intact.
+        $title = Config::setting('seo_title', $this->siteName() . ' — an ANSI bulletin board inside a CRT');
+        $desc  = Config::setting(
+            'seo_description',
+            'A keyboard-driven ANSI bulletin board that runs inside a CRT terminal — messages, files, door games, chat and a live news wire.'
+        );
         return [
-            'title'       => $this->siteName() . ' - dial in',
-            'description' => Config::setting('seo_description', 'A web-based ANSI/ASCII BBS rendered inside a CRT terminal.'),
-            'canonical'   => $this->origin() . '/',
-            'og_type'     => 'website',
-            'og_image'    => $this->origin() . '/og/default.png',
-            'goto'        => '',
-            'jsonld'      => [
+            'title'          => mb_substr($title, 0, 70),
+            'description'    => mb_substr($desc, 0, 155),
+            'og_description' => mb_substr($desc, 0, 150),
+            'canonical'      => $this->origin() . '/',
+            'og_type'        => 'website',
+            'og_image'       => $this->origin() . '/media/images/og-default.png',
+            'og_image_alt'   => $this->siteName() . ' — a keyboard-driven ANSI bulletin board inside a CRT terminal',
+            'goto'           => '',
+            'jsonld'         => [
                 '@context' => 'https://schema.org',
                 '@type'    => 'WebSite',
                 'name'     => $this->siteName(),

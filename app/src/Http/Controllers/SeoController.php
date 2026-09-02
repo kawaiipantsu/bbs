@@ -92,7 +92,9 @@ final class SeoController
             ],
         ];
         return Response::raw(json_encode($m, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT), 'application/manifest+json')
-            ->withHeader('Cache-Control', 'public, max-age=86400');
+            ->withHeader('Cache-Control', 'public, max-age=86400')
+            ->withHeader('Access-Control-Allow-Origin', '*')
+            ->withHeader('Cross-Origin-Resource-Policy', 'cross-origin');
     }
 
     public function securityTxt(Request $req): Response
@@ -110,8 +112,7 @@ final class SeoController
         $slug = preg_replace('/[^a-z0-9_-]/i', '', $args['slug']) ?: 'default';
         $cacheFile = Storage::cachePath('og/' . $slug . '.png');
         if (is_file($cacheFile) && filemtime($cacheFile) > time() - 3600) {
-            return Response::raw((string) file_get_contents($cacheFile), 'image/png')
-                ->withHeader('Cache-Control', 'public, max-age=3600');
+            return $this->imageResponse((string) file_get_contents($cacheFile));
         }
 
         [$headline, $sub] = $this->ogText($slug);
@@ -119,7 +120,19 @@ final class SeoController
         @mkdir(dirname($cacheFile), 0770, true);
         @file_put_contents($cacheFile, $png);
 
-        return Response::raw($png, 'image/png')->withHeader('Cache-Control', 'public, max-age=3600');
+        return $this->imageResponse($png);
+    }
+
+    /** Share images must be loadable cross-origin so link unfurlers can render them. */
+    private function imageResponse(string $png): Response
+    {
+        return Response::raw($png, 'image/png')
+            ->withHeader('Cache-Control', 'public, max-age=3600')
+            ->withHeader('Access-Control-Allow-Origin', '*')
+            ->withHeader('Cross-Origin-Resource-Policy', 'cross-origin')
+            ->withHeader('Timing-Allow-Origin', '*')
+            ->withHeader('Content-Length', (string) strlen($png))
+            ->withHeader('Vary', 'Accept');
     }
 
     /** @return array{0:string,1:string} */
@@ -158,36 +171,50 @@ final class SeoController
         $W = 1200;
         $H = 630;
         $im = imagecreatetruecolor($W, $H);
-        $bg     = imagecolorallocate($im, 0x0e, 0x10, 0x13);
-        $panel  = imagecolorallocate($im, 0x16, 0x19, 0x1f);
-        $line   = imagecolorallocate($im, 0x27, 0x2c, 0x36);
-        $red    = imagecolorallocate($im, 0xe2, 0x22, 0x3b);
-        $text   = imagecolorallocate($im, 0xe6, 0xe9, 0xef);
-        $muted  = imagecolorallocate($im, 0x97, 0xa0, 0xb0);
-        imagefill($im, 0, 0, $bg);
+        imagealphablending($im, true);
+        $ca = static fn ($r, $g, $b, $a = 0) => imagecolorallocatealpha($im, $r, $g, $b, $a);
+        $line  = $ca(0x27, 0x2c, 0x36);
+        $red   = $ca(0xe2, 0x22, 0x3b);
+        $text  = $ca(0xe6, 0xe9, 0xef);
+        $muted = $ca(0x97, 0xa0, 0xb0);
+        $green = $ca(0x5b, 0xe6, 0xa3);
+        imagefilledrectangle($im, 0, 0, $W, $H, $ca(0x05, 0x07, 0x0a));
 
-        // scanline texture
-        for ($y = 0; $y < $H; $y += 3) {
-            imageline($im, 0, $y, $W, $y, $panel);
+        // CRT-monitor photo backdrop: cover-fit, darkened, then a left gradient
+        $monPath = BBS_ROOT . '/html/media/images/monitor.png';
+        $mon = is_file($monPath) ? @imagecreatefrompng($monPath) : false;
+        if ($mon) {
+            $mw = imagesx($mon);
+            $mh = imagesy($mon);
+            $s  = max($W / $mw, $H / $mh) * 1.06;
+            $dw = (int) ($mw * $s);
+            $dh = (int) ($mh * $s);
+            $tmp = imagecreatetruecolor($W, $H);
+            imagecopyresampled($tmp, $mon, 0, 0, 0, 0, $W, $H, $mw, $mh);
+            imagecopyresampled($tmp, $mon, (int) (($W - $dw) / 2), (int) (($H - $dh) / 2) - 38, 0, 0, $dw, $dh, $mw, $mh);
+            imagecopymerge($im, $tmp, 0, 0, 0, 0, $W, $H, 60);
+            imagedestroy($tmp);
+            imagedestroy($mon);
         }
-        // border frame
-        imagerectangle($im, 24, 24, $W - 25, $H - 25, $line);
-        imagerectangle($im, 26, 26, $W - 27, $H - 27, $line);
-        imagefilledrectangle($im, 24, 24, $W - 25, 34, $red);
+        for ($x = 0; $x < $W; $x++) {
+            imagefilledrectangle($im, $x, 0, $x, $H, $ca(0, 0, 0, max(10, (int) (110 - 96 * $x / $W))));
+        }
+        for ($y = 0; $y < $H; $y += 3) {
+            imageline($im, 0, $y, $W, $y, $ca(0, 0, 0, 96));
+        }
+        imagefilledrectangle($im, 0, 0, $W, 10, $red);
+        imagesetthickness($im, 2);
+        imagerectangle($im, 24, 24, $W - 25, $H - 25, $ca(0x27, 0x2c, 0x36, 50));
+        imagesetthickness($im, 1);
 
-        $font = dirname(__DIR__, 3) . '/html/media/fonts/PxPlus_IBM_VGA_9x16.ttf';
-        $useTtf = is_file($font);
-
-        if ($useTtf) {
-            imagettftext($im, 15, 0, 60, 110, $muted, $font, '$ telnet ' . Config::setting('telnet_host', 'bbs.thugs.red'));
-            $this->wrapTtf($im, $font, 46, 60, 240, $W - 120, $text, $headline, 58);
-            $this->wrapTtf($im, $font, 20, 60, $H - 120, $W - 120, $muted, $sub, 30);
-            imagettftext($im, 16, 0, 60, $H - 50, $red, $font, Config::setting('site_name', 'THUGS(red) BBS'));
+        $font = $this->font();
+        if ($font) {
+            imagettftext($im, 15, 0, 64, 110, $muted, $font, '$ telnet ' . Config::setting('telnet_host', 'bbs.thugs.red'));
+            $this->wrapTtf($im, $font, 44, 64, 232, $W - 130, $text, $headline, 58);
+            $this->wrapTtf($im, $font, 19, 64, $H - 116, $W - 130, $muted, $sub, 30);
+            imagettftext($im, 15, 0, 64, $H - 44, $red, $font, strtoupper(Config::setting('site_name', 'THUGS(red) BBS')));
         } else {
-            imagestring($im, 5, 60, 90, '$ telnet ' . Config::setting('telnet_host', 'bbs.thugs.red'), $muted);
-            imagestring($im, 5, 60, 240, substr($headline, 0, 60), $text);
-            imagestring($im, 4, 60, 300, substr($sub, 0, 90), $muted);
-            imagestring($im, 5, 60, $H - 70, Config::setting('site_name', 'THUGS(red) BBS'), $red);
+            imagestring($im, 5, 64, 232, substr($headline, 0, 60), $text);
         }
 
         ob_start();
@@ -195,6 +222,20 @@ final class SeoController
         $data = (string) ob_get_clean();
         imagedestroy($im);
         return $data;
+    }
+
+    private function font(): ?string
+    {
+        foreach ([
+            '/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf',
+            '/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf',
+            '/usr/share/fonts/truetype/liberation/LiberationMono-Bold.ttf',
+        ] as $f) {
+            if (is_file($f)) {
+                return $f;
+            }
+        }
+        return null;
     }
 
     private function wrapTtf($im, string $font, float $size, int $x, int $y, int $maxX, int $color, string $s, int $lh): void

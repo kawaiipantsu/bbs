@@ -47,7 +47,8 @@ INSERT INTO settings (`key`,`value`,`type`,`label`,`category`) VALUES
  ('ticker_news_count','4','int','Bottom crawl: number of latest news headlines (0 = none)','ticker'),
  ('ticker_oneliner_count','10','int','Bottom crawl: number of latest one-liners (0 = none)','ticker'),
  ('ticker_speed_secs','55','int','Bottom crawl: seconds for one full loop (lower = faster)','ticker'),
- ('seo_description','THUGS(red) BBS - a fully keyboard-driven ANSI/ASCII bulletin board system rendered inside a CRT terminal. Dial in, leave a message, browse the files, play a door game.','text','Meta description','seo')
+ ('seo_title','THUGS(red) BBS - an ANSI bulletin board inside a CRT','string','Homepage <title> / OG title','seo'),
+ ('seo_description','A keyboard-driven ANSI bulletin board that runs inside a CRT terminal - messages, files, door games, chat and a live news wire.','text','Meta description','seo')
 ON DUPLICATE KEY UPDATE `label`=VALUES(`label`), `type`=VALUES(`type`), `category`=VALUES(`category`);
 
 -- ---------------------------------------------------------------------

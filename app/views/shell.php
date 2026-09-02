@@ -2,12 +2,14 @@
 /** @var array $meta @var string $origin @var string $site @var string $buildver @var string $asset_v */
 use Bbs\Core\View;
 $e = fn ($v) => View::e($v);
-$title = $meta['title'] ?? $site;
-$desc  = $meta['description'] ?? '';
-$canon = $meta['canonical'] ?? ($origin . '/');
-$ogimg = $meta['og_image'] ?? ($origin . '/og/default.png');
+$title  = $meta['title'] ?? $site;
+$desc   = $meta['description'] ?? '';
+$ogdesc = $meta['og_description'] ?? $desc;
+$canon  = $meta['canonical'] ?? ($origin . '/');
+$ogimg  = $meta['og_image'] ?? ($origin . '/og/default.png');
 $ogtype = $meta['og_type'] ?? 'website';
-$goto  = $meta['goto'] ?? '';
+$ogalt  = $meta['og_image_alt'] ?? $title;
+$goto   = $meta['goto'] ?? '';
 $jsonld = $meta['jsonld'] ?? null;
 ?><!doctype html>
 <html lang="en" data-goto="<?= $e($goto) ?>">
@@ -24,16 +26,21 @@ $jsonld = $meta['jsonld'] ?? null;
 
 <meta property="og:site_name" content="<?= $e($site) ?>">
 <meta property="og:title" content="<?= $e($title) ?>">
-<meta property="og:description" content="<?= $e($desc) ?>">
+<meta property="og:description" content="<?= $e($ogdesc) ?>">
 <meta property="og:type" content="<?= $e($ogtype) ?>">
 <meta property="og:url" content="<?= $e($canon) ?>">
+<meta property="og:locale" content="en_US">
 <meta property="og:image" content="<?= $e($ogimg) ?>">
+<meta property="og:image:secure_url" content="<?= $e($ogimg) ?>">
+<meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="<?= $e($ogalt) ?>">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="<?= $e($title) ?>">
-<meta name="twitter:description" content="<?= $e($desc) ?>">
+<meta name="twitter:description" content="<?= $e($ogdesc) ?>">
 <meta name="twitter:image" content="<?= $e($ogimg) ?>">
+<meta name="twitter:image:alt" content="<?= $e($ogalt) ?>">
 
 <link rel="icon" href="/media/images/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/media/images/favicon-32.png" sizes="32x32" type="image/png">
