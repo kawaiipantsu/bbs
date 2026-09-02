@@ -783,19 +783,21 @@ final class Mud
         $t = $mi['tpl'];
         $dlg = $t['dialogue'] ?: [];
         $out = [];
+        // dialogue lines carry their own quotes inconsistently; normalise to one pair
+        $say = static fn (string $s): string => '"' . trim($s, '"') . '"';
 
         // fixer / questgiver hooks
         if (str_contains($t['behavior'], 'questgiver')) {
             $turn = Quests::turnIn((int) $p['id'], (int) $t['vnum']);
             if ($turn) {
-                return array_merge(['|11' . ucfirst($t['name']) . ': "Good work."'], $turn);
+                return array_merge(['|11' . ucfirst($t['name']) . ': ' . $say('Good work.')], $turn);
             }
             $avail = array_filter(Quests::forGiver((int) $t['vnum']), function ($q) use ($p) {
                 $s = Quests::status((int) $p['id'], (int) $q['id']);
                 return (!$s || $s['status'] === 'failed') && (int) $p['level'] >= (int) $q['level_req'];
             });
             if ($avail && ($topic === null || in_array($topic, ['job', 'jobs', 'work', 'gig'], true))) {
-                $out[] = '|11' . ucfirst($t['name']) . ': "' . ($dlg['job'] ?? 'Got something for you.') . '"';
+                $out[] = '|11' . ucfirst($t['name']) . ': ' . $say($dlg['job'] ?? 'Got something for you.');
                 foreach ($avail as $q) {
                     $out[] = "|08  * {$q['name']} |07- {$q['summary']}  |08(reward: ¥{$q['reward_money']})";
                 }
@@ -805,9 +807,9 @@ final class Mud
         }
 
         if ($topic !== null && isset($dlg['topics'][$topic])) {
-            return ['|07' . ucfirst($t['name']) . ': "' . $dlg['topics'][$topic] . '"'];
+            return ['|07' . ucfirst($t['name']) . ': ' . $say($dlg['topics'][$topic])];
         }
-        $greet = $dlg['greet'] ?? '"What."';
+        $greet = $say($dlg['greet'] ?? 'What.');
         return ['|07' . ucfirst($t['name']) . ': ' . $greet .
                 (isset($dlg['topics']) ? '  |08(ask about: ' . implode(', ', array_keys($dlg['topics'])) . ')' : '')];
     }
