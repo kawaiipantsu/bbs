@@ -40,11 +40,15 @@ cp contrib/bbs-worker.service /etc/systemd/system/
 systemctl enable --now bbs-worker
 ```
 
-or, cron-only:
+or, cron-only — drop the fragment into `/etc/cron.d` (worker fallback, news
+wire, the Hackers-MUD world tick, nightly maintenance):
 
 ```bash
-crontab -u www-data contrib/crontab
+install -o root -g root -m 644 contrib/bbs.cron /etc/cron.d/bbs
 ```
+
+(`crontab -u www-data contrib/crontab` installs the same jobs as a user
+crontab instead, if you prefer that.)
 
 ### News wire
 

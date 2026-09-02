@@ -1,0 +1,31 @@
+# THUGS(red) BBS - scheduled work  (/etc/cron.d fragment)
+#
+# Install (as root):
+#   cp contrib/bbs.cron /etc/cron.d/bbs
+#   chmod 644 /etc/cron.d/bbs
+#   chown root:root /etc/cron.d/bbs
+#
+# The worker line is a FALLBACK: it keeps queued jobs and the news wire moving
+# when no systemd worker is running (see contrib/bbs-worker.service). Running
+# both is harmless - jobs are claimed before they run - but the daemon is what
+# drains the queue in real time.
+#
+# The mud-tick line is OPTIONAL: Hackers-MUD also ticks itself at the top of
+# every player command, so this only matters for respawns / patrols / regen
+# while nobody is connected.
+
+SHELL=/bin/sh
+PATH=/usr/local/bin:/usr/bin:/bin
+MAILTO=""
+
+# Drain queued jobs (Discord, mail) every minute.
+* * * * *   www-data  /usr/bin/php /var/www/vhosts-external/bbs.thugs.red/contrib/worker.php --once   >> /var/www/vhosts-external/bbs.thugs.red/storage/logs/worker.log 2>&1
+
+# Refresh the news wire every 20 minutes.
+*/20 * * * * www-data  /usr/bin/php /var/www/vhosts-external/bbs.thugs.red/contrib/worker.php --news   >> /var/www/vhosts-external/bbs.thugs.red/storage/logs/news.log 2>&1
+
+# Hackers-MUD world tick - respawns, patrols, regen while nobody is connected.
+* * * * *   www-data  /usr/bin/php /var/www/vhosts-external/bbs.thugs.red/contrib/mud-tick.php         >> /var/www/vhosts-external/bbs.thugs.red/storage/logs/mud.log 2>&1
+
+# Nightly: expire dead sessions, prune chat, ping search engines with the sitemap.
+17 4 * * *  www-data  /usr/bin/php /var/www/vhosts-external/bbs.thugs.red/contrib/maintenance.php      >> /var/www/vhosts-external/bbs.thugs.red/storage/logs/maint.log 2>&1

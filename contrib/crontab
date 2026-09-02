@@ -2,6 +2,9 @@
 # Install for the www-data user:
 #   crontab -u www-data /var/www/vhosts-external/bbs.thugs.red/contrib/crontab
 #
+# Or, system-wide, use the /etc/cron.d fragment instead (same jobs):
+#   install -o root -g root -m 644 contrib/bbs.cron /etc/cron.d/bbs
+#
 # Not needed if contrib/bbs-worker.service is running (the daemon handles news
 # and jobs itself). Use this only for the cron-only deployment style.
 
