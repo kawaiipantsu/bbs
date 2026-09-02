@@ -432,9 +432,10 @@ final class Engine
             $this->pop();
             return $this->renderCurrentFrame();
         }
+        $depth = count($this->state['stack']);
         $st = $node['st'] ?? [];
         $f = $mod->run($this, $node['ref'], ['cmd' => 'render'], $st);
-        $this->storeModuleState($st);
+        $this->storeModuleState($st, $depth, $node['ref']);
         return $f;
     }
 
@@ -445,18 +446,32 @@ final class Engine
             $this->pop();
             return $this->renderCurrentFrame();
         }
+        $depth = count($this->state['stack']);
         $st = $node['st'] ?? [];
         $f = $mod->run($this, $node['ref'], $in, $st);
-        $this->storeModuleState($st);
+        $this->storeModuleState($st, $depth, $node['ref']);
         return $f;
     }
 
-    private function storeModuleState(array $st): void
+    /**
+     * Persist a module's sub-state back onto its stack node - but only if that
+     * node is still the top of the stack. If the module navigated (goModule /
+     * exitModule pushed or popped), the nested render already stored its own
+     * state and we must not clobber the new top.
+     */
+    private function storeModuleState(array $st, ?int $expectedDepth = null, ?string $ref = null): void
     {
         $i = count($this->state['stack']) - 1;
-        if ($i >= 0 && ($this->state['stack'][$i]['t'] ?? '') === 'module') {
-            $this->state['stack'][$i]['st'] = $st;
+        if ($i < 0 || ($this->state['stack'][$i]['t'] ?? '') !== 'module') {
+            return;
         }
+        if ($expectedDepth !== null && count($this->state['stack']) !== $expectedDepth) {
+            return;
+        }
+        if ($ref !== null && ($this->state['stack'][$i]['ref'] ?? '') !== $ref) {
+            return;
+        }
+        $this->state['stack'][$i]['st'] = $st;
     }
 
     // -----------------------------------------------------------------
@@ -506,6 +521,11 @@ final class Engine
     public function current(): array
     {
         return $this->state['stack'][count($this->state['stack']) - 1] ?? ['t' => 'menu', 'ref' => 'main'];
+    }
+
+    public function currentType(): string
+    {
+        return (string) ($this->current()['t'] ?? 'menu');
     }
 
     public function push(array $node): void

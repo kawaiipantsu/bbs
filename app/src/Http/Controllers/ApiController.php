@@ -46,12 +46,14 @@ final class ApiController
 
         $engine = new Engine($session, $req);
 
-        // Maintenance mode: everyone below staff (rank 80) gets a busy signal.
+        // Maintenance mode: non-staff get a busy signal, but still reach the
+        // login screen so a SysOp can authenticate their way through.
         $maintenance = Config::bool('maintenance', false) && $engine->rank() < 80;
 
-        $frame = $maintenance
-            ? $this->busyFrame($session, $engine)
-            : $engine->boot();
+        $frame = $engine->boot();
+        if ($maintenance) {
+            $frame = $this->busyFrame($session, $engine);
+        }
         $session->save();
 
         $baud  = Config::int('baud', Config::int('terminal.baud', 57600));
@@ -91,12 +93,12 @@ final class ApiController
     private function busyFrame(Session $session, Engine $engine): array
     {
         $msg = Config::setting('maintenance_msg', 'The board is down for maintenance.');
-        $f = \Bbs\Bbs\Frame::make('screen')->title('Busy')->mode('pager')
+        $f = \Bbs\Bbs\Frame::make('screen')->title('Busy')->mode('menu')
             ->meta(['busy' => true])->blank()->blank()
             ->pipe('|12   ░▒▓  BUSY  ▓▒░')->blank()
             ->pipe('|11   NO CARRIER - the line is engaged.')->blank()
             ->block('|07   ' . wordwrap($msg, 66, "\n   ", true))->blank()
-            ->pipe('|08   Hang up and redial in a while. (Reload the page to retry.)');
+            ->pipe('|08   [|15L|08] SysOp / staff log in      ·      reload the page to retry');
         return $engine->finishPublic($f);
     }
 
@@ -111,7 +113,17 @@ final class ApiController
         $engine = new Engine($session, $req);
 
         if (Config::bool('maintenance', false) && $engine->rank() < 80) {
-            return Response::json($this->busyFrame($session, $engine));
+            $type = $engine->currentType();
+            $k = strtoupper((string) $req->input('key', ''));
+            if ($type === 'auth' || $type === 'changepw' || $type === 'motd') {
+                // let the login flow run untouched
+            } elseif ($k === 'L') {
+                $engine->replaceStack([['t' => 'auth', 'st' => ['step' => 'login']]]);
+                $session->save();
+                return Response::json($engine->finishPublic($engine->renderCurrentFrame()));
+            } else {
+                return Response::json($this->busyFrame($session, $engine));
+            }
         }
 
         $in = [

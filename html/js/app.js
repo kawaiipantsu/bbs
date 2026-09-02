@@ -66,11 +66,11 @@ async function start(skip) {
       maintenance = true;
       sound.startBusy();
       term.renderFrame(payload.frame || {
-        mode: 'pager',
-        lines: [[{ s: '  BUSY - the board is down for maintenance.', f: 12, b: 0, o: true }]],
+        mode: 'menu', meta: { busy: true },
+        lines: [[{ s: '  BUSY - the board is down for maintenance. Press L to log in as staff.', f: 12, b: 0, o: true }]],
       });
       LS.set('bbs_booted', '1');
-      return;
+      return;   // input still flows via the keyboard handler; staff can press L
     }
     if (payload && payload.frame) {
       term.renderFrame(payload.frame);
@@ -111,6 +111,13 @@ function send(payload) {
     }
     if (frame.whoami) state.whoami = frame.whoami;
     term.renderFrame(frame);
+    // maintenance: keep the busy tone while busy frames come back; stop once
+    // a real screen renders (a SysOp logged through).
+    if (frame.meta && frame.meta.busy) {
+      maintenance = true; sound.startBusy();
+    } else if (maintenance) {
+      maintenance = false; sound.stopBusy();
+    }
     if (frame.meta && frame.meta.hangup) return powerOff();
     maybeGoto();
   }).catch(err => {
@@ -198,8 +205,6 @@ function keyboard() {
     }
     if (ev.ctrlKey && ev.key.toLowerCase() === 'l') { ev.preventDefault(); term.render(); return; }
 
-    // maintenance: the line is engaged - swallow input (F5 still reloads to retry)
-    if (maintenance) { ev.preventDefault(); return; }
 
     if (controls && !controls.isPowered()) { ev.preventDefault(); controls.powerOn(); return; }
 

@@ -43,7 +43,7 @@ final class MessagesModule extends Module
                 $e->session->put('msg.board', (int) $m['board_id']);
                 $st['view'] = 'thread';
                 $st['thread'] = (int) $m['thread_id'];
-                $st['pos'] = 0;
+                $st['reply_to'] = (int) $m['id'];
             }
         }
 
@@ -330,29 +330,29 @@ final class MessagesModule extends Module
                 ->form([['name' => 'body', 'label' => 'Reply', 'type' => 'textarea', 'max' => 8000]], 'ENTER posts · ESC cancels');
         }
 
-        // ---- inside a thread ----
+        // ---- inside a thread (whole thread shown as an indented tree) ----
         if ($view === 'thread') {
             $msgs = $this->threadMessages((int) $st['thread']);
-            $st['pos'] = max(0, min(count($msgs) - 1, (int) ($st['pos'] ?? 0)));
             if ($key === "\x1B" || $key === 'Q') {
                 $st['view'] = 'threads';
                 return $this->threadList($e, $board, $st);
             }
-            if ($key === 'N' || $key === ' ' || $key === "\r" || $key === "\n") {
-                if ($st['pos'] < count($msgs) - 1) {
-                    $st['pos']++;
-                } else {
-                    $st['view'] = 'threads';
-                    return $this->threadList($e, $board, $st);
-                }
-            } elseif ($key === 'P' || $key === 'B') {
-                $st['pos'] = max(0, $st['pos'] - 1);
-            } elseif ($key === 'R' && $e->can('message.post')) {
+            // number / letter picks which message a reply attaches under
+            $idx = null;
+            if (ctype_digit($key) && $key !== '0') {
+                $idx = (int) $key - 1;
+            } elseif (strlen($key) === 1 && ctype_alpha($key) && $key !== 'R' && $key !== 'P' && $key !== 'B' && $key !== 'N') {
+                $idx = 9 + (ord($key) - 65);
+            }
+            if ($idx !== null && isset($msgs[$idx])) {
+                $st['reply_to'] = (int) $msgs[$idx]['id'];
+            }
+            if ($key === 'R' && $e->can('message.post')) {
                 $st['view'] = 'reply';
-                $st['reply_to'] = (int) ($msgs[$st['pos']]['id'] ?? 0);
+                $st['reply_to'] = (int) ($st['reply_to'] ?? ($msgs[array_key_last($msgs)]['id'] ?? 0));
                 return $this->run($e, 'msg.read', ['cmd' => 'render'], $st);
             }
-            $this->markRead($e, (int) $board['id'], (int) ($msgs[$st['pos']]['id'] ?? 0));
+            $this->markRead($e, (int) $board['id'], (int) ($msgs[array_key_last($msgs)]['id'] ?? 0));
             return $this->renderThread($e, $board, $st);
         }
 
@@ -365,11 +365,11 @@ final class MessagesModule extends Module
         }
         if (ctype_digit($key) && $key !== '0') {
             $threads = $this->threads((int) $board['id']);
-            $idx = (int) $key - 1 + (int) ($st['page'] ?? 0) * 15;
+            $idx = (int) $key - 1 + (int) ($st['page'] ?? 0) * Frame::pageSize(13);
             if (isset($threads[$idx])) {
                 $st['view'] = 'thread';
                 $st['thread'] = (int) $threads[$idx]['thread_id'];
-                $st['pos'] = 0;
+                unset($st['reply_to']);
                 return $this->renderThread($e, $board, $st);
             }
         }
@@ -420,6 +420,11 @@ final class MessagesModule extends Module
         return $f->footer($hint);
     }
 
+    /**
+     * Render the whole thread on one scrollable page: the opening post, then
+     * every reply indented under its parent so the shape of the conversation is
+     * obvious at a glance.
+     */
     private function renderThread(Engine $e, array $board, array &$st): Frame
     {
         $msgs = $this->threadMessages((int) $st['thread']);
@@ -427,26 +432,76 @@ final class MessagesModule extends Module
             $st['view'] = 'threads';
             return $this->threadList($e, $board, $st);
         }
-        $pos = max(0, min(count($msgs) - 1, (int) ($st['pos'] ?? 0)));
-        $m = $msgs[$pos];
-        $f = Frame::make('screen')->title($m['subject'])->mode('pager')
-            ->header($board['name'] . ' - msg ' . ($pos + 1) . '/' . count($msgs))->blank();
-        $f->pipe('|08   Subject : |15' . $m['subject']);
-        $f->pipe('|08   From    : |11' . $m['from_handle'] . '   |08To: |07' . $m['to_handle']);
-        $f->pipe('|08   Date    : |07' . date('Y-m-d H:i', strtotime($m['created_at'])) . '   |08Calling from: |07' . ($m['ip_phone'] ?: 'unlisted'));
-        $f->rule();
-        foreach ($this->wrapBody($m['body']) as $l) {
-            $f->pipe('|07   ' . $l);
+
+        // index by id, then order depth-first by parent_id
+        $byId = [];
+        foreach ($msgs as $m) {
+            $byId[(int) $m['id']] = $m;
         }
-        $sig = Db::val('SELECT signature FROM users WHERE id = ?', [$m['from_user_id']]);
+        $kids = [];
+        $roots = [];
+        foreach ($msgs as $m) {
+            $pid = $m['parent_id'] !== null ? (int) $m['parent_id'] : 0;
+            if ($pid && isset($byId[$pid])) {
+                $kids[$pid][] = (int) $m['id'];
+            } else {
+                $roots[] = (int) $m['id'];
+            }
+        }
+        $ordered = [];
+        $walk = function (int $id, int $depth) use (&$walk, &$ordered, &$kids) {
+            $ordered[] = [$id, $depth];
+            foreach ($kids[$id] ?? [] as $c) {
+                $walk($c, $depth + 1);
+            }
+        };
+        foreach ($roots as $r) {
+            $walk($r, 0);
+        }
+
+        $root = $byId[$roots[0]] ?? $msgs[0];
+        $replyTo = (int) ($st['reply_to'] ?? 0);
+        $w = Frame::width();
+
+        $f = Frame::make('screen')->title($root['subject'])->mode('pager')
+            ->header($board['name'] . ' · ' . count($msgs) . ' post' . (count($msgs) === 1 ? '' : 's'))->blank();
+        $f->pipe('|08   Subject : |15' . mb_substr(preg_replace('/^(Re:\s*)+/i', '', $root['subject']) ?: $root['subject'], 0, $w - 14));
+        $f->rule();
+
+        $labels = [];
+        foreach ($ordered as $n => [$id, $depth]) {
+            $m = $byId[$id];
+            $labels[$id] = $n < 9 ? (string) ($n + 1) : chr(65 + $n - 9);
+            $pad = str_repeat('  ', min(6, $depth));
+            $branch = $depth > 0 ? '|08' . $pad . '└─ ' : '|08' . $pad;
+            $mark = $id === $replyTo ? '|12▸ ' : '   ';
+            $f->blank();
+            $f->pipe(sprintf(
+                '%s%s|08[|15%s|08] |11%s |08%s%s',
+                $mark,
+                $branch,
+                $labels[$id],
+                mb_substr($m['from_handle'], 0, 20),
+                date('Y-m-d H:i', strtotime($m['created_at'])),
+                $depth === 0 && $m['ip_phone'] ? '  |08(' . $m['ip_phone'] . ')' : ''
+            ));
+            foreach ($this->wrapBody($m['body'], $w - 8 - strlen($pad)) as $l) {
+                $f->pipe('|07' . $pad . '   ' . $l);
+            }
+        }
+
+        $sig = $root['from_user_id'] ? Db::val('SELECT signature FROM users WHERE id = ?', [$root['from_user_id']]) : null;
         if ($sig) {
-            $f->blank()->pipe('|08   --- ');
+            $f->blank()->pipe('|08   ---');
             foreach (explode("\n", (string) $sig) as $l) {
                 $f->pipe('|08   ' . $l);
             }
         }
-        $reply = $e->can('message.post') ? ' · R reply' : '';
-        return $f->footer('N/SPACE next · P prev' . $reply . ' · Q back to list');
+
+        $reply = $e->can('message.post')
+            ? ' · number selects a post · R reply' . ($replyTo && isset($labels[$replyTo]) ? ' to [' . $labels[$replyTo] . ']' : '')
+            : '';
+        return $f->footer('SPACE / ↓ scroll' . $reply . ' · Q back to list');
     }
 
     // -----------------------------------------------------------------
