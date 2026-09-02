@@ -25,16 +25,19 @@ final class AccountModule extends Module
 
     public function run(Engine $e, string $slug, array $in, array &$st): Frame
     {
+        $key = strtoupper((string) ($in['key'] ?? ''));
+        $cmd = (string) ($in['cmd'] ?? '');
+
         $user = $e->session->user();
         if (!$user) {
+            if ($key === "\x1B" || $key === 'Q') {
+                return $e->exitModule();
+            }
             return Frame::make('screen')->title('Account')->mode('menu')->header('Account')->blank()
                 ->pipe('|11   You are browsing as a guest.')
                 ->pipe('|07   Log off and choose [N]ew user to get an account, or [L]og in.')
                 ->footer('Q back');
         }
-
-        $key = strtoupper((string) ($in['key'] ?? ''));
-        $cmd = (string) ($in['cmd'] ?? '');
         $mode = $st['mode'] ?? 'view';
 
         if ($mode === 'edit') {

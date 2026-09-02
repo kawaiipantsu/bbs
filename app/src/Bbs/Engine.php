@@ -96,10 +96,33 @@ final class Engine
     // -----------------------------------------------------------------
     //  Dispatch one step
     // -----------------------------------------------------------------
+    /**
+     * Normalise the named keys the browser sends ("ESC", "ENTER", …) to the
+     * single-byte forms the engine and modules compare against ("\x1b", "\r").
+     * Arrow / paging names are left as-is (modules match the words).
+     */
+    private static function normKey(string $k): string
+    {
+        return match (strtoupper($k)) {
+            'ESC', 'ESCAPE'  => "\x1b",
+            'ENTER', 'RETURN' => "\r",
+            'SPACE'          => ' ',
+            'TAB'            => "\t",
+            'BACKSPACE', 'BKSP', 'DEL' => "\x08",
+            default          => strtoupper($k),
+        };
+    }
+
     public function dispatch(array $in): array
     {
-        $key = strtoupper((string) ($in['key'] ?? ''));
+        $in['key'] = self::normKey((string) ($in['key'] ?? ''));
+        $key = $in['key'];
         $cmd = (string) ($in['cmd'] ?? '');
+
+        // a bare "cancel" with no key acts like ESC for list/game screens
+        if ($cmd === 'cancel' && $key === '') {
+            $in['key'] = $key = "\x1b";
+        }
         $node = $this->current();
 
         // plain redraw request (client reconnect / post-redirect refresh)

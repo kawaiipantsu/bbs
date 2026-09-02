@@ -88,8 +88,8 @@ export class Terminal {
   resize() {
     const glass = document.getElementById('glass').getBoundingClientRect();
     if (!glass.width) return;
-    // keep the text a little inside the glass so it doesn't touch the tube edge
-    const M = Math.max(10, Math.round(Math.min(glass.width, glass.height) * 0.028));
+    // keep the text well inside the glass so it clears the rounded corners
+    const M = Math.max(30, Math.round(Math.min(glass.width, glass.height) * 0.05));
     const usableW = glass.width - M * 2;
     const usableH = glass.height - M * 2;
     const fontSize = usableW / (this.cols * this._k);
