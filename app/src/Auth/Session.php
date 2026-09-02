@@ -211,6 +211,9 @@ final class Session
             'id'      => $newId,
             'user_id' => $userId,
         ], ['id' => $oldId]);
+        // carry the open call-log row and any chat presence onto the new id
+        Db::q('UPDATE call_log SET session_id = ?, user_id = ? WHERE session_id = ?', [$newId, $userId, $oldId]);
+        Db::q('UPDATE chat_presence SET session_id = ? WHERE session_id = ?', [$newId, $oldId]);
         Cache::del('sess:' . $oldId);
         $this->id         = $newId;
         $this->userId     = $userId;

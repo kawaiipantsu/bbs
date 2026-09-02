@@ -1,0 +1,8 @@
+Contact: mailto:sysop@thugs.red
+Expires: 2027-01-01T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://bbs.thugs.red/.well-known/security.txt
+Policy: https://bbs.thugs.red/b/feedback
+
+# THUGS(red) BBS - please describe the CLASS of issue, not a working
+# exploit chain. See docs/security.md in the repository.
