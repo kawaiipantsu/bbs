@@ -27,8 +27,11 @@ final class LinksModule extends Module
         $key = strtoupper((string) ($in['key'] ?? ''));
         $cmd = (string) ($in['cmd'] ?? '');
 
-        // deep entry straight into the THUGS(red) Projects category
-        if ($slug === 'links.thugs' && (int) ($st['cat'] ?? 0) === 0 && ($st['view'] ?? '') === '') {
+        // deep entry straight into the THUGS(red) Projects category, once only:
+        // this menu item IS that category, so backing out of it exits the module
+        // rather than dropping to the full category list.
+        if ($slug === 'links.thugs' && !isset($st['deep'])) {
+            $st['deep'] = true;
             $st['cat'] = (int) Db::val("SELECT id FROM link_categories WHERE slug = 'thugs'");
         }
 
@@ -64,6 +67,9 @@ final class LinksModule extends Module
                 [(int) $st['cat']]
             );
             if ($key === "\x1B" || $key === 'Q' || $key === 'X') {
+                if ($st['deep'] ?? false) {
+                    return $e->exitModule();   // this menu item was the category
+                }
                 $st['cat'] = 0;
                 return $this->render($e, $st);
             }
