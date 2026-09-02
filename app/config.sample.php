@@ -79,8 +79,8 @@ return [
     ],
 
     'terminal' => [
-        'cols'  => (int) $env('BBS_TERM_COLS', '132'),
-        'rows'  => (int) $env('BBS_TERM_ROWS', '50'),
+        'cols'  => (int) $env('BBS_TERM_COLS', '112'),
+        'rows'  => (int) $env('BBS_TERM_ROWS', '40'),
         'baud'  => (int) $env('BBS_BAUD', '57600'),
         'nodes' => (int) $env('BBS_NODES', '8'),
     ],

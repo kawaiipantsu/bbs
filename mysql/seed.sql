@@ -23,8 +23,8 @@ INSERT INTO settings (`key`,`value`,`type`,`label`,`category`) VALUES
  ('canonical','https://bbs.thugs.red','url','Canonical URL','identity'),
  ('nodes','8','int','Simultaneous nodes (phone lines)','system'),
  ('baud','57600','int','CONNECT baud string','system'),
- ('term_cols','132','int','Terminal columns','system'),
- ('term_rows','50','int','Terminal rows','system'),
+ ('term_cols','112','int','Terminal columns','system'),
+ ('term_rows','40','int','Terminal rows','system'),
  ('new_user_role','user','string','Role auto-granted on registration','system'),
  ('registration_open','1','bool','Allow new user registration','system'),
  ('guest_browsing','1','bool','Let guests read public areas','system'),
@@ -379,8 +379,19 @@ INSERT INTO games (slug,name,description,module,score_label,score_order,sort) VA
  ('dice','Ten Thousand','Push-your-luck dice, first to 10,000','dice','High Roll','desc',30),
  ('blackjack','One-Armed Bandit','Blackjack vs the house','blackjack','Chips','desc',40),
  ('wumpus','Hunt The Wumpus','Classic cave crawl','wumpus','Rooms','asc',50),
- ('lorc','Legend of the Red Console','A tiny LORD-style adventure','lorc','Level','desc',60)
-ON DUPLICATE KEY UPDATE name=VALUES(name), description=VALUES(description), module=VALUES(module), sort=VALUES(sort);
+ ('lorc','Legend of the Red Console','A tiny LORD-style adventure','lorc','Level','desc',60),
+ ('rps','Rock Paper Scissors','Best of nine against the machine','rps','Margin','desc',70),
+ ('ttt','Tic-Tac-Toe','X vs a CPU that blocks and wins','ttt','Wins','desc',80),
+ ('nim','21 Matchsticks','Take 1-3, do not take the last','nim','Wins','desc',90),
+ ('mastermind','Mastermind','Crack the 4-digit code in 10 tries','mastermind','Tries','asc',100),
+ ('anagram','Anagram','Unscramble eight BBS words','anagram','Score','desc',110),
+ ('hilo','Hi-Lo','Higher or lower? Build a streak, cash out','hilo','Streak','desc',120),
+ ('craps','Craps','A bankroll and a pass-line bet','craps','Bankroll','desc',130),
+ ('mines','Minesweeper','8x8, ten mines, steady hands','mines','Squares','desc',140),
+ ('g2048','2048','Slide and merge tiles to 2048','g2048','Score','desc',150),
+ ('lightsout','Lights Out','Turn every light off on a 5x5 grid','lightsout','Moves','asc',160)
+ON DUPLICATE KEY UPDATE name=VALUES(name), description=VALUES(description), module=VALUES(module),
+ score_label=VALUES(score_label), score_order=VALUES(score_order), sort=VALUES(sort);
 
 -- ---------------------------------------------------------------------
 --  a starter poll

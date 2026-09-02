@@ -59,6 +59,16 @@ final class GamesModule extends Module
                 'blackjack' => $this->blackjack($e, $in, $g),
                 'wumpus'    => $this->wumpus($e, $in, $g),
                 'lorc'      => $this->lorc($e, $in, $g),
+                'rps'       => $this->rps($e, $in, $g),
+                'ttt'       => $this->ttt($e, $in, $g),
+                'nim'       => $this->nim($e, $in, $g),
+                'mastermind' => $this->mastermind($e, $in, $g),
+                'anagram'   => $this->anagram($e, $in, $g),
+                'hilo'      => $this->hilo($e, $in, $g),
+                'craps'     => $this->craps($e, $in, $g),
+                'mines'     => $this->mines($e, $in, $g),
+                'g2048'     => $this->g2048($e, $in, $g),
+                'lightsout' => $this->lightsout($e, $in, $g),
                 default     => $this->listGames($e),
             };
             $st['g'] = $g;
@@ -70,29 +80,48 @@ final class GamesModule extends Module
             return $e->exitModule();
         }
         $games = Db::all('SELECT * FROM games WHERE enabled = 1 ORDER BY sort, id');
-        if (ctype_digit($key) && $key !== '0') {
-            $idx = (int) $key - 1;
-            if (isset($games[$idx])) {
-                Db::q('UPDATE games SET plays = plays + 1 WHERE id = ?', [$games[$idx]['id']]);
-                $st['screen'] = 'play';
-                $st['module'] = $games[$idx]['module'];
-                $st['game_id'] = (int) $games[$idx]['id'];
-                $st['g'] = [];
-                return $this->run($e, $slug, ['cmd' => 'render'], $st);
-            }
+        $idx = self::keyToIndex($key);
+        if ($idx !== null && isset($games[$idx])) {
+            Db::q('UPDATE games SET plays = plays + 1 WHERE id = ?', [$games[$idx]['id']]);
+            $st['screen'] = 'play';
+            $st['module'] = $games[$idx]['module'];
+            $st['game_id'] = (int) $games[$idx]['id'];
+            $st['g'] = [];
+            return $this->run($e, $slug, ['cmd' => 'render'], $st);
         }
         return $this->listGames($e);
+    }
+
+    /** 1..9 then A,B,C... -> 0-based game index */
+    private static function keyToIndex(string $key): ?int
+    {
+        if ($key === '') {
+            return null;
+        }
+        if (ctype_digit($key) && $key !== '0') {
+            return (int) $key - 1;
+        }
+        if (strlen($key) === 1 && ctype_alpha($key)) {
+            return 9 + (ord(strtoupper($key)) - 65);
+        }
+        return null;
+    }
+
+    private static function indexLabel(int $i): string
+    {
+        return $i < 9 ? (string) ($i + 1) : chr(65 + $i - 9);
     }
 
     private function listGames(Engine $e): Frame
     {
         $games = Db::all('SELECT * FROM games WHERE enabled = 1 ORDER BY sort, id');
-        $f = Frame::make('screen')->title('Game Room')->mode('menu')->header('Door Games')->blank();
+        $f = Frame::make('screen')->title('Game Room')->mode('menu')->header('Door Games', count($games) . ' games')->blank();
+        $col = 0;
         foreach ($games as $i => $g) {
-            $f->pipe(sprintf('|08   [|15%2d|08] |14%-28s |07%s', $i + 1, $g['name'], $g['description']));
-            $f->pipe(sprintf('        |08%s · played %d times', $g['score_label'], (int) $g['plays']));
+            $lbl = self::indexLabel($i);
+            $f->pipe(sprintf('|08 [|15%2s|08] |14%-26s |08%s', $lbl, mb_substr($g['name'], 0, 26), mb_substr($g['description'], 0, 62)));
         }
-        return $f->footer('number to play · Q back');
+        return $f->footer('press the letter / number to play · Q back');
     }
 
     private function scores(Engine $e): Frame
@@ -527,5 +556,727 @@ final class GamesModule extends Module
             $f->blank()->pipe('|07   F fight · H visit healer · ESC leave');
         }
         return $f->footer('ESC leave');
+    }
+
+    // ===============================================================
+    //  ROCK PAPER SCISSORS  (first to 5)
+    // ===============================================================
+    private function rps(Engine $e, array $in, array &$g): Frame
+    {
+        $g['_module'] = 'rps';
+        $g['you'] ??= 0; $g['cpu'] ??= 0; $g['msg'] ??= 'First to 5. Press R, P or S.';
+        $names = ['R' => 'Rock', 'P' => 'Paper', 'S' => 'Scissors'];
+        $beats = ['R' => 'S', 'P' => 'R', 'S' => 'P'];
+        $key = strtoupper((string) ($in['key'] ?? ''));
+        $done = $g['you'] >= 5 || $g['cpu'] >= 5;
+
+        if (!$done && isset($names[$key])) {
+            $c = ['R', 'P', 'S'][random_int(0, 2)];
+            if ($key === $c) {
+                $g['msg'] = "Both chose {$names[$key]}. Draw.";
+            } elseif ($beats[$key] === $c) {
+                $g['you']++;
+                $g['msg'] = "{$names[$key]} beats {$names[$c]}. You score.";
+            } else {
+                $g['cpu']++;
+                $g['msg'] = "{$names[$c]} beats {$names[$key]}. CPU scores.";
+            }
+            if ($g['you'] >= 5) {
+                $g['msg'] = 'You win the match 5-' . $g['cpu'] . '!';
+                $this->saveScore($e, $g, $g['you'] - $g['cpu'], 'won 5-' . $g['cpu']);
+            } elseif ($g['cpu'] >= 5) {
+                $g['msg'] = 'CPU wins the match ' . $g['you'] . '-5.';
+            }
+        }
+        if (($g['you'] >= 5 || $g['cpu'] >= 5) && $key === 'ENTER') {
+            $g = ['_module' => 'rps', '_saved' => $g['_saved'] ?? false];
+            return $this->rps($e, [], $g);
+        }
+
+        $f = Frame::make('screen')->view('game')->title('Rock Paper Scissors')->mode('game')
+            ->header('Rock Paper Scissors', $g['you'] . ' - ' . $g['cpu'])->blank()
+            ->pipe('|15   ' . $g['msg'])->blank()
+            ->pipe('|07   You |14' . str_repeat('#', $g['you']) . '|08' . str_repeat('.', 5 - $g['you']))
+            ->pipe('|07   CPU |12' . str_repeat('#', $g['cpu']) . '|08' . str_repeat('.', 5 - $g['cpu']));
+        if ($g['you'] >= 5 || $g['cpu'] >= 5) {
+            $f->blank()->pipe('|10   ENTER for a rematch, ESC to leave.');
+        }
+        return $f->footer('R rock · P paper · S scissors · ESC leave');
+    }
+
+    // ===============================================================
+    //  TIC-TAC-TOE  (you are X, CPU blocks/wins)
+    // ===============================================================
+    private function ttt(Engine $e, array $in, array &$g): Frame
+    {
+        $g['_module'] = 'ttt';
+        $g['b'] ??= array_fill(0, 9, ' ');
+        $g['msg'] ??= 'You are X. Press 1-9 for a square.';
+        $key = strtoupper((string) ($in['key'] ?? ''));
+        $b = &$g['b'];
+        $win = static function (array $b, string $p): bool {
+            $L = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+            foreach ($L as $l) {
+                if ($b[$l[0]] === $p && $b[$l[1]] === $p && $b[$l[2]] === $p) {
+                    return true;
+                }
+            }
+            return false;
+        };
+        $over = $win($b, 'X') || $win($b, 'O') || !in_array(' ', $b, true);
+
+        if (!$over && ctype_digit($key) && $key !== '0') {
+            $i = (int) $key - 1;
+            if ($b[$i] === ' ') {
+                $b[$i] = 'X';
+                if (!$win($b, 'X') && in_array(' ', $b, true)) {
+                    // CPU: win, else block, else centre, else random
+                    $pick = null;
+                    foreach (['O', 'X'] as $p) {
+                        for ($j = 0; $j < 9 && $pick === null; $j++) {
+                            if ($b[$j] === ' ') {
+                                $b[$j] = $p;
+                                if ($win($b, $p)) {
+                                    $pick = $j;
+                                }
+                                $b[$j] = ' ';
+                            }
+                        }
+                    }
+                    if ($pick === null && $b[4] === ' ') {
+                        $pick = 4;
+                    }
+                    if ($pick === null) {
+                        $free = array_keys($b, ' ', true);
+                        $pick = $free[array_rand($free)];
+                    }
+                    $b[$pick] = 'O';
+                }
+                $g['msg'] = $win($b, 'X') ? 'You win!' : ($win($b, 'O') ? 'CPU wins.' : (in_array(' ', $b, true) ? 'Your move.' : 'A draw.'));
+                if ($win($b, 'X')) {
+                    $this->saveScore($e, $g, 1, 'win');
+                }
+            }
+        }
+        if (($win($b, 'X') || $win($b, 'O') || !in_array(' ', $b, true)) && $key === 'ENTER') {
+            $g = ['_module' => 'ttt', '_saved' => $g['_saved'] ?? false];
+            return $this->ttt($e, [], $g);
+        }
+
+        $f = Frame::make('screen')->view('game')->title('Tic-Tac-Toe')->mode('game')
+            ->header('Tic-Tac-Toe')->blank()->pipe('|15   ' . $g['msg'])->blank();
+        for ($r = 0; $r < 3; $r++) {
+            $cells = [];
+            for ($c = 0; $c < 3; $c++) {
+                $i = $r * 3 + $c;
+                $cells[] = $b[$i] === ' ' ? '|08' . ($i + 1) : ($b[$i] === 'X' ? '|14X' : '|12O');
+            }
+            $f->pipe('     ' . implode('|08 │ ', $cells));
+            if ($r < 2) {
+                $f->pipe('|08    ───┼───┼───');
+            }
+        }
+        if ($win($b, 'X') || $win($b, 'O') || !in_array(' ', $b, true)) {
+            $f->blank()->pipe('|10   ENTER for another game, ESC to leave.');
+        }
+        return $f->footer('1-9 place · ESC leave');
+    }
+
+    // ===============================================================
+    //  21 MATCHSTICKS (Nim) - take 1-3, whoever takes the last loses
+    // ===============================================================
+    private function nim(Engine $e, array $in, array &$g): Frame
+    {
+        $g['_module'] = 'nim';
+        $g['n'] ??= 21;
+        $g['msg'] ??= '21 matches. Take 1, 2 or 3. Do NOT take the last one.';
+        $key = strtoupper((string) ($in['key'] ?? ''));
+        $done = isset($g['end']);
+
+        if (!$done && in_array($key, ['1', '2', '3'], true)) {
+            $take = min((int) $key, $g['n']);
+            $g['n'] -= $take;
+            if ($g['n'] <= 0) {
+                $g['end'] = 'lose';
+                $g['msg'] = 'You took the last match. You lose!';
+            } else {
+                // CPU plays to leave (multiple of 4) + 1
+                $cpu = ($g['n'] - 1) % 4;
+                if ($cpu === 0) {
+                    $cpu = random_int(1, min(3, $g['n'] - 1));
+                }
+                $cpu = min($cpu, $g['n']);
+                $g['n'] -= $cpu;
+                if ($g['n'] <= 0) {
+                    $g['end'] = 'win';
+                    $g['msg'] = "CPU took $cpu and grabbed the last match. You win!";
+                    $this->saveScore($e, $g, 1, 'win');
+                } else {
+                    $g['msg'] = "You took $take, CPU took $cpu. " . $g['n'] . ' left.';
+                }
+            }
+        }
+        if ($done && $key === 'ENTER') {
+            $g = ['_module' => 'nim', '_saved' => $g['_saved'] ?? false];
+            return $this->nim($e, [], $g);
+        }
+
+        $rows = str_repeat('|', max(0, $g['n']));
+        $f = Frame::make('screen')->view('game')->title('21 Matchsticks')->mode('game')
+            ->header('21 Matchsticks', $g['n'] . ' left')->blank()
+            ->pipe('|15   ' . $g['msg'])->blank()
+            ->pipe('|11   ' . implode(' ', str_split($rows)))
+            ->blank();
+        $f->pipe($done ? '|10   ENTER to play again, ESC to leave.' : '|07   Take 1, 2 or 3.');
+        return $f->footer('1 / 2 / 3 · ESC leave');
+    }
+
+    // ===============================================================
+    //  MASTERMIND - crack the 4-digit code (digits 1-6), 10 tries
+    // ===============================================================
+    private function mastermind(Engine $e, array $in, array &$g): Frame
+    {
+        $g['_module'] = 'mastermind';
+        if (!isset($g['code'])) {
+            $g['code'] = '';
+            for ($i = 0; $i < 4; $i++) {
+                $g['code'] .= random_int(1, 6);
+            }
+            $g['tries'] = [];
+            $g['msg'] = 'Guess the 4-digit code. Digits 1-6. 10 tries.';
+        }
+        $input = preg_replace('/\D/', '', (string) ($in['input'] ?? ''));
+        $key = strtoupper((string) ($in['key'] ?? ''));
+        $solved = in_array($g['code'], array_column($g['tries'], 0), true);
+
+        if (!$solved && count($g['tries']) < 10 && strlen($input) === 4 && strspn($input, '123456') === 4) {
+            $bulls = 0;
+            $cows = 0;
+            $cc = str_split($g['code']);
+            $gg = str_split($input);
+            for ($i = 0; $i < 4; $i++) {
+                if ($gg[$i] === $cc[$i]) {
+                    $bulls++;
+                    $cc[$i] = $gg[$i] = '*';
+                }
+            }
+            for ($i = 0; $i < 4; $i++) {
+                if ($gg[$i] !== '*' && ($k = array_search($gg[$i], $cc, true)) !== false) {
+                    $cows++;
+                    $cc[$k] = '-';
+                }
+            }
+            $g['tries'][] = [$input, $bulls, $cows];
+            if ($bulls === 4) {
+                $g['msg'] = 'Cracked it in ' . count($g['tries']) . '!';
+                $this->saveScore($e, $g, count($g['tries']), 'cracked');
+            } elseif (count($g['tries']) >= 10) {
+                $g['msg'] = 'Out of tries. The code was ' . $g['code'] . '.';
+            } else {
+                $g['msg'] = "$bulls exact, $cows misplaced.";
+            }
+        }
+        $ended = in_array($g['code'], array_column($g['tries'], 0), true) || count($g['tries']) >= 10;
+        if ($ended && $key === 'ENTER') {
+            $g = ['_module' => 'mastermind', '_saved' => $g['_saved'] ?? false];
+            return $this->mastermind($e, [], $g);
+        }
+
+        $f = Frame::make('screen')->view('game')->title('Mastermind')->mode($ended ? 'game' : 'line')
+            ->header('Mastermind', count($g['tries']) . '/10')->blank()
+            ->pipe('|15   ' . $g['msg'])->blank();
+        foreach ($g['tries'] as $t) {
+            $f->pipe(sprintf('|07   %s   |10%s exact  |11%s near', $t[0], $t[1], $t[2]));
+        }
+        $f->blank();
+        if ($ended) {
+            $f->pipe('|10   ENTER for a new code, ESC to leave.');
+        } else {
+            $f->pipe('|07   Type 4 digits (1-6) and press ENTER.')->prompt('Code');
+        }
+        return $f->footer('ESC leave');
+    }
+
+    // ===============================================================
+    //  ANAGRAM - unscramble the word
+    // ===============================================================
+    private function anagram(Engine $e, array $in, array &$g): Frame
+    {
+        $g['_module'] = 'anagram';
+        $words = ['MODEM', 'CARRIER', 'PHOSPHOR', 'TERMINAL', 'PACKET', 'CONSOLE', 'FIDONET', 'DIALTONE',
+                  'HANDSHAKE', 'DOWNLOAD', 'SYSOP', 'ANSI', 'BULLETIN', 'BAUDRATE', 'SCROLLBACK', 'KEYBOARD'];
+        $g['score'] ??= 0;
+        $g['round'] ??= 0;
+        if (!isset($g['word'])) {
+            $g['word'] = $words[array_rand($words)];
+            $chars = str_split($g['word']);
+            shuffle($chars);
+            $g['scram'] = implode('', $chars);
+            $g['round']++;
+            $g['msg'] = 'Round ' . $g['round'] . ' - unscramble it.';
+        }
+        $input = strtoupper(trim((string) ($in['input'] ?? '')));
+        $key = strtoupper((string) ($in['key'] ?? ''));
+
+        if ($input !== '') {
+            if ($input === $g['word']) {
+                $g['score'] += 10 + strlen($g['word']);
+                $g['msg'] = 'Yes! +' . (10 + strlen($g['word'])) . '. Next word...';
+                unset($g['word']);
+                if ($g['round'] >= 8) {
+                    $g['end'] = true;
+                    $g['msg'] = 'Eight rounds done. Final score ' . $g['score'] . '.';
+                    $this->saveScore($e, $g, $g['score'], 'anagram');
+                }
+                return $this->anagram($e, [], $g);
+            }
+            $g['msg'] = 'Not quite. Try again (or type PASS).';
+            if ($input === 'PASS') {
+                $g['msg'] = 'The word was ' . $g['word'] . '. Next...';
+                unset($g['word']);
+                return $this->anagram($e, [], $g);
+            }
+        }
+        if (isset($g['end']) && $key === 'ENTER') {
+            $g = ['_module' => 'anagram', '_saved' => $g['_saved'] ?? false];
+            return $this->anagram($e, [], $g);
+        }
+
+        $f = Frame::make('screen')->view('game')->title('Anagram')->mode(isset($g['end']) ? 'game' : 'line')
+            ->header('Anagram', 'score ' . $g['score'])->blank()
+            ->pipe('|15   ' . $g['msg'])->blank();
+        if (isset($g['scram'])) {
+            $f->pipe('|14   ' . implode(' ', str_split($g['scram'])));
+        }
+        $f->blank();
+        $f->pipe(isset($g['end']) ? '|10   ENTER to play again, ESC to leave.' : '|07   Type your answer (or PASS) and ENTER.');
+        return $f->prompt('Word')->footer('ESC leave');
+    }
+
+    // ===============================================================
+    //  HI-LO - will the next card be higher or lower? build a streak
+    // ===============================================================
+    private function hilo(Engine $e, array $in, array &$g): Frame
+    {
+        $g['_module'] = 'hilo';
+        $g['card'] ??= random_int(2, 14);
+        $g['streak'] ??= 0;
+        $g['best'] ??= 0;
+        $g['msg'] ??= 'Card is up. Will the next be Higher or Lower?';
+        $key = strtoupper((string) ($in['key'] ?? ''));
+        $done = isset($g['bust']);
+        $name = static fn ($n) => [11 => 'J', 12 => 'Q', 13 => 'K', 14 => 'A'][$n] ?? (string) $n;
+
+        if (!$done && ($key === 'H' || $key === 'L')) {
+            $next = random_int(2, 14);
+            $hi = $next > $g['card'];
+            $lo = $next < $g['card'];
+            $ok = ($key === 'H' && $hi) || ($key === 'L' && $lo);
+            $push = $next === $g['card'];
+            $g['card'] = $next;
+            if ($push) {
+                $g['msg'] = 'Same rank - push, guess again.';
+            } elseif ($ok) {
+                $g['streak']++;
+                $g['best'] = max($g['best'], $g['streak']);
+                $g['msg'] = 'Right! Streak ' . $g['streak'] . '. Cash out with C.';
+            } else {
+                $g['bust'] = true;
+                $g['msg'] = 'Wrong. Streak broken at ' . $g['streak'] . '.';
+                $this->saveScore($e, $g, $g['streak'], 'streak');
+            }
+        } elseif (!$done && $key === 'C' && $g['streak'] > 0) {
+            $g['bust'] = true;
+            $g['msg'] = 'Cashed out with a streak of ' . $g['streak'] . '.';
+            $this->saveScore($e, $g, $g['streak'], 'cashed');
+        }
+        if ($done && $key === 'ENTER') {
+            $g = ['_module' => 'hilo', '_saved' => $g['_saved'] ?? false];
+            return $this->hilo($e, [], $g);
+        }
+
+        $f = Frame::make('screen')->view('game')->title('Hi-Lo')->mode('game')
+            ->header('Hi-Lo', 'streak ' . $g['streak'] . ' · best ' . $g['best'])->blank()
+            ->pipe('|15   ' . $g['msg'])->blank()
+            ->pipe('|08   ┌─────┐')
+            ->pipe('|08   │ |14' . str_pad($name($g['card']), 3) . '|08 │')
+            ->pipe('|08   └─────┘')->blank();
+        $f->pipe($done ? '|10   ENTER to play again, ESC to leave.' : '|07   H higher · L lower · C cash out');
+        return $f->footer('H / L / C · ESC leave');
+    }
+
+    // ===============================================================
+    //  CRAPS - a bankroll and a pass-line bet
+    // ===============================================================
+    private function craps(Engine $e, array $in, array &$g): Frame
+    {
+        $g['_module'] = 'craps';
+        $g['bank'] ??= 100;
+        $g['point'] ??= 0;
+        $g['msg'] ??= 'Bankroll 100. Bet is 10. Press R to roll.';
+        $key = strtoupper((string) ($in['key'] ?? ''));
+
+        if ($key === 'R' && $g['bank'] >= 10) {
+            $d1 = random_int(1, 6);
+            $d2 = random_int(1, 6);
+            $sum = $d1 + $d2;
+            $roll = "$d1+$d2=$sum";
+            if ($g['point'] === 0) {
+                if ($sum === 7 || $sum === 11) {
+                    $g['bank'] += 10;
+                    $g['msg'] = "$roll - a natural! +10.";
+                } elseif (in_array($sum, [2, 3, 12], true)) {
+                    $g['bank'] -= 10;
+                    $g['msg'] = "$roll - craps. -10.";
+                } else {
+                    $g['point'] = $sum;
+                    $g['msg'] = "$roll - point is $sum. Roll it again before a 7.";
+                }
+            } else {
+                if ($sum === $g['point']) {
+                    $g['bank'] += 10;
+                    $g['msg'] = "$roll - hit the point! +10.";
+                    $g['point'] = 0;
+                } elseif ($sum === 7) {
+                    $g['bank'] -= 10;
+                    $g['msg'] = "$roll - seven out. -10.";
+                    $g['point'] = 0;
+                } else {
+                    $g['msg'] = "$roll - no decision. Roll again.";
+                }
+            }
+            if ($g['bank'] <= 0) {
+                $g['msg'] = 'Tapped out. Better luck next call.';
+                $this->saveScore($e, $g, 0, 'busted');
+            } elseif ($g['bank'] >= 200) {
+                $g['msg'] = 'Up to ' . $g['bank'] . ' - the pit boss is watching.';
+                $this->saveScore($e, $g, $g['bank'], 'craps');
+            }
+        }
+
+        $f = Frame::make('screen')->view('game')->title('Craps')->mode('game')
+            ->header('Craps', 'bank ' . $g['bank'] . ($g['point'] ? ' · point ' . $g['point'] : ''))->blank()
+            ->pipe('|15   ' . $g['msg'])->blank()
+            ->pipe('|07   Bankroll: |14' . $g['bank']);
+        return $f->footer('R roll · ESC leave');
+    }
+
+    // ===============================================================
+    //  MINESWEEPER - 8x8, 10 mines. "c r" reveal, "f c r" flag
+    // ===============================================================
+    private function mines(Engine $e, array $in, array &$g): Frame
+    {
+        $g['_module'] = 'mines';
+        $N = 8;
+        $M = 10;
+        if (!isset($g['mines'])) {
+            $spots = (array) array_rand(array_flip(range(0, $N * $N - 1)), $M);
+            $g['mines'] = array_fill(0, $N * $N, false);
+            foreach ($spots as $s) {
+                $g['mines'][$s] = true;
+            }
+            $g['shown'] = array_fill(0, $N * $N, false);
+            $g['flag'] = array_fill(0, $N * $N, false);
+            $g['msg'] = '8x8, 10 mines. Type "col row" to dig, "f col row" to flag.';
+        }
+        $adj = static function (int $i) use ($N) {
+            $r = intdiv($i, $N);
+            $c = $i % $N;
+            $out = [];
+            for ($dr = -1; $dr <= 1; $dr++) {
+                for ($dc = -1; $dc <= 1; $dc++) {
+                    if ($dr || $dc) {
+                        $nr = $r + $dr;
+                        $nc = $c + $dc;
+                        if ($nr >= 0 && $nr < $N && $nc >= 0 && $nc < $N) {
+                            $out[] = $nr * $N + $nc;
+                        }
+                    }
+                }
+            }
+            return $out;
+        };
+        $count = function (int $i) use ($adj, $g) {
+            $n = 0;
+            foreach ($adj($i) as $j) {
+                if ($g['mines'][$j]) {
+                    $n++;
+                }
+            }
+            return $n;
+        };
+        $input = strtolower(trim((string) ($in['input'] ?? '')));
+        $key = strtoupper((string) ($in['key'] ?? ''));
+        $done = isset($g['end']);
+
+        if (!$done && $input !== '' && preg_match('/^(f\s+)?(\d+)\s+(\d+)$/', $input, $m)) {
+            $c = (int) $m[2];
+            $r = (int) $m[3];
+            if ($c >= 1 && $c <= $N && $r >= 1 && $r <= $N) {
+                $i = ($r - 1) * $N + ($c - 1);
+                if ($m[1]) {
+                    $g['flag'][$i] = !$g['flag'][$i];
+                } elseif (!$g['flag'][$i]) {
+                    if ($g['mines'][$i]) {
+                        $g['end'] = 'boom';
+                        $g['msg'] = 'BOOM. You hit a mine at ' . $c . ',' . $r . '.';
+                    } else {
+                        // flood fill zeros
+                        $stack = [$i];
+                        while ($stack) {
+                            $x = array_pop($stack);
+                            if ($g['shown'][$x]) {
+                                continue;
+                            }
+                            $g['shown'][$x] = true;
+                            if ($count($x) === 0) {
+                                foreach ($adj($x) as $j) {
+                                    if (!$g['shown'][$j] && !$g['mines'][$j]) {
+                                        $stack[] = $j;
+                                    }
+                                }
+                            }
+                        }
+                        $safe = $N * $N - $M;
+                        $seen = count(array_filter($g['shown']));
+                        if ($seen >= $safe) {
+                            $g['end'] = 'clear';
+                            $g['msg'] = 'Field cleared! Nice nerves.';
+                            $this->saveScore($e, $g, $seen, 'cleared');
+                        } else {
+                            $g['msg'] = "$seen / $safe safe squares dug.";
+                        }
+                    }
+                }
+            }
+        }
+        if ($done && $key === 'ENTER') {
+            $g = ['_module' => 'mines', '_saved' => $g['_saved'] ?? false];
+            return $this->mines($e, [], $g);
+        }
+
+        $f = Frame::make('screen')->view('game')->title('Minesweeper')->mode($done ? 'game' : 'line')
+            ->header('Minesweeper', $done ? strtoupper((string) $g['end']) : '10 mines')->blank()
+            ->pipe('|15   ' . $g['msg'])->blank()
+            ->pipe('|08      ' . implode(' ', range(1, $N)));
+        for ($r = 0; $r < $N; $r++) {
+            $line = '|08   ' . ($r + 1) . ' ';
+            for ($c = 0; $c < $N; $c++) {
+                $i = $r * $N + $c;
+                if ($done && $g['mines'][$i]) {
+                    $line .= '|12*';
+                } elseif ($g['flag'][$i]) {
+                    $line .= '|11F';
+                } elseif (!$g['shown'][$i]) {
+                    $line .= '|08·';
+                } else {
+                    $n = $count($i);
+                    $line .= $n ? '|14' . $n : '|08 ';
+                }
+                $line .= ' ';
+            }
+            $f->pipe($line);
+        }
+        $f->blank()->pipe($done ? '|10   ENTER for a new field, ESC to leave.' : '|07   e.g.  3 4   or   f 3 4');
+        return $f->prompt('Dig')->footer('ESC leave');
+    }
+
+    // ===============================================================
+    //  2048 - arrow keys, merge tiles, reach 2048
+    // ===============================================================
+    private function g2048(Engine $e, array $in, array &$g): Frame
+    {
+        $g['_module'] = 'g2048';
+        if (!isset($g['grid'])) {
+            $g['grid'] = array_fill(0, 16, 0);
+            $g['score'] = 0;
+            $this->g2048Spawn($g['grid']);
+            $this->g2048Spawn($g['grid']);
+            $g['msg'] = 'Arrow keys slide the board. Merge to 2048.';
+        }
+        $key = strtoupper((string) ($in['key'] ?? ''));
+        $dir = ['UP' => 0, 'RIGHT' => 1, 'DOWN' => 2, 'LEFT' => 3][$key] ?? null;
+        $done = isset($g['end']);
+
+        if (!$done && $dir !== null) {
+            $before = $g['grid'];
+            $gained = $this->g2048Move($g['grid'], $dir);
+            if ($g['grid'] !== $before) {
+                $g['score'] += $gained;
+                $this->g2048Spawn($g['grid']);
+                if (in_array(2048, $g['grid'], true)) {
+                    $g['end'] = 'win';
+                    $g['msg'] = 'You made 2048! Score ' . $g['score'] . '.';
+                    $this->saveScore($e, $g, $g['score'], 'won');
+                } elseif (!$this->g2048CanMove($g['grid'])) {
+                    $g['end'] = 'lose';
+                    $g['msg'] = 'No moves left. Score ' . $g['score'] . '.';
+                    $this->saveScore($e, $g, $g['score'], 'stuck');
+                } else {
+                    $g['msg'] = 'Score ' . $g['score'];
+                }
+            }
+        }
+        if ($done && $key === 'ENTER') {
+            $g = ['_module' => 'g2048', '_saved' => $g['_saved'] ?? false];
+            return $this->g2048($e, [], $g);
+        }
+
+        $f = Frame::make('screen')->view('game')->title('2048')->mode('game')
+            ->header('2048', 'score ' . $g['score'])->blank()
+            ->pipe('|15   ' . $g['msg'])->blank();
+        for ($r = 0; $r < 4; $r++) {
+            $line = '   ';
+            for ($c = 0; $c < 4; $c++) {
+                $v = $g['grid'][$r * 4 + $c];
+                $col = $v >= 128 ? '|11' : ($v >= 16 ? '|14' : ($v ? '|07' : '|08'));
+                $line .= $col . str_pad((string) ($v ?: '.'), 6, ' ', STR_PAD_LEFT);
+            }
+            $f->pipe($line);
+            $f->blank();
+        }
+        $f->pipe($done ? '|10   ENTER for a new board, ESC to leave.' : '|07   ↑ ↓ ← → to slide');
+        return $f->footer('arrows · ESC leave');
+    }
+
+    private function g2048Spawn(array &$grid): void
+    {
+        $free = array_keys($grid, 0, true);
+        if ($free) {
+            $grid[$free[array_rand($free)]] = random_int(1, 10) === 1 ? 4 : 2;
+        }
+    }
+
+    private function g2048Move(array &$grid, int $dir): int
+    {
+        $gained = 0;
+        $line = function (int $k) use ($grid, $dir): array {
+            $out = [];
+            for ($i = 0; $i < 4; $i++) {
+                $out[] = match ($dir) {
+                    0 => $grid[$i * 4 + $k],
+                    2 => $grid[(3 - $i) * 4 + $k],
+                    3 => $grid[$k * 4 + $i],
+                    default => $grid[$k * 4 + (3 - $i)],
+                };
+            }
+            return $out;
+        };
+        $put = function (int $k, array $vals) use (&$grid, $dir): void {
+            for ($i = 0; $i < 4; $i++) {
+                $idx = match ($dir) {
+                    0 => $i * 4 + $k,
+                    2 => (3 - $i) * 4 + $k,
+                    3 => $k * 4 + $i,
+                    default => $k * 4 + (3 - $i),
+                };
+                $grid[$idx] = $vals[$i];
+            }
+        };
+        for ($k = 0; $k < 4; $k++) {
+            $vals = array_values(array_filter($line($k)));
+            $merged = [];
+            for ($i = 0; $i < count($vals); $i++) {
+                if ($i + 1 < count($vals) && $vals[$i] === $vals[$i + 1]) {
+                    $merged[] = $vals[$i] * 2;
+                    $gained += $vals[$i] * 2;
+                    $i++;
+                } else {
+                    $merged[] = $vals[$i];
+                }
+            }
+            while (count($merged) < 4) {
+                $merged[] = 0;
+            }
+            $put($k, $merged);
+        }
+        return $gained;
+    }
+
+    private function g2048CanMove(array $grid): bool
+    {
+        if (in_array(0, $grid, true)) {
+            return true;
+        }
+        for ($r = 0; $r < 4; $r++) {
+            for ($c = 0; $c < 4; $c++) {
+                $v = $grid[$r * 4 + $c];
+                if ($c < 3 && $v === $grid[$r * 4 + $c + 1]) {
+                    return true;
+                }
+                if ($r < 3 && $v === $grid[($r + 1) * 4 + $c]) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    // ===============================================================
+    //  LIGHTS OUT - 5x5, toggle a light and its neighbours, clear the board
+    // ===============================================================
+    private function lightsout(Engine $e, array $in, array &$g): Frame
+    {
+        $g['_module'] = 'lightsout';
+        $N = 5;
+        if (!isset($g['grid'])) {
+            $g['grid'] = array_fill(0, $N * $N, false);
+            // scramble with random presses so it's always solvable
+            for ($p = 0; $p < 8; $p++) {
+                $this->loToggle($g['grid'], random_int(0, $N * $N - 1), $N);
+            }
+            $g['moves'] = 0;
+            $g['msg'] = 'Turn every light off. Type "col row" to press.';
+        }
+        $input = trim((string) ($in['input'] ?? ''));
+        $key = strtoupper((string) ($in['key'] ?? ''));
+        $done = !in_array(true, $g['grid'], true);
+
+        if (!$done && preg_match('/^(\d+)\s+(\d+)$/', $input, $m)) {
+            $c = (int) $m[1];
+            $r = (int) $m[2];
+            if ($c >= 1 && $c <= $N && $r >= 1 && $r <= $N) {
+                $this->loToggle($g['grid'], ($r - 1) * $N + ($c - 1), $N);
+                $g['moves']++;
+                if (!in_array(true, $g['grid'], true)) {
+                    $g['msg'] = 'All out in ' . $g['moves'] . ' moves!';
+                    $this->saveScore($e, $g, $g['moves'], 'solved');
+                } else {
+                    $g['msg'] = $g['moves'] . ' moves so far.';
+                }
+            }
+        }
+        $done = !in_array(true, $g['grid'], true);
+        if ($done && $key === 'ENTER') {
+            $g = ['_module' => 'lightsout', '_saved' => $g['_saved'] ?? false];
+            return $this->lightsout($e, [], $g);
+        }
+
+        $f = Frame::make('screen')->view('game')->title('Lights Out')->mode($done ? 'game' : 'line')
+            ->header('Lights Out', $g['moves'] . ' moves')->blank()
+            ->pipe('|15   ' . $g['msg'])->blank()
+            ->pipe('|08      ' . implode(' ', range(1, $N)));
+        for ($r = 0; $r < $N; $r++) {
+            $line = '|08   ' . ($r + 1) . '  ';
+            for ($c = 0; $c < $N; $c++) {
+                $line .= ($g['grid'][$r * $N + $c] ? '|11#' : '|08.') . ' ';
+            }
+            $f->pipe($line);
+        }
+        $f->blank()->pipe($done ? '|10   ENTER for a new puzzle, ESC to leave.' : '|07   e.g.  3 2');
+        return $f->prompt('Press')->footer('ESC leave');
+    }
+
+    private function loToggle(array &$grid, int $i, int $N): void
+    {
+        $r = intdiv($i, $N);
+        $c = $i % $N;
+        foreach ([[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]] as [$dr, $dc]) {
+            $nr = $r + $dr;
+            $nc = $c + $dc;
+            if ($nr >= 0 && $nr < $N && $nc >= 0 && $nc < $N) {
+                $grid[$nr * $N + $nc] = !$grid[$nr * $N + $nc];
+            }
+        }
     }
 }
