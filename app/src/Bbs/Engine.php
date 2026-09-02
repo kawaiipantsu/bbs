@@ -547,6 +547,13 @@ final class Engine
         return $this->pushRender(['t' => 'menu', 'ref' => $slug]);
     }
 
+    /** Jump a guest into the login / new-user flow. $step = 'login' | 'register' | 'menu'. */
+    public function gotoAuth(string $step = 'menu'): Frame
+    {
+        $this->replaceStack([['t' => 'auth', 'st' => ['step' => $step]]]);
+        return $this->renderCurrentFrame();
+    }
+
     /** Pop this module and redraw whatever is underneath. */
     public function exitModule(): Frame
     {

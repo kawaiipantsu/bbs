@@ -33,10 +33,19 @@ final class AccountModule extends Module
             if ($key === "\x1B" || $key === 'Q') {
                 return $e->exitModule();
             }
+            if ($key === 'N') {
+                return $e->gotoAuth('register');
+            }
+            if ($key === 'L') {
+                return $e->gotoAuth('login');
+            }
             return Frame::make('screen')->title('Account')->mode('menu')->header('Account')->blank()
-                ->pipe('|11   You are browsing as a guest.')
-                ->pipe('|07   Log off and choose [N]ew user to get an account, or [L]og in.')
-                ->footer('Q back');
+                ->pipe('|11   You are browsing as a guest - no profile to show.')->blank()
+                ->pipe('|08   [|15N|08] Apply for a new account')
+                ->pipe('|08   [|15L|08] Log in to an existing handle')
+                ->pipe('|08   [|15Q|08] Back')
+                ->footer('N new user · L log in · Q back')
+                ->meta(['keys' => ['N', 'L', 'Q']]);
         }
         $mode = $st['mode'] ?? 'view';
 
