@@ -1,0 +1,13 @@
+.git
+.github
+node_modules
+vendor
+storage/files/*
+storage/cache/*
+storage/tmp/*
+storage/logs/*
+app/config.php
+app/config.local.php
+*.log
+.DS_Store
+docs/_build

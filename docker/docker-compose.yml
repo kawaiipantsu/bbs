@@ -1,0 +1,83 @@
+# THUGS(red) BBS - one-command local stack.
+#   docker compose -f docker/docker-compose.yml up --build
+# then open http://localhost:8080
+#
+# We do NOT run this in production (the real site uses host infra), but it lets
+# anyone try or hack on the BBS with zero setup.
+
+name: thugs-bbs
+
+services:
+  web:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    ports:
+      - "8080:80"
+    environment:
+      BBS_DB_HOST: db
+      BBS_DB_NAME: projects_bbs
+      BBS_DB_USER: bbs
+      BBS_DB_PASS: bbs-dev-password
+      BBS_REDIS_HOST: redis
+      BBS_BEANSTALK_HOST: beanstalkd
+      BBS_SEED: "1"
+    volumes:
+      - ../:/app
+      - bbs-storage:/app/storage
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      beanstalkd:
+        condition: service_started
+    restart: unless-stopped
+
+  worker:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    command: ["php", "/app/contrib/worker.php"]
+    environment:
+      BBS_DB_HOST: db
+      BBS_DB_NAME: projects_bbs
+      BBS_DB_USER: bbs
+      BBS_DB_PASS: bbs-dev-password
+      BBS_REDIS_HOST: redis
+      BBS_BEANSTALK_HOST: beanstalkd
+    volumes:
+      - ../:/app
+      - bbs-storage:/app/storage
+    depends_on:
+      web:
+        condition: service_started
+    restart: unless-stopped
+
+  db:
+    image: mariadb:11
+    environment:
+      MARIADB_DATABASE: projects_bbs
+      MARIADB_USER: bbs
+      MARIADB_PASSWORD: bbs-dev-password
+      MARIADB_ROOT_PASSWORD: root-dev-password
+    volumes:
+      - bbs-db:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+
+  beanstalkd:
+    image: docker.io/schickling/beanstalkd:latest
+    # if that image is unavailable, comment this service out - the app falls
+    # back to a DB-backed job queue automatically.
+
+volumes:
+  bbs-db:
+  bbs-storage:

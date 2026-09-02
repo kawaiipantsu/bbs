@@ -1,0 +1,35 @@
+# --- secrets & local config ---
+/app/config.php
+/app/config.local.php
+.env
+*.key
+*.pem
+
+# --- runtime storage (mount a dedicated disk here) ---
+/storage/files/*
+/storage/tmp/*
+/storage/cache/*
+/storage/logs/*
+!/storage/files/.gitkeep
+!/storage/tmp/.gitkeep
+!/storage/cache/.gitkeep
+!/storage/logs/.gitkeep
+
+# --- dependencies / build ---
+/vendor/
+/node_modules/
+composer.phar
+
+# --- logs ---
+*.log
+/logs/
+
+# --- editor / OS cruft ---
+.DS_Store
+Thumbs.db
+*.swp
+*~
+.idea/
+.vscode/
+/assets/dist/
+/docs/img/*.orig

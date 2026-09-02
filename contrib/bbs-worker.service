@@ -1,0 +1,24 @@
+[Unit]
+Description=THUGS(red) BBS background worker (Discord, news, mail)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/vhosts-external/bbs.thugs.red
+ExecStart=/usr/bin/php /var/www/vhosts-external/bbs.thugs.red/contrib/worker.php
+Restart=always
+RestartSec=5
+# hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+ReadWritePaths=/var/www/vhosts-external/bbs.thugs.red/storage
+StandardOutput=append:/var/www/vhosts-external/bbs.thugs.red/storage/logs/worker.log
+StandardError=append:/var/www/vhosts-external/bbs.thugs.red/storage/logs/worker.log
+
+[Install]
+WantedBy=multi-user.target

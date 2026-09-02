@@ -1,0 +1,37 @@
+{
+    "name": "kawaiipantsu/bbs",
+    "description": "THUGS(red) BBS - a web-based ANSI/ASCII bulletin board system with a CRT terminal UI",
+    "type": "project",
+    "license": "MIT",
+    "homepage": "https://thugs.red",
+    "keywords": ["bbs", "ansi", "ascii", "telnet", "retrocomputing", "crt", "terminal", "modem"],
+    "require": {
+        "php": ">=8.2",
+        "ext-pdo": "*",
+        "ext-pdo_mysql": "*",
+        "ext-mbstring": "*",
+        "ext-json": "*",
+        "ext-openssl": "*",
+        "ext-sodium": "*",
+        "ext-curl": "*",
+        "ext-gd": "*"
+    },
+    "suggest": {
+        "ext-redis": "Faster session cache and chat pub/sub (falls back to DB/polling without it)"
+    },
+    "//": "No third-party runtime deps. Beanstalkd, Redis and Discord clients are hand-rolled in app/src/Core. 'composer install' is optional and only regenerates the PSR-4 autoloader; app/bootstrap.php ships its own.",
+    "autoload": {
+        "psr-4": {
+            "Bbs\\": "app/src/"
+        }
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "sort-packages": true
+    },
+    "scripts": {
+        "migrate": "php mysql/migrate.php",
+        "seed": "php mysql/migrate.php --seed",
+        "worker": "php contrib/worker.php"
+    }
+}

@@ -1,0 +1,270 @@
+/* =====================================================================
+   THUGS(red) BBS - base styles, palette, terminal grid
+   Palette lifted from wardrive.thugs.red
+   ===================================================================== */
+
+@font-face {
+  font-family: "BBS Terminal";
+  src: url("/media/fonts/bbsterm-regular.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "BBS Terminal";
+  src: url("/media/fonts/bbsterm-bold.woff2") format("woff2");
+  font-weight: 700;
+  font-display: swap;
+}
+
+:root {
+  --bg:        #0e1013;
+  --surface:   #16191f;
+  --surface-2: #1d2129;
+  --line:      #272c36;
+  --text:      #e6e9ef;
+  --muted:     #97a0b0;
+  --accent:    #e2223b;
+  --accent-dim:#8f1626;
+  --ok:        #35c98b;
+  --warn:      #e8a33d;
+  --link:      #9fc4ff;
+
+  /* phosphor for the terminal itself - warm amber-green-white CRT */
+  --phosphor:  #cfe3d6;
+  --phosphor-dim: #7f9a89;
+  --screen-bg: #05070a;
+
+  /* CRT glass rectangle inside media/images/monitor.png (1448x1086).
+     Tweak these four if the screen ever drifts off the bezel. */
+  --glass-left:   19.6%;
+  --glass-top:    12.2%;
+  --glass-width:  60.6%;
+  --glass-height: 60.1%;
+  --glass-radius: 3.4% / 4.6%;   /* shared by the glass, the screen and every FX layer */
+
+  --crt-intensity: 0.85;
+
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: #000;
+  color: var(--text);
+  font-family: var(--mono, ui-monospace, "SF Mono", Menlo, Consolas, monospace);
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+body {
+  display: grid;
+  place-items: center;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  background: #000;
+}
+
+img { max-width: 100%; }
+[hidden] { display: none !important; }
+
+/* ---------------------------------------------------------------------
+   The CRT monitor
+   --------------------------------------------------------------------- */
+#crt {
+  position: relative;
+  /* keep the monitor photo's 4:3 aspect; scale to fill the smaller window
+     dimension so it is as large as possible, letterboxing the rest in black. */
+  width: min(100vw, calc(100dvh * 1.3333));
+  height: min(100dvh, calc(100vw / 1.3333));
+  /* bleed pure black outward so the letterbox seam is invisible on any ratio */
+  box-shadow: 0 0 22vmax 14vmax #000, 0 0 0 50vmax #000;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* fade the photo's own edges into the surrounding black */
+#crt::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  z-index: 6;
+  pointer-events: none;
+  box-shadow:
+    inset 0 0 14vmin 5vmin rgba(0,0,0,.85),
+    inset 0 0 4vmin 1vmin rgba(0,0,0,.6);
+  background: radial-gradient(ellipse at 50% 46%,
+    rgba(0,0,0,0) 60%, rgba(0,0,0,.35) 88%, rgba(0,0,0,.9) 100%);
+}
+
+#monitor {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* the live screen sits ON TOP of the monitor photo, aligned to its glass */
+#glass {
+  position: absolute;
+  left:   var(--glass-left);
+  top:    var(--glass-top);
+  width:  var(--glass-width);
+  height: var(--glass-height);
+  overflow: hidden;
+  background: var(--screen-bg);
+  border-radius: var(--glass-radius);
+  z-index: 4;
+  box-shadow:
+    inset 0 0 8vmin 2vmin rgba(0,0,0,.9),
+    inset 0 0 2vmin rgba(0,0,0,.8);
+}
+
+/* ---------------------------------------------------------------------
+   Terminal surface
+   --------------------------------------------------------------------- */
+#screen {
+  position: absolute;
+  inset: 0;
+  outline: none;
+  cursor: default;
+  z-index: 1;
+  border-radius: var(--glass-radius);
+  overflow: hidden;
+}
+
+.term {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: top left;
+  font-family: "BBS Terminal", var(--mono, monospace);
+  font-size: 16px;
+  line-height: 16px;
+  letter-spacing: 0;
+  white-space: pre;
+  color: var(--phosphor);
+  text-shadow: 0 0 calc(2px * var(--crt-intensity)) currentColor;
+  -webkit-font-smoothing: none;
+  font-smooth: never;
+  overflow: hidden;
+  border-radius: var(--glass-radius);
+}
+
+.term .row {
+  display: block;
+  height: var(--lh, 1em);
+  line-height: inherit;
+  white-space: pre;
+  overflow: hidden;
+}
+
+.term .row span { white-space: pre; }
+
+/* blinking */
+@keyframes bbs-blink { 50% { opacity: 0; } }
+.term .bl { animation: bbs-blink 1s steps(1) infinite; }
+
+/* the block cursor */
+.term .cursor {
+  background: var(--phosphor);
+  color: var(--screen-bg);
+  animation: bbs-blink 1.05s steps(1) infinite;
+}
+
+/* selection highlight */
+.term .row ::selection { background: rgba(226,34,59,.4); color: #fff; }
+
+/* ---------------------------------------------------------------------
+   ANSI 16-colour palette (VGA, nudged toward the site theme)
+   --------------------------------------------------------------------- */
+.f0  { color:#1b1d23; } .f1  { color:#b23a48; } .f2  { color:#3fae7b; } .f3  { color:#c98a3d; }
+.f4  { color:#4b73c9; } .f5  { color:#a24fb0; } .f6  { color:#3fa9b6; } .f7  { color:#c9cfda; }
+.f8  { color:#5a6472; } .f9  { color:#e2223b; } .f10 { color:#5be6a3; } .f11 { color:#ffcf5b; }
+.f12 { color:#7aa2ff; } .f13 { color:#e08bf0; } .f14 { color:#6fe6f2; } .f15 { color:#ffffff; }
+
+.b0 {} /* transparent over screen-bg */
+.b1 { background:#5c1620; } .b2 { background:#154b33; } .b3 { background:#5a3c15; }
+.b4 { background:#1f2f5c; } .b5 { background:#43214a; } .b6 { background:#164a52; } .b7 { background:#2b2f38; }
+.b8 { background:#20242c; } .b9 { background:#7a1220; } .b10{ background:#1b6b48; } .b11{ background:#6b5416; }
+.b12{ background:#2b4a8f; } .b13{ background:#6b2f78; } .b14{ background:#1f6b74; } .b15{ background:#3a4150; }
+
+/* ---------------------------------------------------------------------
+   HUD (outside the glass, bottom-left of the monitor)
+   --------------------------------------------------------------------- */
+#hud {
+  position: absolute;
+  left: 2%;
+  bottom: -2.2rem;
+  display: flex;
+  gap: .5rem;
+  align-items: center;
+  z-index: 3;
+  font: 11px/1 var(--mono, monospace);
+}
+#hud button {
+  background: var(--surface);
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: .35rem .5rem;
+  cursor: pointer;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+#hud button:hover { color: var(--text); border-color: #3a4150; }
+#hud button[aria-pressed="true"] { color: var(--accent); border-color: var(--accent-dim); }
+#hud #hud-node { color: var(--muted); margin-left: .4rem; }
+
+/* ---------------------------------------------------------------------
+   Ticker crawl (bottom of the whole window)
+   --------------------------------------------------------------------- */
+#ticker {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  height: 1.5rem;
+  background: linear-gradient(180deg, rgba(14,16,19,0) 0%, rgba(5,6,10,.92) 60%);
+  overflow: hidden;
+  z-index: 4;
+  pointer-events: none;
+  font: 12px/1.5rem var(--mono, monospace);
+  color: var(--muted);
+}
+#ticker-track {
+  position: absolute;
+  white-space: nowrap;
+  will-change: transform;
+  padding-left: 100%;
+  animation: ticker-scroll 60s linear infinite;
+}
+#ticker-track b { color: var(--accent); }
+@keyframes ticker-scroll { to { transform: translateX(-100%); } }
+
+/* ---------------------------------------------------------------------
+   noscript
+   --------------------------------------------------------------------- */
+.noscript {
+  max-width: 40rem;
+  margin: 10vh auto;
+  padding: 2rem;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--text);
+  font-family: var(--mono, monospace);
+}
+.noscript h1 { color: var(--accent); }
+
+/* ---------------------------------------------------------------------
+   Reduced motion
+   --------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  #ticker-track { animation-duration: 200s; }
+  .term .bl, .term .cursor { animation: none; }
+}

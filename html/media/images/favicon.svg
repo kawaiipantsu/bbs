@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="THUGS(red) BBS">
+  <defs>
+    <linearGradient id="screen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1a1f27"/>
+      <stop offset="1" stop-color="#05070a"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="12" fill="#0e1013"/>
+  <!-- monitor body -->
+  <rect x="9" y="12" width="46" height="34" rx="5" fill="#2b2f38" stroke="#3a4150" stroke-width="1.5"/>
+  <!-- screen -->
+  <rect x="14" y="16" width="36" height="24" rx="3" fill="url(#screen)"/>
+  <!-- scanlines -->
+  <g stroke="#0b0d10" stroke-width="1" opacity="0.5">
+    <line x1="14" y1="20" x2="50" y2="20"/>
+    <line x1="14" y1="24" x2="50" y2="24"/>
+    <line x1="14" y1="28" x2="50" y2="28"/>
+    <line x1="14" y1="32" x2="50" y2="32"/>
+    <line x1="14" y1="36" x2="50" y2="36"/>
+  </g>
+  <!-- prompt + blinking block cursor -->
+  <path d="M19 27 h6 M19 27 l3 -3 M19 27 l3 3" fill="none" stroke="#5be6a3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="28" y="23" width="6" height="9" fill="#e2223b"/>
+  <!-- stand -->
+  <rect x="26" y="46" width="12" height="5" rx="1" fill="#2b2f38"/>
+  <rect x="20" y="51" width="24" height="3" rx="1.5" fill="#3a4150"/>
+  <!-- power dot -->
+  <circle cx="45" cy="43.5" r="1.6" fill="#e2223b"/>
+</svg>

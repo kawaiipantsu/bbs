@@ -1,0 +1,18 @@
+# THUGS(red) BBS - crontab
+# Install for the www-data user:
+#   crontab -u www-data /var/www/vhosts-external/bbs.thugs.red/contrib/crontab
+#
+# Not needed if contrib/bbs-worker.service is running (the daemon handles news
+# and jobs itself). Use this only for the cron-only deployment style.
+
+BBS=/var/www/vhosts-external/bbs.thugs.red
+PHP=/usr/bin/php
+
+# drain queued jobs (Discord, mail) every minute
+* * * * *   $PHP $BBS/contrib/worker.php --once   >> $BBS/storage/logs/worker.log 2>&1
+
+# refresh the news wire every 20 minutes
+*/20 * * * * $PHP $BBS/contrib/worker.php --news   >> $BBS/storage/logs/news.log 2>&1
+
+# nightly: expire dead sessions, prune chat, ping search engines with the sitemap
+17 4 * * *  $PHP $BBS/contrib/maintenance.php      >> $BBS/storage/logs/maint.log 2>&1

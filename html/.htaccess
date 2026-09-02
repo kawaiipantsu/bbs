@@ -1,0 +1,98 @@
+# =====================================================================
+#  THUGS(red) BBS - Apache config for the document root
+#  DocumentRoot = /var/www/vhosts-external/bbs.thugs.red/html
+#  TLS is terminated upstream; do NOT redirect to HTTPS here (loop).
+# =====================================================================
+
+Options -Indexes -MultiViews +FollowSymLinks
+DirectoryIndex index.php
+ServerSignature Off
+
+# --- default charset ---
+AddDefaultCharset utf-8
+
+# ---------------------------------------------------------------------
+#  Front controller: route everything that is not a real file/dir
+# ---------------------------------------------------------------------
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # never rewrite real files or directories
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # everything else -> index.php
+    RewriteRule ^ index.php [L]
+</IfModule>
+
+# ---------------------------------------------------------------------
+#  Security headers (static assets; index.php sets its own for dynamic)
+# ---------------------------------------------------------------------
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "DENY"
+    Header always set Referrer-Policy "no-referrer"
+    Header always set Cross-Origin-Resource-Policy "same-origin"
+    Header always set Permissions-Policy "geolocation=(), microphone=(), camera=(), payment=(), usb=()"
+    Header always unset X-Powered-By
+    Header always unset Server
+
+    # Static bundle: allow same-origin embedding of fonts/audio worklets
+    <FilesMatch "\.(woff2?|ttf|otf|eot)$">
+        Header set Access-Control-Allow-Origin "same-origin"
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
+    <FilesMatch "\.(css|js|mjs)$">
+        Header set Cache-Control "public, max-age=86400"
+    </FilesMatch>
+    <FilesMatch "\.(png|jpg|jpeg|gif|svg|webp|ico)$">
+        Header set Cache-Control "public, max-age=604800"
+    </FilesMatch>
+</IfModule>
+
+# ---------------------------------------------------------------------
+#  Compression
+# ---------------------------------------------------------------------
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/css application/javascript application/json image/svg+xml application/xml
+</IfModule>
+
+# ---------------------------------------------------------------------
+#  Block dotfiles and source/backup extensions outright
+# ---------------------------------------------------------------------
+<FilesMatch "(^\.|\.(bak|old|orig|save|swp|swo|dist|sample|sql|sh|md|ini|log|lock|json|yml|yaml|twig|tpl)$|~$)">
+    Require all denied
+</FilesMatch>
+
+# allow the two JSON files the site actually serves as static
+<Files "manifest.webmanifest">
+    Require all granted
+</Files>
+
+# Never serve the app/, mysql/, docs/, contrib/, assets/ trees even if symlinked in
+RedirectMatch 404 ^/(app|mysql|docs|contrib|assets|vendor|node_modules)(/|$)
+
+# ---------------------------------------------------------------------
+#  MIME
+# ---------------------------------------------------------------------
+<IfModule mod_mime.c>
+    AddType application/manifest+json .webmanifest
+    AddType text/javascript .js .mjs
+    AddType font/woff2 .woff2
+    AddType image/svg+xml .svg
+</IfModule>
+
+# ---------------------------------------------------------------------
+#  PHP hardening (php_value only works under mod_php; harmless otherwise)
+# ---------------------------------------------------------------------
+<IfModule mod_php.c>
+    php_flag display_errors Off
+    php_flag expose_php Off
+    php_value upload_max_filesize 16M
+    php_value post_max_size 18M
+</IfModule>
+
+# custom error document -> the terminal handles 404s itself
+ErrorDocument 404 /index.php
