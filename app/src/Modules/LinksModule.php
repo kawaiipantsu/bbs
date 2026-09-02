@@ -19,13 +19,18 @@ final class LinksModule extends Module
 {
     public static function slugs(): array
     {
-        return ['links'];
+        return ['links', 'links.thugs'];
     }
 
     public function run(Engine $e, string $slug, array $in, array &$st): Frame
     {
         $key = strtoupper((string) ($in['key'] ?? ''));
         $cmd = (string) ($in['cmd'] ?? '');
+
+        // deep entry straight into the THUGS(red) Projects category
+        if ($slug === 'links.thugs' && (int) ($st['cat'] ?? 0) === 0 && ($st['view'] ?? '') === '') {
+            $st['cat'] = (int) Db::val("SELECT id FROM link_categories WHERE slug = 'thugs'");
+        }
 
         // ---- add-a-link form -------------------------------------------------
         if (($st['view'] ?? '') === 'add') {

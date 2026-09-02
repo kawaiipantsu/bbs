@@ -326,6 +326,7 @@ SELECT m.id, x.sort, x.hotkey, x.label, x.descr, x.action, x.target, x.perm, x.r
   SELECT 'main' mslug,20 sort,'F' hotkey,'File Libraries' label,'Browse and download files' descr,'menu' action,'files' target,NULL perm,0 rank UNION ALL
   SELECT 'main' mslug,30 sort,'N' hotkey,'News Wire' label,'IT / Hacking / Tech / Entertainment' descr,'menu' action,'news' target,NULL perm,0 rank UNION ALL
   SELECT 'main' mslug,40 sort,'K' hotkey,'Links Directory' label,'Curated links: AI, OSINT, red/blue team, ...' descr,'module' action,'links' target,NULL perm,0 rank UNION ALL
+  SELECT 'main' mslug,45 sort,'P' hotkey,'THUGS(red) Projects' label,'Everything the crew builds and runs' descr,'module' action,'links.thugs' target,NULL perm,0 rank UNION ALL
   SELECT 'main' mslug,50 sort,'C' hotkey,'Communication' label,'Chat, one-liners, user list' descr,'menu' action,'comms' target,NULL perm,0 rank UNION ALL
   SELECT 'main' mslug,60 sort,'G' hotkey,'Game Room' label,'16 door games and high scores' descr,'menu' action,'games' target,NULL perm,0 rank UNION ALL
   SELECT 'main' mslug,70 sort,'V' hotkey,'Voting Booth' label,'Cast your vote' descr,'module' action,'poll' target,NULL perm,0 rank UNION ALL
@@ -567,3 +568,54 @@ SELECT c.id, x.title, x.url, x.descr, 'sysop', x.sort FROM link_categories c JOI
   SELECT 'scene' cslug,'The BBS Documentary' title,'http://www.bbsdocumentary.com/' url,'Jason Scott, 2005' descr,70 sort
 ) x ON x.cslug = c.slug
 ON DUPLICATE KEY UPDATE title=VALUES(title);
+
+-- THUGS(red) Projects (thugs.red/projects)
+INSERT INTO link_categories (slug,name,description,icon,sort) VALUES
+ ('thugs','THUGS(red) Projects','Everything the crew builds and runs','!',5)
+ON DUPLICATE KEY UPDATE name=VALUES(name), description=VALUES(description), icon=VALUES(icon), sort=VALUES(sort);
+
+INSERT INTO links (category_id,title,url,description,added_handle,sort)
+SELECT c.id, x.title, x.url, x.descr, 'sysop', x.sort FROM link_categories c JOIN (
+  SELECT 'thugs' cslug,'DarkWeb Monitor' title,'https://darkweb.thugs.red' url,'Onion services, leak sites & criminal marketplaces' descr,10 sort UNION ALL
+  SELECT 'thugs' cslug,'THUGS(red) Blacklist' title,'https://blacklist.thugs.red' url,'Curated blocklists of hostile infrastructure' descr,20 sort UNION ALL
+  SELECT 'thugs' cslug,'Live Activity Map' title,'https://activitymap.thugs.red' url,'Live view of sensor & honeypot activity' descr,30 sort UNION ALL
+  SELECT 'thugs' cslug,'SMTP Latrine' title,'https://smtplatrine.thugs.red' url,'SMTP honeypot for open-relay traffic' descr,40 sort UNION ALL
+  SELECT 'thugs' cslug,'Telegram Grabber' title,'https://telegram-grabber.thugs.red' url,'Collection from channels where leaks surface' descr,50 sort UNION ALL
+  SELECT 'thugs' cslug,'githubxhunter' title,'https://github.com/kawaiipantsu/githubxhunter' url,'Hunt malicious code on GitHub' descr,60 sort UNION ALL
+  SELECT 'thugs' cslug,'RansomWatch' title,'https://github.com/kawaiipantsu/ransomwatch' url,'Ransomware leak-site monitoring, Nordics' descr,70 sort UNION ALL
+  SELECT 'thugs' cslug,'THUGS(red) Wardrive' title,'https://wardrive.thugs.red' url,'Wardriving data collection & mapping' descr,80 sort UNION ALL
+  SELECT 'thugs' cslug,'Dangling DNS' title,'https://dangling.thugs.red' url,'Dangling DNS records & subdomain takeovers' descr,90 sort UNION ALL
+  SELECT 'thugs' cslug,'Gates of Valhalla' title,'https://valhalla.thugs.red' url,'OSINT platform: emails, usernames, IPs, domains' descr,100 sort UNION ALL
+  SELECT 'thugs' cslug,'NetworkSambaScanner' title,'https://github.com/kawaiipantsu/NetworkSambaScanner' url,'SMB/Samba exposure scanning + severity' descr,110 sort UNION ALL
+  SELECT 'thugs' cslug,'Wardrive (Android)' title,'https://github.com/kawaiipantsu/thugsred-wardrive-apk' url,'WiFi & Bluetooth wardriving app' descr,120 sort UNION ALL
+  SELECT 'thugs' cslug,'RedJoust' title,'https://github.com/kawaiipantsu/redjoust' url,'Desktop recon workbench for OSINT / red team' descr,130 sort UNION ALL
+  SELECT 'thugs' cslug,'WiFi Jumper' title,'https://github.com/kawaiipantsu/wifijumper' url,'ESP8266 hopping between open WiFi' descr,140 sort UNION ALL
+  SELECT 'thugs' cslug,'Evil Project' title,'https://evil.thugs.red' url,'Offensive research & red team tradecraft' descr,150 sort UNION ALL
+  SELECT 'thugs' cslug,'MailChumHum' title,'https://mailchumhum.com' url,'Credential phishing simulation infrastructure' descr,160 sort UNION ALL
+  SELECT 'thugs' cslug,'CupATM' title,'https://cupatm.com' url,'Bitcoin / extortion-themed phishing simulation' descr,170 sort UNION ALL
+  SELECT 'thugs' cslug,'Security Check' title,'https://securitycheck.thugs.red' url,'EDR / AV / SOC reaction benchmark testing' descr,180 sort UNION ALL
+  SELECT 'thugs' cslug,'URL Bully' title,'https://github.com/kawaiipantsu/urlbully' url,'Templated web requests & timing analysis' descr,190 sort UNION ALL
+  SELECT 'thugs' cslug,'DuckyScript Payloads' title,'https://github.com/kawaiipantsu/duckyscript-payloads' url,'BadUSB scripts for Flipper Zero' descr,200 sort UNION ALL
+  SELECT 'thugs' cslug,'THUGS(red) APT' title,'https://apt.thugs.red' url,'Debian APT repo with custom binaries & tools' descr,210 sort UNION ALL
+  SELECT 'thugs' cslug,'Tools Overview' title,'https://tools.thugs.red' url,'The team\'s collected tooling in one place' descr,220 sort UNION ALL
+  SELECT 'thugs' cslug,'Dump File' title,'https://dump.thugs.red' url,'File analysis service for suspicious files' descr,230 sort UNION ALL
+  SELECT 'thugs' cslug,'Suricata Rules' title,'https://suricata-rules.thugs.red' url,'Detection rules from real-world observations' descr,240 sort UNION ALL
+  SELECT 'thugs' cslug,'Canary Tokens' title,'https://canary.dk' url,'Plant a tripwire anywhere' descr,250 sort UNION ALL
+  SELECT 'thugs' cslug,'Filio File Sharing' title,'https://filio.dk' url,'Files up to 2 GB, no account, no trackers' descr,260 sort UNION ALL
+  SELECT 'thugs' cslug,'ipdigger' title,'https://github.com/kawaiipantsu/ipdigger' url,'IP extraction & enrichment tool' descr,270 sort UNION ALL
+  SELECT 'thugs' cslug,'telegramdigger' title,'https://github.com/kawaiipantsu/telegramdigger' url,'Telegram Bot API from your terminal' descr,280 sort UNION ALL
+  SELECT 'thugs' cslug,'subdigger' title,'https://github.com/kawaiipantsu/subdigger' url,'Fast multi-threaded subdomain discovery' descr,290 sort UNION ALL
+  SELECT 'thugs' cslug,'SynapseIDS' title,'https://github.com/kawaiipantsu/synapseids' url,'Network IDS using neural nets for classification' descr,300 sort UNION ALL
+  SELECT 'thugs' cslug,'susfile' title,'https://github.com/kawaiipantsu/susfile' url,'CLI file-forensics visualiser (entropy/structure)' descr,310 sort UNION ALL
+  SELECT 'thugs' cslug,'boop' title,'https://github.com/kawaiipantsu/boop' url,'Local-first AI client & agent runtime' descr,320 sort UNION ALL
+  SELECT 'thugs' cslug,'LogIO Devlog' title,'https://github.com/kawaiipantsu/logio-devlog' url,'PHP integration for real-time log viewing' descr,330 sort UNION ALL
+  SELECT 'thugs' cslug,'theZoo WebUI' title,'https://github.com/kawaiipantsu/theZoo-WebUI' url,'Browser interface for a live malware repo' descr,340 sort UNION ALL
+  SELECT 'thugs' cslug,'The Lab' title,'https://lab.thugs.red' url,'Practice range infrastructure for testing' descr,350 sort UNION ALL
+  SELECT 'thugs' cslug,'Takedown Authority' title,'https://takedown.thugs.red' url,'Seizure-notice domain for verified abuse actions' descr,360 sort UNION ALL
+  SELECT 'thugs' cslug,'Bitbasher' title,'https://bitbasher.dk' url,'Browser Eurorack rendered in ANSI' descr,370 sort UNION ALL
+  SELECT 'thugs' cslug,'CRIT ZONE' title,'https://critzone.dk' url,'Neon vector arena shooter' descr,380 sort UNION ALL
+  SELECT 'thugs' cslug,'Tank Wars' title,'https://tankwars.dk' url,'Massively multiplayer top-down tank combat' descr,390 sort UNION ALL
+  SELECT 'thugs' cslug,'Egg Heist' title,'https://eggheist.dk' url,'Browser party game: steal a golden egg' descr,400 sort UNION ALL
+  SELECT 'thugs' cslug,'Stick Fight Arena' title,'https://fight.xxc.dk/' url,'Neural-network-evolved stick figure combat' descr,410 sort
+) x ON x.cslug = c.slug
+ON DUPLICATE KEY UPDATE title=VALUES(title), description=VALUES(description);
