@@ -19,7 +19,7 @@ Everything is keyboard-driven. Type the letter in `[brackets]`, or use
 | **F** | File Libraries | areas, browse, download, upload (SysOp-approved), text-file library |
 | **N** | News Wire | IT / Hacking / Tech / Entertainment — live RSS, ENTER opens the link |
 | **C** | Communication | node chat, one-liner wall, user list, who's online, comment to SysOp |
-| **G** | Game Room | door games + hall of fame |
+| **G** | Game Room | Hackers-MUD (persistent multiplayer) + 16 door games + hall of fame |
 | **V** | Voting Booth | one vote per account, live ANSI bar graph |
 | **I** | System Information | board identity, software, live stats |
 | **S** | Statistics | totals, top posters, busiest boards, 7-day call graph |
@@ -44,10 +44,22 @@ staff, 16 MB cap). Downloads stream through PHP with an RBAC + audit check —
 the `storage/` tree is never web-served. The **Library** area holds curated
 links/text instead of blobs.
 
-## Games (door games)
+## Games
+
+### Hackers-MUD
+
+A persistent multiplayer MUD in a cyberpunk Night City — six districts, ~86
+rooms, ~120 items, ~40 enemy types, 13 shops, 12 chained fixer jobs, a live
+world tick (respawns / wander / regen / aggro), ASCII minimap, character sheet,
+implants, buffs, hacking, robbery, banking. Your BBS account is your character.
+Full write-up in [`docs/mud.md`](mud.md).
+
+### Door games
 
 `Guess The Number`, `Hangman`, `Ten Thousand` (dice), `One-Armed Bandit`
-(blackjack), `Hunt The Wumpus`, `Legend of the Red Console` (LORD-lite).
+(blackjack), `Hunt The Wumpus`, `Legend of the Red Console` (LORD-lite),
+`Rock-Paper-Scissors`, `Tic-Tac-Toe`, `21 Matchsticks` (Nim), `Mastermind`,
+`Anagram`, `Hi-Lo`, `Craps`, `Minesweeper`, `2048`, `Lights Out` — 16 in all.
 Scores land in the hall of fame.
 
 ## Chat

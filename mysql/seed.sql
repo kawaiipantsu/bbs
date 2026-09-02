@@ -279,6 +279,21 @@ INSERT INTO screens (slug,title,kind,content_type,body) VALUES
 
 |15  ANSI is a lifestyle, not a file format.'),
 
+('art.banner','THUGS(red) - fire banner','template','pipe',
+'|03       .    ''      ,     ^    .     ''      :    ,     .    ''      ^
+|09     ,    ''     .    ^    ,     ''     .     ^    ,    ''    .     ^
+|01              ███████  ██   ██  ██   ██   ██████   ██████
+|09                ███    ██   ██  ██   ██  ██       ██
+|09                ███    ███████  ██   ██  ██  ███   █████
+|03                ███    ██   ██  ██   ██  ██   ██        ██
+|11                ███    ██   ██  ██   ██  ██   ██        ██
+|15                ███    ██   ██   █████    ██████  ██████
+|11          ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+|03          ▓▓▒█████████████████████████████████████▒▓▓
+|09          ▒▓▓▓▒▒░░▒▒▓▓▒▒░░  ░░  ▒▒  ░░ ░ ░ ▒▒▓▓▒
+|01           ░▒▓▓▒░   ░ ▒ ░  ░   ▒  ░ ░   ░  ▒ ░   ░ ▒▓▒░
+|08          >> |09( r e d )|08   B U L L E T I N   B O A R D   S Y S T E M  <<'),
+
 ('nonode','No Free Nodes','template','pipe',
 '|11   ALL LINES BUSY|07
 
@@ -291,7 +306,7 @@ ON DUPLICATE KEY UPDATE title=VALUES(title), body=VALUES(body), content_type=VAL
 --  menus
 -- ---------------------------------------------------------------------
 INSERT INTO menus (slug,title,header_screen,prompt,columns) VALUES
- ('main','Main Menu',NULL,'Main',2),
+ ('main','Main Menu','art.banner','Main',2),
  ('messages','Message Menu',NULL,'Messages',2),
  ('files','File Menu',NULL,'Files',2),
  ('news','News Menu',NULL,'News',1),
@@ -319,6 +334,7 @@ SELECT m.id, x.sort, x.hotkey, x.label, x.descr, x.action, x.target, x.perm, x.r
   SELECT 'files' mslug,40 sort,'U' hotkey,'Upload' label,'Contribute a file' descr,'module' action,'file.upload' target,'file.upload' perm,30 rank UNION ALL
   SELECT 'files' mslug,50 sort,'Y' hotkey,'Library' label,'Text-files & reference library' descr,'module' action,'file.library' target,NULL perm,0 rank UNION ALL
   SELECT 'files' mslug,90 sort,'X' hotkey,'Back' label,'Return to main menu' descr,'menu' action,'main' target,NULL perm,0 rank UNION ALL
+  SELECT 'games' mslug,5 sort,'M' hotkey,'Hackers-MUD' label,'Jack into Night City - a live multiplayer MUD' descr,'module' action,'mud.play' target,NULL perm,0 rank UNION ALL
   SELECT 'games' mslug,10 sort,'D' hotkey,'Door Games' label,'Pick a game to play' descr,'module' action,'game.list' target,NULL perm,0 rank UNION ALL
   SELECT 'games' mslug,20 sort,'H' hotkey,'High Scores' label,'Hall of fame' descr,'module' action,'game.scores' target,NULL perm,0 rank UNION ALL
   SELECT 'games' mslug,90 sort,'X' hotkey,'Back' label,'Return to main menu' descr,'menu' action,'main' target,NULL perm,0 rank UNION ALL

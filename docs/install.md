@@ -26,6 +26,7 @@ mkdir -p storage/{files,cache,tmp,logs}
 chown -R www-data:www-data .      # web user must own the tree
 
 php mysql/migrate.php --seed      # schema + demo content + the first SysOp
+php mysql/mud_world.php           # build the Hackers-MUD world (see docs/mud.md)
 ```
 
 Point the vhost `DocumentRoot` at `html/`. That's it — open the site, watch it

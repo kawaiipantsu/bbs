@@ -20,6 +20,7 @@ use Bbs\Modules\FilesModule;
 use Bbs\Modules\GamesModule;
 use Bbs\Modules\LinksModule;
 use Bbs\Modules\MessagesModule;
+use Bbs\Modules\MudModule;
 use Bbs\Modules\NewsModule;
 use Bbs\Modules\PollModule;
 use Bbs\Modules\StatsModule;
@@ -47,6 +48,7 @@ final class Engine
         TicketModule::class,
         PollModule::class,
         GamesModule::class,
+        MudModule::class,
         ChatModule::class,
         AccountModule::class,
         AdminModule::class,

@@ -16,3 +16,7 @@ PHP=/usr/bin/php
 
 # nightly: expire dead sessions, prune chat, ping search engines with the sitemap
 17 4 * * *  $PHP $BBS/contrib/maintenance.php      >> $BBS/storage/logs/maint.log 2>&1
+
+# Hackers-MUD world tick - respawns, patrols, regen while nobody is connected.
+# Optional: the MUD also ticks itself on every player command. Safe to omit.
+* * * * *   $PHP $BBS/contrib/mud-tick.php         >> $BBS/storage/logs/mud.log 2>&1
