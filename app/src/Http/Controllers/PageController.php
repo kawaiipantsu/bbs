@@ -201,7 +201,19 @@ final class PageController
 
     private function assetVersion(): string
     {
-        $css = @filemtime(dirname(__DIR__, 3) . '/html/css/bbs.css') ?: time();
-        return substr((string) $css, -6);
+        // newest mtime across every shipped JS/CSS file, so any front-end
+        // change busts the cache - including ES-module sub-imports, which the
+        // shell's import map rewrites to carry this same ?v= tag.
+        $root   = dirname(__DIR__, 3) . '/html';
+        $newest = 0;
+        foreach (['/js', '/css'] as $dir) {
+            foreach (glob($root . $dir . '/*.{js,css}', GLOB_BRACE) ?: [] as $f) {
+                $m = @filemtime($f);
+                if ($m && $m > $newest) {
+                    $newest = $m;
+                }
+            }
+        }
+        return substr((string) ($newest ?: time()), -6);
     }
 }

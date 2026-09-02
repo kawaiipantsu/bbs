@@ -90,6 +90,18 @@ $jsonld = $meta['jsonld'] ?? null;
 
 <div id="ticker"><div id="ticker-track"></div></div>
 
+<?php
+// ES-module sub-imports (import './audio.js' &c.) drop the query string when
+// they resolve, so a bare /js/audio.js can go stale at the CDN edge while a
+// freshly-versioned app.js loads against it. Remap every module URL to carry
+// the same ?v= tag as the entry point.
+$__mods = ['app', 'audio', 'net', 'boot', 'terminal', 'chat', 'controls'];
+$__map  = [];
+foreach ($__mods as $__m) {
+    $__map['/js/' . $__m . '.js'] = '/js/' . $__m . '.js?v=' . $asset_v;
+}
+?>
+<script type="importmap"><?= json_encode(['imports' => $__map], JSON_UNESCAPED_SLASHES) ?></script>
 <script type="module" src="/js/app.js?v=<?= $e($asset_v) ?>"></script>
 </body>
 </html>
