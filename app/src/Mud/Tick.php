@@ -66,9 +66,19 @@ final class Tick
             $exits = array_values(World::exits((int) $w['room_id']));
             $exits = array_filter($exits, function ($x) use ($w) {
                 $dest = World::room((int) $x['to_room']);
-                return $dest && (int) $dest['zone_id'] === (int) $w['zone_id']
-                    && !str_contains((string) $dest['flags'], 'shop')
-                    && !$x['locked'] && !$x['hidden'];
+                if (!$dest || $x['locked'] || $x['hidden']) {
+                    return false;
+                }
+                if ((int) $dest['zone_id'] !== (int) $w['zone_id']) {
+                    return false;
+                }
+                $df = (string) $dest['flags'];
+                foreach (['shop', 'nomob', 'safe', 'start', 'indoors', 'bank'] as $bad) {
+                    if (str_contains($df, $bad)) {
+                        return false;
+                    }
+                }
+                return true;
             });
             if (!$exits) {
                 continue;
@@ -110,7 +120,7 @@ final class Tick
              JOIN mud_rooms r ON r.id = mi.room_id
              WHERE mi.state = 'idle' AND mt.behavior LIKE '%aggressive%'
                AND p.state <> 'dead' AND p.last_cmd_at > NOW() - INTERVAL 4 MINUTE
-               AND r.flags NOT LIKE '%safe%'
+               AND r.flags NOT LIKE '%safe%' AND r.flags NOT LIKE '%nomob%'
              ORDER BY RAND() LIMIT 20"
         );
         foreach ($threats as $t) {
@@ -145,7 +155,7 @@ final class Tick
              JOIN mud_rooms r ON r.id = p.room_id
              WHERE p.wanted >= 60 AND p.state <> 'dead'
                AND p.last_cmd_at > NOW() - INTERVAL 3 MINUTE
-               AND r.flags NOT LIKE '%safe%'
+               AND r.flags NOT LIKE '%safe%' AND r.flags NOT LIKE '%nomob%'
              ORDER BY RAND() LIMIT 4"
         );
         foreach ($hunted as $h) {

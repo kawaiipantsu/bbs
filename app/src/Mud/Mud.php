@@ -336,7 +336,7 @@ final class Mud
         // instant aggro on arrival
         foreach (World::mobs((int) $p['room_id']) as $mi) {
             if ($mi['state'] === 'idle' && str_contains((string) $mi['tpl']['behavior'], 'aggressive')
-                && !str_contains((string) World::room((int) $p['room_id'])['flags'], 'safe')) {
+                && !str_contains((string) World::room((int) $p['room_id'])['flags'], 'safe') && !str_contains((string) World::room((int) $p['room_id'])['flags'], 'nomob')) {
                 $out[] = '';
                 $out = array_merge($out, Combat::mobStrike((int) $mi['id'], (int) $p['id']));
                 break;
@@ -663,7 +663,8 @@ final class Mud
         if (!$target) {
             return ['|08You do not see "' . $kw . '" here.'];
         }
-        if (str_contains((string) World::room((int) $p['room_id'])['flags'], 'safe')) {
+        $rf = (string) (World::room((int) $p['room_id'])['flags'] ?? '');
+        if (str_contains($rf, 'safe') || str_contains($rf, 'nomob')) {
             return ['|08Not here. Too many cameras. Take it outside.'];
         }
         if (str_contains((string) $target['tpl']['behavior'], 'shopkeeper')) {
