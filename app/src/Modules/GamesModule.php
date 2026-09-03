@@ -22,11 +22,21 @@ final class GamesModule extends Module
 
     public function run(Engine $e, string $slug, array $in, array &$st): Frame
     {
-        $key = strtoupper((string) ($in['key'] ?? ''));
+        // The engine hands us control bytes ("\r", "\x1b", "\x08", " ");
+        // turn them back into friendly names so every game handler can just
+        // check $key === 'ENTER' / 'ESC' / etc. (and $in['key'] downstream).
+        $in['key'] = match ((string) ($in['key'] ?? '')) {
+            "\r", "\n"     => 'ENTER',
+            "\x1b"         => 'ESC',
+            "\x08", "\x7f" => 'BACKSPACE',
+            ' '            => 'SPACE',
+            default        => strtoupper((string) ($in['key'] ?? '')),
+        };
+        $key = (string) $in['key'];
         $cmd = (string) ($in['cmd'] ?? '');
 
         if ($slug === 'game.scores') {
-            if ($key === "\x1B" || $key === 'Q') {
+            if ($key === 'ESC' || $key === 'Q') {
                 return $e->exitModule();
             }
             return $this->scores($e);
@@ -47,7 +57,7 @@ final class GamesModule extends Module
         $screen = $st['screen'] ?? 'list';
 
         if ($screen === 'play') {
-            if ($key === "\x1B") {
+            if ($key === 'ESC') {
                 $st['screen'] = 'list';
                 return $this->listGames($e);
             }
@@ -77,7 +87,7 @@ final class GamesModule extends Module
         }
 
         // list
-        if ($key === "\x1B" || $key === 'Q') {
+        if ($key === 'ESC' || $key === 'Q') {
             return $e->exitModule();
         }
         $games = Db::all('SELECT * FROM games WHERE enabled = 1 ORDER BY sort, id');
