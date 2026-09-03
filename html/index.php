@@ -16,6 +16,8 @@ use Bbs\Core\Response;
 use Bbs\Core\Router;
 use Bbs\Http\Controllers\ApiController;
 use Bbs\Http\Controllers\ChatController;
+use Bbs\Http\Controllers\HackersMudController;
+use Bbs\Http\Controllers\MudApiController;
 use Bbs\Http\Controllers\PageController;
 use Bbs\Http\Controllers\SeoController;
 
@@ -85,6 +87,18 @@ $router->post('/api/action',         [ApiController::class, 'action']);
 $router->get('/api/whoami',          [ApiController::class, 'whoami']);
 $router->post('/api/auth/logout',    [ApiController::class, 'logout']);
 $router->get('/api/ticker',          [ApiController::class, 'ticker']);
+
+// --- Hackers-MUD standalone graphical client ---
+// (the shell itself is html/hackers-mud/index.php, served by Apache's
+//  DirectoryIndex; only the virtual paths below reach the front controller)
+$router->get('/hackers-mud/og.png',    [HackersMudController::class, 'og']);
+$router->get('/hackers-mud/banner.png', [HackersMudController::class, 'banner']);
+$router->post('/api/mud/login',      [MudApiController::class, 'login']);
+$router->post('/api/mud/logout',     [MudApiController::class, 'logout']);
+$router->post('/api/mud/archetype',  [MudApiController::class, 'archetype']);
+$router->get('/api/mud/whoami',      [MudApiController::class, 'whoami']);
+$router->get('/api/mud/state',       [MudApiController::class, 'state']);
+$router->post('/api/mud/cmd',        [MudApiController::class, 'cmd']);
 
 // --- chat (SSE + post) ---
 $router->get('/api/chat/stream',  [ChatController::class, 'stream']);

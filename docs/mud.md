@@ -9,6 +9,10 @@ Your BBS account *is* your MUD character: the first time you jack in you pick a
 background and a `mud_players` row is created, keyed on your `user_id`. Guests
 cannot play (no account = no character).
 
+There is also a **standalone graphical client** at `/hackers-mud` - a modern
+2D browser UI (canvas room view, WASD movement, panels) that plays the *same*
+world and *same* character. See [`hackers-mud-client.md`](hackers-mud-client.md).
+
 The world is a cyberpunk Night City: **eight districts, ~128 rooms**, 200+ item
 templates, 70+ enemy types, 20+ shops, 26 chained jobs plus a repeatable
 bounty board, and ~45 readable room descriptions (`look <terminal|graffiti|
