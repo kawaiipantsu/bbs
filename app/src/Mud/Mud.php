@@ -216,7 +216,7 @@ final class Mud
 
         // direction shortcuts
         $dirmap = ['n' => 'n', 's' => 's', 'e' => 'e', 'w' => 'w', 'u' => 'u', 'd' => 'd',
-                   'ne' => 'ne', 'nw' => 'nw', 'se' => 'se', 'sw' => 'sw',
+                   'ne' => 'ne', 'nw' => 'nw', 'se' => 'se', 'sw' => 'sw', 'in' => 'in', 'out' => 'out',
                    'north' => 'n', 'south' => 's', 'east' => 'e', 'west' => 'w', 'up' => 'u', 'down' => 'd',
                    'northeast' => 'ne', 'northwest' => 'nw', 'southeast' => 'se', 'southwest' => 'sw'];
         if (isset($dirmap[$verb])) {
