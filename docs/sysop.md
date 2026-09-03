@@ -78,6 +78,16 @@ pages viewed.
 - **File Admin**: upload queue — `A` approve, `X` reject.
 - **Tickets**: `R` staff reply, `O/X/A/C` set status.
 
+## Shell tools
+
+- `contrib/set-password.php <handle> [<newpassword>]` — reset a password from
+  the box when someone is locked out (or to rotate the seeded `sysop` account
+  after install). Prompts for the password (hidden, twice) if omitted;
+  `--random` generates and prints one, `--stdin` reads it from a pipe.
+  `--force-change` makes the user pick a new one on next login, `--logout`
+  ends their active sessions. Audited as `user.password_set`; the password is
+  never logged.
+
 ## Housekeeping
 
 `contrib/maintenance.php` (nightly cron) expires dead sessions, closes orphan
