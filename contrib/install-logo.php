@@ -28,14 +28,29 @@ use Bbs\Core\Db;
 
 Config::loadSettings();
 
-$dry  = in_array('--dry-run', array_slice($argv, 1), true);
+$args = array_slice($argv, 1);
+$dry  = in_array('--dry-run', $args, true);
 $out  = static fn (string $m) => fwrite(STDOUT, $m . "\n");
-$src  = dirname(__DIR__) . '/assets/THUGSred.ans';
+
+// optional: a source .ans path, and --max-rows=N to cap the height
+$maxRows = 0;
+$srcArg  = null;
+foreach ($args as $a) {
+    if (preg_match('/^--max-rows=(\d+)$/', $a, $m)) {
+        $maxRows = (int) $m[1];
+    } elseif ($a[0] !== '-') {
+        $srcArg = $a;
+    }
+}
+$src = $srcArg
+    ? (str_starts_with($srcArg, '/') ? $srcArg : dirname(__DIR__) . '/' . ltrim($srcArg, './'))
+    : dirname(__DIR__) . '/assets/' . Config::setting('banner_src', 'THUGSred.ans');
 
 if (!is_file($src)) {
     fwrite(STDERR, "missing $src\n");
     exit(1);
 }
+$out('source: ' . $src . ($maxRows ? "  (cap {$maxRows} rows)" : ''));
 
 /* ---- clean the ANSI art ------------------------------------------- */
 $raw = (string) file_get_contents($src);
@@ -46,11 +61,34 @@ $raw = preg_replace('/\x1b\[\?[0-9;]*[A-Za-z]/', '', $raw) ?? $raw;
 $raw = preg_replace('/\x1b\[[0-9;]*[A-Za-ln-z]/', '', $raw) ?? $raw;   // keeps ...m
 $raw = rtrim($raw, "\n");
 
-$vis   = static fn (string $l): int => mb_strlen((string) preg_replace('/\x1b\[[0-9;]*m/', '', $l));
-$lines = explode("\n", $raw);
-// trim trailing lines that carry no visible glyphs (a lone reset etc.)
-while ($lines && trim((string) preg_replace('/\x1b\[[0-9;]*m/', '', end($lines))) === '') {
+$vis    = static fn (string $l): int => mb_strlen((string) preg_replace('/\x1b\[[0-9;]*m/', '', $l));
+$plain  = static fn (string $l): string => trim((string) preg_replace('/\x1b\[[0-9;]*m/', '', $l));
+$lines  = explode("\n", $raw);
+
+// drop a trailing "// ... ANSI" credit line some editors leave in
+if ($lines && preg_match('~//.*ansi~i', $plain(end($lines)))) {
     array_pop($lines);
+}
+// trim leading / trailing blank lines, and collapse runs of blanks to one
+while ($lines && $plain($lines[0]) === '') {
+    array_shift($lines);
+}
+while ($lines && $plain(end($lines)) === '') {
+    array_pop($lines);
+}
+$compact = [];
+$blank = false;
+foreach ($lines as $l) {
+    $isBlank = $plain($l) === '';
+    if ($isBlank && $blank) {
+        continue;
+    }
+    $compact[] = $l;
+    $blank = $isBlank;
+}
+$lines = $compact;
+if ($maxRows > 0 && count($lines) > $maxRows) {
+    $lines = array_slice($lines, 0, $maxRows);
 }
 
 $maxw = 0;

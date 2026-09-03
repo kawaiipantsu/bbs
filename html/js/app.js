@@ -1,11 +1,11 @@
 /* app.js - wires the CRT, terminal, audio, boot sequence and HUD together. */
 
-import { Terminal } from './terminal.js?v=3';
-import { runBoot, skipBoot } from './boot.js?v=3';
-import { sound } from './audio.js?v=3';
-import { action, ticker, state } from './net.js?v=3';
-import { installChat } from './chat.js?v=3';
-import { installControls } from './controls.js?v=3';
+import { Terminal } from './terminal.js?v=4';
+import { runBoot, skipBoot } from './boot.js?v=4';
+import { sound } from './audio.js?v=4';
+import { action, ticker, state } from './net.js?v=4';
+import { installChat } from './chat.js?v=4';
+import { installControls } from './controls.js?v=4';
 
 const $ = sel => document.querySelector(sel);
 const LS = {

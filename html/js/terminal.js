@@ -1,7 +1,7 @@
 /* terminal.js - renders server "frames" onto the CRT grid and turns keystrokes
    into /api/action calls. Modes: menu, pager, screen, line, form, game, chat. */
 
-import { sound } from './audio.js?v=3';
+import { sound } from './audio.js?v=4';
 
 /* xterm-256 palette for foreground indices > 15 (games / imported ANSI) */
 function xterm256(i) {
@@ -191,6 +191,7 @@ export class Terminal {
 
     const total = rows.length;
     const maxTop = Math.max(0, total - this.rows);
+    this._maxTop = maxTop;                       // authoritative scroll ceiling for the key handlers
     if (this.scroll > maxTop) this.scroll = maxTop;
     const view = rows.slice(this.scroll, this.scroll + this.rows);
 
@@ -381,15 +382,13 @@ export class Terminal {
   }
 
   _scrollBy(n) {
-    const total = ((this.frame.lines || []).length) + (this.mode === 'menu' ? 3 : 0);
-    const maxTop = Math.max(0, total - this.rows);
+    const maxTop = this._maxTop || 0;           // set by the last render()
     this.scroll = Math.min(maxTop, Math.max(0, this.scroll + n));
     this.render();
   }
 
   _atBottom() {
-    const total = (this.frame.lines || []).length;
-    return this.scroll >= Math.max(0, total - this.rows);
+    return this.scroll >= (this._maxTop || 0);
   }
 
   _pagerKey(k) {
@@ -409,6 +408,14 @@ export class Terminal {
 
   _menuKey(k) {
     const items = (this.frame.meta && this.frame.meta.items) || [];
+    // page the viewport when the frame is taller than the screen - works even
+    // with a highlighted item list (e.g. a long menu under a tall banner).
+    if ((k === 'SPACE' || k === 'PAGEDOWN') && this.scroll < (this._maxTop || 0)) {
+      return this._scrollBy(this.rows - 3);
+    }
+    if ((k === 'PAGEUP') && this.scroll > 0) {
+      return this._scrollBy(-(this.rows - 3));
+    }
     if (items.length && (k === 'UP' || k === 'DOWN')) {
       this.sel = (this.sel + (k === 'DOWN' ? 1 : items.length - 1)) % items.length;
       sound.move();

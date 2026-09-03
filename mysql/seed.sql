@@ -36,6 +36,7 @@ INSERT INTO settings (`key`,`value`,`type`,`label`,`category`) VALUES
  ('sound_default','0','bool','Sound on by default','appearance'),
  ('motd_screen','boot.motd','string','Screen shown at connect','appearance'),
  ('banner_screen','art.logo','string','Logo screen shown above the MOTD and Main Menu','appearance'),
+ ('banner_src','THUGSred_banner.ans','string','assets/ file that contrib/install-logo.php loads into art.logo','appearance'),
  ('discord_enabled','0','bool','Enable Discord webhooks','integrations'),
  ('discord_events','user.register,ticket.new,ticket.reply,message.new,sysop.page','string','Events that fire webhooks','integrations'),
  ('news_feeds_it','https://www.theregister.com/headlines.atom','text','IT news RSS feeds (one per line)','news'),
@@ -356,7 +357,6 @@ SELECT m.id, x.sort, x.hotkey, x.label, x.descr, x.action, x.target, x.perm, x.r
   SELECT 'main' mslug,60 sort,'G' hotkey,'Game Room' label,'16 door games and high scores' descr,'menu' action,'games' target,NULL perm,0 rank UNION ALL
   SELECT 'main' mslug,70 sort,'V' hotkey,'Voting Booth' label,'Cast your vote' descr,'module' action,'poll' target,NULL perm,0 rank UNION ALL
   SELECT 'main' mslug,80 sort,'B' hotkey,'Bulletins' label,'Notices from the SysOp' descr,'module' action,'bulletins' target,NULL perm,0 rank UNION ALL
-  SELECT 'main' mslug,89 sort,'' hotkey,'-' label,'' descr,'divider' action,'' target,NULL perm,0 rank UNION ALL
   SELECT 'main' mslug,100 sort,'I' hotkey,'System Information' label,'About this board' descr,'screen' action,'sys.info' target,NULL perm,0 rank UNION ALL
   SELECT 'main' mslug,110 sort,'S' hotkey,'Statistics' label,'Board and caller stats' descr,'module' action,'stats' target,NULL perm,0 rank UNION ALL
   SELECT 'main' mslug,120 sort,'U' hotkey,'What\'s New' label,'New messages, files and headlines' descr,'module' action,'whatsnew' target,NULL perm,0 rank UNION ALL
