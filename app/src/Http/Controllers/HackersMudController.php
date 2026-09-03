@@ -133,7 +133,7 @@ HTML;
             "frame-ancestors 'none'",
         ]);
         return Response::html($html)
-            ->withHeader('Cache-Control', 'public, max-age=300')
+            ->withHeader('Cache-Control', 'no-cache')
             ->withHeader('Content-Security-Policy', $csp)
             ->withHeader('X-Content-Type-Options', 'nosniff')
             ->withHeader('Referrer-Policy', 'no-referrer');
