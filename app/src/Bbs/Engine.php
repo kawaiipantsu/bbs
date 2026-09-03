@@ -183,7 +183,12 @@ final class Engine
     private function renderMotd(): Frame
     {
         $slug = Config::setting('motd_screen', 'boot.motd');
-        $f = Screen::render(Frame::make('screen'), $slug, $this->ctx, 'Message of the Day');
+        $f = Frame::make('screen');
+        $banner = Screen::load(Config::setting('banner_screen', 'art.logo'));
+        if ($banner) {
+            $f->block($banner['body'], $banner['content_type'], $this->ctx)->blank();
+        }
+        $f = Screen::render($f, $slug, $this->ctx, 'Message of the Day');
         $f->mode('pager')->meta(['boot' => true]);
         return $f;
     }

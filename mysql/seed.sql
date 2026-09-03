@@ -35,6 +35,7 @@ INSERT INTO settings (`key`,`value`,`type`,`label`,`category`) VALUES
  ('crt_curvature','1','bool','Barrel distortion','appearance'),
  ('sound_default','0','bool','Sound on by default','appearance'),
  ('motd_screen','boot.motd','string','Screen shown at connect','appearance'),
+ ('banner_screen','art.logo','string','Logo screen shown above the MOTD and Main Menu','appearance'),
  ('discord_enabled','0','bool','Enable Discord webhooks','integrations'),
  ('discord_events','user.register,ticket.new,ticket.reply,message.new,sysop.page','string','Events that fire webhooks','integrations'),
  ('news_feeds_it','https://www.theregister.com/headlines.atom','text','IT news RSS feeds (one per line)','news'),
@@ -131,14 +132,10 @@ INSERT IGNORE INTO role_permissions (role_id, permission_id)
 --  screens  (pipe colour)
 -- ---------------------------------------------------------------------
 INSERT INTO screens (slug,title,kind,content_type,body) VALUES
+-- The connect banner is prepended from the `art.logo` screen (banner_screen
+-- setting) by Engine::renderMotd(), so this body starts straight at the rule.
 ('boot.motd','Message of the Day','template','pipe',
-'|08+============================================================================+
-|09             █████ █   █ █   █  ████  ████     |12████  █████ ████
-|09               █   █   █ █   █ █     █        |12█   █ █     █   █
-|09               █   █████ █   █ █  ██  ███     |12████  ████  █   █
-|09               █   █   █ █   █ █   █     █    |12█  █  █     █   █
-|09               █   █   █ █████  ████ ████     |12█   █ █████ ████
-|08 .--------------------------------------------------------------------------.
+'|08 .--------------------------------------------------------------------------.
 |07            B U L L E T I N   B O A R D   S Y S T E M   |08v{{version}}
 |08 `--------------------------------------------------------------------------`
 
@@ -294,6 +291,18 @@ INSERT INTO screens (slug,title,kind,content_type,body) VALUES
 |01           ░▒▓▓▒░   ░ ▒ ░  ░   ▒  ░ ░   ░  ▒ ░   ░ ▒▓▒░
 |08          >> |09( r e d )|08   B U L L E T I N   B O A R D   S Y S T E M  <<'),
 
+-- Fallback logo. `contrib/install-logo.php` overwrites this with the real
+-- graffiti ANSI from assets/THUGSred.ans (content_type -> ansi).
+('art.logo','THUGS(red) - logo','template','pipe',
+'|09     ,    ''     .    ^    ,     ''     .     ^    ,    ''    .     ^
+|01              ███████  ██   ██  ██   ██   ██████   ██████
+|09                ███    ██   ██  ██   ██  ██       ██
+|09                ███    ███████  ██   ██  ██  ███   █████
+|03                ███    ██   ██  ██   ██  ██   ██        ██
+|15                ███    ██   ██   █████    ██████  ██████
+|03          ▓▓▒█████████████████████████████████████▒▓▓
+|08          >> |09( r e d )|08   B U L L E T I N   B O A R D   S Y S T E M  <<'),
+
 ('nonode','No Free Nodes','template','pipe',
 '|11   ALL LINES BUSY|07
 
@@ -306,7 +315,7 @@ ON DUPLICATE KEY UPDATE title=VALUES(title), body=VALUES(body), content_type=VAL
 --  menus
 -- ---------------------------------------------------------------------
 INSERT INTO menus (slug,title,header_screen,prompt,columns) VALUES
- ('main','Main Menu','art.banner','Main',2),
+ ('main','Main Menu','art.logo','Main',2),
  ('messages','Message Menu',NULL,'Messages',2),
  ('files','File Menu',NULL,'Files',2),
  ('news','News Menu',NULL,'News',1),
