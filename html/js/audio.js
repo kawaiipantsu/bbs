@@ -25,6 +25,16 @@ export class Sound {
     this.master = this.ctx.createGain();
     this.master.gain.value = 0.5;
     this.master.connect(this.ctx.destination);
+    // music sits on its own low bus, well under the modem + UI sounds, with a
+    // transparent limiter so a scheduler hitch can never turn into a spike.
+    this.musicBus = this.ctx.createGain();
+    this.musicBus.gain.value = 0.55;
+    try {
+      const lim = this.ctx.createDynamicsCompressor();
+      lim.threshold.value = -4; lim.knee.value = 0; lim.ratio.value = 20;
+      lim.attack.value = 0.003; lim.release.value = 0.15;
+      this.musicBus.connect(lim); lim.connect(this.master);
+    } catch (_) { this.musicBus.connect(this.master); }
     // iOS re-suspends the context whenever it feels like it - chase it back.
     this.ctx.onstatechange = () => {
       if (this._unlocked && this.ctx.state === 'suspended') this.ctx.resume().catch(() => {});
@@ -74,7 +84,7 @@ export class Sound {
   setEnabled(on) {
     this.enabled = !!on;
     if (on) this.unlock();
-    else this.ambientStop();
+    else { this.ambientStop(); this.stopMusic(0.3); }
   }
 
   /** Cheap idempotent nudge - call on every keydown/click. */
@@ -459,6 +469,244 @@ export class Sound {
       nodes.out.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + fade);
       nodes.n.stop(this.ctx.currentTime + fade + 0.05);
     } catch (_) {}
+  }
+
+  /* ---- generative background music -----------------------------------
+     A long-form synth bed for browsing the board. It is built from
+     SECTIONS of 8-16 bars; each section rolls its own key drift, chord
+     walk, texture (pad wave, filter, arp), rhythm masks and mood
+     (sparse / calm / flow / pulse). Masks also re-roll every 2 bars, so
+     within a section it keeps moving. Nothing ever repeats - the
+     effective loop is many minutes long. Soft, minor-key, low in the
+     mix. Click-safe envelopes + a lookahead scheduler that skips ahead
+     silently if the main thread stalls (no catch-up crackle). */
+  music(track = 'bbs') {
+    this._musicWanted = track;
+    if (!this.enabled) return;
+    this._ensure();
+    if (!this.ctx) return;
+    if (this.ctx.state === 'suspended') this.ctx.resume().catch(() => {});
+    if (this._musTimer) return;                 // already playing
+    const bus = this.ctx.createGain();
+    bus.gain.setValueAtTime(0.0001, this.ctx.currentTime);
+    bus.gain.exponentialRampToValueAtTime(1, this.ctx.currentTime + 2.5);   // slow fade-in
+    bus.connect(this.musicBus || this.master);
+    this._musOut = bus;
+    this._musPad = null;
+    this._mus = {
+      bpm: 72 + ((Math.random() * 16) | 0),
+      baseRoot: 45 + [0, 0, -2, 3, -4, 5][(Math.random() * 6) | 0],
+      step: 0,
+      nextT: this.ctx.currentTime + 0.12,
+      secEndBar: 0,
+      sec: null,
+    };
+    this._musSection(0);
+    this._musTimer = setInterval(() => this._musSchedule(), 25);
+  }
+
+  stopMusic(fade = 1.4) {
+    if (this._musTimer) { clearInterval(this._musTimer); this._musTimer = null; }
+    this._mus = null; this._musPad = null;
+    const bus = this._musOut; this._musOut = null;
+    if (!bus || !this.ctx) return;
+    try {
+      const t = this.ctx.currentTime;
+      bus.gain.cancelScheduledValues(t);
+      bus.gain.setValueAtTime(Math.max(0.0001, bus.gain.value), t);
+      bus.gain.exponentialRampToValueAtTime(0.0001, t + fade);
+    } catch (_) {}
+  }
+
+  _hzMidi(n) { return 440 * Math.pow(2, (n - 69) / 12); }
+
+  _musSection(bar) {
+    const m = this._mus; if (!m) return;
+    const CH = {
+      i: [0, 3, 7], ii: [2, 5, 8], III: [3, 7, 10], iv: [5, 8, 12],
+      v: [7, 10, 14], VI: [8, 12, 15], VII: [10, 14, 17], i9: [0, 3, 7, 14],
+    };
+    const NEXT = {
+      i: ['VI', 'iv', 'III', 'VII', 'v', 'ii', 'i9'], ii: ['v', 'VII', 'i'],
+      III: ['VI', 'iv', 'VII'], iv: ['VII', 'v', 'i', 'ii'], v: ['VI', 'i', 'iv'],
+      VI: ['iv', 'III', 'ii', 'VII'], VII: ['i', 'VI', 'v'], i9: ['iv', 'VI', 'v'],
+    };
+    const MOODS = ['sparse', 'calm', 'calm', 'flow', 'flow', 'flow', 'pulse'];
+    const s = {
+      mood: MOODS[(Math.random() * MOODS.length) | 0],
+      keyShift: [0, 0, 0, -2, 3, -4, 5, -5, 7][(Math.random() * 9) | 0],
+      lenBars: 8 + ((Math.random() * 9) | 0),
+      progLen: 4 + ((Math.random() * 4) | 0),
+      prog: [],
+      padWave: ['sine', 'triangle', 'sawtooth'][(Math.random() * 3) | 0],
+      arpEvery: [2, 2, 3, 4, 6][(Math.random() * 5) | 0],
+      arpOct: 1 + ((Math.random() * 2) | 0),
+      cutoff: 480 + ((Math.random() * 900) | 0),
+      swing: Math.random() < 0.5 ? 0 : 0.012 + Math.random() * 0.02,
+      bell: Math.random() < 0.45 ? 0.1 + Math.random() * 0.22 : 0,
+    };
+    let k = 'i';
+    for (let b = 0; b < s.progLen; b++) {
+      s.prog.push(CH[k]);
+      const opts = NEXT[k] || ['i'];
+      k = opts[(Math.random() * opts.length) | 0];
+    }
+    s.root = m.baseRoot + s.keyShift;
+    s.drum = { sparse: 0, calm: 0.16, flow: 0.5, pulse: 0.92 }[s.mood];
+    s.arpBase = s.mood === 'flow' || s.mood === 'pulse';
+    m.sec = s;
+    m.secEndBar = bar + s.lenBars;
+    this._musRoll();
+  }
+
+  _musRoll() {
+    const s = this._mus && this._mus.sec; if (!s) return;
+    const mask = (d) => { let x = 0; for (let i = 0; i < 16; i++) if (Math.random() < d) x |= (1 << i); return x; };
+    s.kickM = (0b0000000100000001) | mask(s.mood === 'pulse' ? 0.12 : 0.03);
+    s.hatM  = s.mood === 'pulse' ? (0b1010101010101010 ^ mask(0.15)) : mask(s.mood === 'flow' ? 0.14 : 0.05);
+    s.bassM = s.drum > 0.3 ? (0b0001000100010001 | mask(0.12)) : mask(0.05);
+    s.arpOn = s.arpBase || Math.random() < 0.35;
+  }
+
+  _musSchedule() {
+    const m = this._mus; if (!m || !this.ctx) return;
+    const stepDur = 60 / m.bpm / 4;
+    const now = this.ctx.currentTime;
+    if (m.nextT < now - 0.03) {                 // fell behind: fast-forward silently
+      const skip = Math.ceil((now - m.nextT) / stepDur);
+      m.step += skip; m.nextT += skip * stepDur;
+    }
+    let guard = 0;
+    while (m.nextT < now + 0.2 && guard++ < 48) {
+      this._musStep(m.step, Math.max(m.nextT, now + 0.004));
+      m.step++; m.nextT += stepDur;
+    }
+  }
+
+  _musStep(i, t) {
+    const m = this._mus, s = m.sec; if (!s) return;
+    const bar = (i / 16) | 0, sib = i & 15;
+    if (sib === 0) {
+      if (i > 0 && bar >= m.secEndBar) this._musSection(bar);
+      else if (i > 0 && bar % 2 === 0) this._musRoll();
+    }
+    const sec = m.sec;
+    const chord = sec.prog[bar % sec.prog.length];
+    const barLen = (60 / m.bpm) * 4;
+
+    if (sib === 0) {
+      this._mPad(t, chord.map((x) => sec.root + x), barLen * 1.04, sec);
+      if (sec.bell && Math.random() < sec.bell) {
+        const pent = [0, 3, 5, 7, 10, 12];
+        const n = sec.root + 24 + pent[(Math.random() * pent.length) | 0] + 12 * ((Math.random() * 2) | 0);
+        this._mBell(t + Math.random() * 0.12, n);
+      }
+    }
+    const sw = (sib % 2) ? sec.swing : 0;
+
+    if (sec.drum > 0 && (sec.kickM & (1 << sib))) this._mKick(t);
+    if (sec.drum > 0.35 && (sib === 4 || sib === 12)) this._mBrush(t);
+    if (sec.hatM & (1 << sib)) this._mHat(t + sw);
+
+    if (sec.bassM & (1 << sib)) {
+      const n = sec.root - 12 + chord[0] + (Math.random() < 0.1 ? 7 : 0);
+      this._mVoice(this._hzMidi(n), t, sec.drum > 0.3 ? 0.2 : 0.3, { type: 'sawtooth', g: 0.09, cutoff: 380, glide: this._hzMidi(n) * 0.985 });
+    }
+
+    if (sec.arpOn && sib % sec.arpEvery === 0) {
+      const seq = chord.concat(chord.map((x) => x + 12));
+      const idx = ((i / sec.arpEvery) | 0) % seq.length;
+      const n = sec.root + 12 * sec.arpOct + seq[idx] + (sib === 0 ? 12 : 0);
+      this._mVoice(this._hzMidi(n), t + sw, 0.19, { type: 'triangle', g: 0.033, cutoff: sec.cutoff });
+      this._mVoice(this._hzMidi(n) * 2.001, t + sw, 0.10, { type: 'sine', g: 0.012, cutoff: sec.cutoff * 2 });
+    }
+  }
+
+  _mPad(t, notes, dur, s) {
+    if (this._musPad) { try { this._musPad.o.forEach((o) => o.stop(t + 0.35)); } catch (_) {} }
+    const g = this.ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(0.028, t + Math.min(1.2, dur * 0.35));
+    g.gain.setValueAtTime(0.028, t + dur * 0.55);
+    g.gain.linearRampToValueAtTime(0.0001, t + dur);
+    const lp = this.ctx.createBiquadFilter();
+    lp.type = 'lowpass'; lp.frequency.value = s ? s.cutoff : 700; lp.Q.value = 0.4;
+    g.connect(lp).connect(this._musOut || this.master);
+    const o = notes.map((mm, k) => {
+      const osc = this.ctx.createOscillator();
+      osc.type = k === 0 ? (s ? s.padWave : 'sawtooth') : 'triangle';
+      osc.frequency.value = this._hzMidi(mm);
+      osc.detune.value = (Math.random() - 0.5) * 9;
+      osc.connect(g); osc.start(t); osc.stop(t + dur + 0.1); return osc;
+    });
+    this._musPad = { g, o };
+  }
+
+  _mVoice(hz, t, dur, { type = 'triangle', g = 0.04, cutoff = 1200, glide = null } = {}) {
+    const o = this.ctx.createOscillator();
+    const ga = this.ctx.createGain();
+    const lp = this.ctx.createBiquadFilter();
+    lp.type = 'lowpass'; lp.frequency.value = cutoff;
+    o.type = type; o.frequency.setValueAtTime(hz, t);
+    if (glide) o.frequency.exponentialRampToValueAtTime(glide, t + dur);
+    ga.gain.setValueAtTime(0.0001, t);
+    ga.gain.exponentialRampToValueAtTime(g, t + 0.01);
+    ga.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(lp).connect(ga).connect(this._musOut || this.master);
+    o.start(t); o.stop(t + dur + 0.03);
+  }
+
+  _mBell(t, midi) {
+    const hz = this._hzMidi(midi);
+    [1, 2.004, 3.01].forEach((mul, k) => {
+      const o = this.ctx.createOscillator(), ga = this.ctx.createGain();
+      o.type = 'sine'; o.frequency.value = hz * mul;
+      const peak = [0.03, 0.014, 0.006][k];
+      ga.gain.setValueAtTime(0.0001, t);
+      ga.gain.exponentialRampToValueAtTime(peak, t + 0.005);
+      ga.gain.exponentialRampToValueAtTime(0.0001, t + 1.6 + k * 0.4);
+      o.connect(ga).connect(this._musOut || this.master);
+      o.start(t); o.stop(t + 2.4);
+    });
+  }
+
+  _mKick(t) {
+    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+    o.frequency.setValueAtTime(115, t);
+    o.frequency.exponentialRampToValueAtTime(44, t + 0.11);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.32, t + 0.004);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.17);
+    o.connect(g).connect(this._musOut || this.master);
+    o.start(t); o.stop(t + 0.22);
+  }
+
+  _mBrush(t) {
+    const n = Math.max(1, (this.ctx.sampleRate * 0.14) | 0);
+    const b = this.ctx.createBuffer(1, n, this.ctx.sampleRate), ch = b.getChannelData(0);
+    for (let k = 0; k < n; k++) ch[k] = (Math.random() * 2 - 1) * (1 - k / n);
+    const s = this.ctx.createBufferSource(); s.buffer = b;
+    const f = this.ctx.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 2400; f.Q.value = 0.6;
+    const g = this.ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.05, t + 0.006);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.14);
+    s.connect(f).connect(g).connect(this._musOut || this.master);
+    s.start(t); s.stop(t + 0.18);
+  }
+
+  _mHat(t) {
+    const d = 0.03;
+    const n = Math.max(1, (this.ctx.sampleRate * d) | 0);
+    const b = this.ctx.createBuffer(1, n, this.ctx.sampleRate), ch = b.getChannelData(0);
+    for (let k = 0; k < n; k++) ch[k] = Math.random() * 2 - 1;
+    const s = this.ctx.createBufferSource(); s.buffer = b;
+    const f = this.ctx.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = 8000;
+    const g = this.ctx.createGain();
+    g.gain.setValueAtTime(0.045, t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+    s.connect(f).connect(g).connect(this._musOut || this.master);
+    s.start(t); s.stop(t + d + 0.02);
   }
 
   /* ---- the modem ---------------------------------------------------

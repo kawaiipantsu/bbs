@@ -83,6 +83,7 @@ $jsonld = $meta['jsonld'] ?? null;
 
 <div id="hud">
   <button id="btn-sound" type="button" aria-pressed="false" title="Toggle sound (Ctrl+S)">SOUND: OFF</button>
+  <button id="btn-music" type="button" aria-pressed="true" title="Toggle background music">MUSIC: ON</button>
   <button id="btn-crt" type="button" aria-pressed="true" title="Toggle CRT FX">CRT: ON</button>
   <button id="btn-full" type="button" title="Fullscreen (F11)">[ ]</button>
   <span id="hud-node"></span>

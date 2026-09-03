@@ -1,11 +1,11 @@
 /* app.js - wires the CRT, terminal, audio, boot sequence and HUD together. */
 
-import { Terminal } from './terminal.js?v=2';
-import { runBoot, skipBoot } from './boot.js?v=2';
-import { sound } from './audio.js?v=2';
-import { action, ticker, state } from './net.js?v=2';
-import { installChat } from './chat.js?v=2';
-import { installControls } from './controls.js?v=2';
+import { Terminal } from './terminal.js?v=3';
+import { runBoot, skipBoot } from './boot.js?v=3';
+import { sound } from './audio.js?v=3';
+import { action, ticker, state } from './net.js?v=3';
+import { installChat } from './chat.js?v=3';
+import { installControls } from './controls.js?v=3';
 
 const $ = sel => document.querySelector(sel);
 const LS = {
@@ -75,13 +75,16 @@ async function start(skip) {
     if (payload && payload.frame) {
       term.renderFrame(payload.frame);
       maybeGoto();
+      syncMusic();
     } else {
       term.renderFrame({ mode: 'pager', lines: [[{ s: '  NO CARRIER - could not reach the board. Reload to redial.', f: 9, b: 0, o: true }]] });
       sound.errorLoop?.('nocarrier');
+      sound.stopMusic?.(0.4);
     }
   } catch (e) {
     term.renderFrame({ mode: 'pager', lines: [[{ s: '  NO CARRIER - ' + (e && e.message || 'connection failed'), f: 9, b: 0 }]] });
     sound.errorLoop?.('nocarrier');
+    sound.stopMusic?.(0.4);
   }
   LS.set('bbs_booted', '1');
 }
@@ -148,6 +151,7 @@ function maybeGoto() {
 }
 
 function powerOff() {
+  sound.stopMusic?.(0.3);
   crt.classList.remove('powering-on');
   crt.classList.add('powering-off');
   setTimeout(() => {
@@ -163,13 +167,36 @@ function syncSoundBtn() {
   b.setAttribute('aria-pressed', String(sound.enabled));
 }
 
+const musicWanted = () => LS.get('bbs_music', 'on') !== 'off';
+function syncMusicBtn() {
+  const b = $('#btn-music');
+  if (!b) return;
+  const on = musicWanted();
+  b.textContent = 'MUSIC: ' + (on ? 'ON' : 'OFF');
+  b.setAttribute('aria-pressed', String(on));
+  b.classList.toggle('is-off', !on);
+}
+// Start / stop the background music according to the sound + music toggles
+// and whether we're actually connected to the board (no music over dial-up).
+function syncMusic() {
+  if (sound.enabled && musicWanted() && started && !maintenance && term && term.frame) sound.music('bbs');
+  else sound.stopMusic?.();
+}
+
 function hud() {
   $('#btn-sound').addEventListener('click', () => {
     sound.setEnabled(!sound.enabled);
     LS.set('bbs_sound', sound.enabled ? 'on' : 'off');
     syncSoundBtn();
     if (sound.enabled) sound.beep();
+    syncMusic();
   });
+  $('#btn-music')?.addEventListener('click', () => {
+    LS.set('bbs_music', musicWanted() ? 'off' : 'on');
+    syncMusicBtn();
+    syncMusic();
+  });
+  syncMusicBtn();
   $('#btn-crt').addEventListener('click', () => {
     const on = crt.classList.toggle('no-crt');
     const now = !on;
@@ -264,8 +291,8 @@ function main() {
   term.setSend(send);
   installChat(term);
   controls = installControls(term, {
-    onPowerOff: () => { term.busy = true; },
-    onPowerOn: () => { term.busy = false; },
+    onPowerOff: () => { term.busy = true; sound.stopMusic?.(0.25); },
+    onPowerOn: () => { term.busy = false; syncMusic(); },
   });
   hud();
   keyboard();
