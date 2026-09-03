@@ -94,20 +94,19 @@ final class TicketModule extends Module
         if (!$tickets) {
             $f->pipe('|08   You have no tickets open.');
         }
+        $choices = [];
         foreach ($tickets as $i => $t) {
             $colour = match ($t['status']) {
                 'open' => '|14', 'pending' => '|11', 'answered' => '|10', default => '|08'
             };
-            $f->pipe(sprintf(
-                '|08   [|15%d|08] %s%-10s|07 %-46s |08%s',
-                $i + 1,
-                $colour,
-                strtoupper($t['status']),
-                mb_substr($t['subject'], 0, 46),
-                date('Y-m-d', strtotime($t['created_at']))
-            ));
+            $choices[] = [
+                'key'   => (string) ($i + 1),
+                'label' => $colour . sprintf('%-10s', strtoupper($t['status'])) . '|07 ' . mb_substr($t['subject'], 0, 46),
+                'desc'  => 'filed ' . date('Y-m-d', strtotime($t['created_at'])),
+            ];
         }
-        return $f->footer('number to open · N new ticket · Q back');
+        $this->picker($f, $choices);
+        return $f->footer('↑↓ move  ·  ENTER open  ·  N new ticket · Q back');
     }
 
     private function myTickets(Engine $e): array

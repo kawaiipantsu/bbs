@@ -65,13 +65,19 @@ final class FilesModule extends Module
         }
         $title = $kind === 'library' ? 'Reference Library' : 'File Areas';
         $f = Frame::make('screen')->title($title)->mode('menu')->header($title)->blank();
+        $choices = [];
         foreach ($areas as $i => $a) {
-            $f->pipe(sprintf('|08   [|15%2d|08] |14%-24s |07%-6s |08%s', $i + 1, mb_substr($a['name'], 0, 24), $a['n'], $a['description']));
+            $choices[] = [
+                'key'   => (string) ($i + 1),
+                'label' => sprintf('%-24s  %s files', mb_substr($a['name'], 0, 24), (string) $a['n']),
+                'desc'  => (string) $a['description'],
+            ];
         }
+        $this->picker($f, $choices);
         if (!$areas) {
             $f->pipe('|08   Nothing here yet.');
         }
-        return $f->footer('number to open · Q back');
+        return $f->footer('↑↓ move  ·  ENTER open  ·  Q back');
     }
 
     private function list(Engine $e, string $key, array &$st): Frame
@@ -109,22 +115,26 @@ final class FilesModule extends Module
 
         $f = Frame::make('screen')->title($area['name'])->mode('menu')
             ->header($area['name'], count($files) . ' files')->blank();
-        $f->pipe('|08   ' . str_pad('#', 5) . str_pad('FILENAME', 32) . str_pad('SIZE', 10) . str_pad('DL', 6) . 'DATE');
-        $f->rule();
+        $choices = [];
         foreach ($files as $i => $fl) {
-            $f->pipe(sprintf(
-                '|08   [|15%2d|08] |14%-30s |07%-9s |08%-5d %s',
-                $i + 1,
-                mb_substr($fl['filename'], 0, 30),
-                $this->hsize((int) $fl['size_bytes']),
-                (int) $fl['downloads'],
-                date('Y-m-d', strtotime($fl['created_at']))
-            ));
+            $choices[] = [
+                'key'   => (string) ($i + 1),
+                'label' => mb_substr($fl['filename'], 0, 40),
+                'desc'  => sprintf(
+                    '%s · %d downloads · %s',
+                    $this->hsize((int) $fl['size_bytes']),
+                    (int) $fl['downloads'],
+                    date('Y-m-d', strtotime($fl['created_at']))
+                ),
+            ];
         }
+        $this->picker($f, $choices);
         if (!$files) {
             $f->pipe('|08   Empty area.');
         }
-        $hint = $e->can('file.upload') ? 'number details · U upload · Q back' : 'number details · Q back';
+        $hint = $e->can('file.upload')
+            ? '↑↓ move  ·  ENTER details  ·  U upload · Q back'
+            : '↑↓ move  ·  ENTER details  ·  Q back';
         return $f->footer($hint);
     }
 
@@ -141,7 +151,13 @@ final class FilesModule extends Module
         foreach (explode("\n", wordwrap((string) $fl['description'], 110, "\n", true)) as $l) {
             $f->pipe('|07   ' . $l);
         }
-        return $f->footer('D download · Q back');
+        $f->blank();
+        $this->picker($f, [[
+            'key'   => 'D',
+            'label' => 'Download this file',
+            'desc'  => (string) ($fl['title'] ?: $fl['filename']),
+        ]]);
+        return $f->footer('↑↓ move  ·  ENTER / D download  ·  Q back');
     }
 
     private function find(Engine $e, array $in, string $cmd, string $key, array &$st): Frame
@@ -180,13 +196,19 @@ final class FilesModule extends Module
         }
         $f = Frame::make('screen')->title('Find: ' . $q)->mode('menu')
             ->header('File search "' . $q . '"', count($rows) . ' hits')->blank();
+        $choices = [];
         foreach ($rows as $i => $r) {
-            $f->pipe(sprintf('|08   [|15%2d|08] |14%-30s |08%-16s |07%s', $i + 1, mb_substr($r['filename'], 0, 30), mb_substr($r['area'], 0, 16), $this->hsize((int) $r['size_bytes'])));
+            $choices[] = [
+                'key'   => (string) ($i + 1),
+                'label' => mb_substr($r['filename'], 0, 40),
+                'desc'  => sprintf('%s · %s', mb_substr($r['area'], 0, 16), $this->hsize((int) $r['size_bytes'])),
+            ];
         }
+        $this->picker($f, $choices);
         if ($q !== '' && !$rows) {
             $f->pipe('|08   No matching files.');
         }
-        return $f->footer('number details · Q back');
+        return $f->footer('↑↓ move  ·  ENTER details  ·  Q back');
     }
 
     private function upload(Engine $e, array $in, string $cmd, string $key, array &$st): Frame

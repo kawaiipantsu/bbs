@@ -112,21 +112,19 @@ final class MessagesModule extends Module
         }
         $f = Frame::make('screen')->title('Message Boards')->mode('menu')
             ->header('Boards - ' . $conf['name'], count($boards) . ' areas')->blank();
-        $f->pipe('|08   ' . str_pad('#', 5) . str_pad('BOARD', 26) . str_pad('MSGS', 8) . 'DESCRIPTION');
-        $f->rule();
+        $choices = [];
         foreach ($boards as $i => $b) {
-            $f->pipe(sprintf(
-                '|08   [|15%2d|08] |14%-24s |07%-7s |08%s',
-                $i + 1,
-                mb_substr($b['name'], 0, 24),
-                (string) $b['msgs'],
-                mb_substr($b['description'], 0, 74)
-            ));
+            $choices[] = [
+                'key'   => (string) ($i + 1),
+                'label' => sprintf('%-24s  %s msgs', mb_substr($b['name'], 0, 24), (string) $b['msgs']),
+                'desc'  => (string) $b['description'],
+            ];
         }
+        $this->picker($f, $choices);
         if (!$boards) {
             $f->pipe('|08   No boards you can read in this conference.');
         }
-        return $f->footer('number to enter · C change conference · Q back');
+        return $f->footer('↑↓ move  ·  ENTER enter  ·  C change conference · Q back');
     }
 
     private function conferences(Engine $e, string $key, array &$st): Frame
@@ -146,11 +144,16 @@ final class MessagesModule extends Module
         }
         $cur = (int) $e->session->get('msg.conf', 0);
         $f = Frame::make('screen')->title('Conferences')->mode('menu')->header('Change Conference')->blank();
+        $choices = [];
         foreach ($confs as $i => $c) {
-            $mark = (int) $c['id'] === $cur ? '|10*' : '|08 ';
-            $f->pipe(sprintf('%s |08[|15%d|08] |14%-22s |07%s', $mark, $i + 1, $c['name'], $c['description']));
+            $choices[] = [
+                'key'   => (string) ($i + 1),
+                'label' => $c['name'] . ((int) $c['id'] === $cur ? '  (current)' : ''),
+                'desc'  => (string) $c['description'],
+            ];
         }
-        return $f->footer('number to join · Q back');
+        $this->picker($f, $choices);
+        return $f->footer('↑↓ move  ·  ENTER join  ·  Q back');
     }
 
     // -----------------------------------------------------------------
@@ -185,13 +188,19 @@ final class MessagesModule extends Module
         if (!$uid) {
             $f->pipe('|11   Scan tracks unread per account - log in to use it.');
         }
+        $choices = [];
         foreach ($withUnread as $i => $r) {
-            $f->pipe(sprintf('|08   [|15%2d|08] |14%-26s |08%-14s |12%d new', $i + 1, mb_substr($r['name'], 0, 26), mb_substr($r['conf'], 0, 14), $r['unread']));
+            $choices[] = [
+                'key'   => (string) ($i + 1),
+                'label' => sprintf('%-26s  %s', mb_substr($r['name'], 0, 26), mb_substr($r['conf'], 0, 14)),
+                'desc'  => $r['unread'] . ' new message' . ((int) $r['unread'] === 1 ? '' : 's'),
+            ];
         }
+        $this->picker($f, $choices);
         if ($uid && !$withUnread) {
             $f->pipe('|10   You are all caught up. Nothing new.');
         }
-        return $f->footer('number to read · Q back');
+        return $f->footer('↑↓ move  ·  ENTER read  ·  Q back');
     }
 
     // -----------------------------------------------------------------
@@ -231,20 +240,24 @@ final class MessagesModule extends Module
         }
         $f = Frame::make('screen')->title('Find: ' . $q)->mode('menu')
             ->header('Search results for "' . $q . '"', count($results) . ' hits')->blank();
+        $choices = [];
         foreach ($results as $i => $r) {
-            $f->pipe(sprintf(
-                '|08   [|15%2d|08] |07%-52s |09%-16s |08%-14s %s',
-                $i + 1,
-                mb_substr($r['subject'], 0, 52),
-                mb_substr($r['from_handle'], 0, 16),
-                mb_substr($r['board'], 0, 14),
-                date('Y-m-d', strtotime($r['created_at']))
-            ));
+            $choices[] = [
+                'key'   => (string) ($i + 1),
+                'label' => mb_substr($r['subject'], 0, 52),
+                'desc'  => sprintf(
+                    '%s in %s · %s',
+                    mb_substr($r['from_handle'], 0, 16),
+                    mb_substr($r['board'], 0, 14),
+                    date('Y-m-d', strtotime($r['created_at']))
+                ),
+            ];
         }
+        $this->picker($f, $choices);
         if ($q !== '' && !$results) {
             $f->pipe('|08   Nothing matched. Try fewer / different words.');
         }
-        return $f->footer('number to open · Q back');
+        return $f->footer('↑↓ move  ·  ENTER open  ·  Q back');
     }
 
     // -----------------------------------------------------------------
@@ -401,22 +414,28 @@ final class MessagesModule extends Module
         }
         $f->pipe('|08   ' . str_pad('#', 5) . str_pad('SUBJECT', 54) . str_pad('BY', 16) . str_pad('REPL', 6) . 'LAST');
         $f->rule();
+        $choices = [];
         foreach ($slice as $i => $t) {
-            $new = (int) $t['max_id'] > $lastRead ? '|12*' : '|08 ';
-            $f->pipe(sprintf(
-                '%s |08[|15%2d|08] |07%-52s |09%-15s |08%-5d %s',
-                $new,
-                $page * $perPage + $i + 1,
-                mb_substr(preg_replace('/^(Re:\s*)+/i', '', $t['subject']) ?: $t['subject'], 0, 52),
-                mb_substr($t['from_handle'], 0, 15),
-                (int) $t['replies'],
-                date('m/d H:i', strtotime($t['last_at']))
-            ));
+            $unread = (int) $t['max_id'] > $lastRead;
+            $subj = mb_substr(preg_replace('/^(Re:\s*)+/i', '', $t['subject']) ?: $t['subject'], 0, 52);
+            $choices[] = [
+                'key'   => (string) ($i + 1),
+                'label' => ($unread ? '* ' : '  ') . $subj,
+                'desc'  => sprintf(
+                    '%s · %d repl · %s',
+                    mb_substr($t['from_handle'], 0, 15),
+                    (int) $t['replies'],
+                    date('m/d H:i', strtotime($t['last_at']))
+                ),
+            ];
         }
+        $this->picker($f, $choices);
         if (!$threads) {
             $f->pipe('|08   No messages here yet. Press P to start a thread.');
         }
-        $hint = $e->can('message.post') ? 'number read · P post · ←/→ page · Q back' : 'number read · ←/→ page · Q back';
+        $hint = $e->can('message.post')
+            ? '↑↓ move  ·  ENTER read  ·  P post · ←/→ page · Q back'
+            : '↑↓ move  ·  ENTER read  ·  ←/→ page · Q back';
         return $f->footer($hint);
     }
 

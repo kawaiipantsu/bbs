@@ -173,21 +173,18 @@ final class AdminModule extends Module
 
         $f = Frame::make('screen')->title('Users & Roles')->mode('menu')
             ->header('SysOp · Users', count($rows) . ($q ? ' matching "' . $q . '"' : ' shown'))->blank();
-        $f->pipe('|08   ' . str_pad('#', 5) . str_pad('HANDLE', 20) . str_pad('STATUS', 11) . str_pad('ROLES', 24) . 'LAST CALL');
-        $f->rule();
+        $choices = [];
         foreach ($rows as $i => $r) {
             $sc = match ($r['status']) { 'banned' => '|12', 'suspended' => '|11', 'pending' => '|13', default => '|10' };
-            $f->pipe(sprintf(
-                '|08   [|15%2d|08] |15%-18s%s%-11s|09%-24s|08%s',
-                $i + 1,
-                mb_substr($r['handle'], 0, 18),
-                $sc,
-                $r['status'],
-                mb_substr((string) $r['roles'], 0, 24),
-                $r['last_login_at'] ? date('Y-m-d H:i', strtotime($r['last_login_at'])) : 'never'
-            ));
+            $choices[] = [
+                'key'   => (string) ($i + 1),
+                'label' => '|15' . mb_substr($r['handle'], 0, 18) . '  ' . $sc . $r['status'],
+                'desc'  => trim((string) $r['roles'] === '' ? 'no roles' : (string) $r['roles'])
+                    . ' · last call ' . ($r['last_login_at'] ? date('Y-m-d H:i', strtotime($r['last_login_at'])) : 'never'),
+            ];
         }
-        return $f->footer('number edit · S search · Q back');
+        $this->picker($f, $choices);
+        return $f->footer('↑↓ move  ·  ENTER edit  ·  S search · Q back');
     }
 
     private function userDetail(Engine $e, array $in, string $key, string $cmd, array &$st): Frame
@@ -265,14 +262,20 @@ final class AdminModule extends Module
         $f->pipe('|07   Created ....: |07' . $u['created_at']);
         $f->pipe('|07   Last call ..: |07' . ($u['last_login_at'] ?: 'never') . '  from ' . ($u['last_login_phone'] ?: '—') . '  (' . ($u['last_login_ip'] ?: '—') . ')');
         $f->pipe(sprintf('|07   Stats ......: |14%d|07 calls · |14%d|07 posts · |14%d|07 up · |14%d|07 dn', $u['calls'], $u['posts'], $u['uploads'], $u['downloads']));
-        $f->blank()->pipe('|14   ROLES  |08(number toggles)');
+        $f->blank()->pipe('|14   ROLES  |08(ENTER or number toggles)');
+        $roleChoices = [];
         foreach ($roles as $i => $r) {
-            $on = in_array($r['slug'], $userRoles, true) ? '|10[x]' : '|08[ ]';
-            $f->pipe(sprintf('     |08%d %s |07%-12s |08rank %d', $i + 1, $on, $r['name'], $r['rank']));
+            $has = in_array($r['slug'], $userRoles, true);
+            $roleChoices[] = [
+                'key'   => (string) ($i + 1),
+                'label' => ($has ? '|10[x] ' : '|08[ ] ') . '|07' . $r['name'],
+                'desc'  => 'rank ' . $r['rank'] . ($has ? ' · granted' : ''),
+            ];
         }
+        $this->picker($f, $roleChoices);
         $f->blank()->pipe('|14   ACTIONS');
         $f->pipe('|08     B |07' . ($u['status'] === 'banned' ? 'un-ban' : 'ban') . '     U ' . ($u['status'] === 'suspended' ? 'un-suspend' : 'suspend') . '     P reset password' . ($e->can('admin.impersonate') ? '     I impersonate' : ''));
-        return $f->footer('number toggle role · B/U/P' . ($e->can('admin.impersonate') ? '/I' : '') . ' · Q back');
+        return $f->footer('↑↓ move  ·  ENTER toggle role  ·  B/U/P' . ($e->can('admin.impersonate') ? '/I' : '') . ' · Q back');
     }
 
     // ===============================================================
@@ -316,9 +319,13 @@ final class AdminModule extends Module
                 $f->blank()->pipe('|14   [' . strtoupper($cat) . ']');
             }
             $val = $r['type'] === 'secret' && $r['value'] !== '' ? '********' : mb_substr(str_replace("\n", ' / ', $r['value']), 0, 68);
-            $f->pipe(sprintf('|08   %2d |11%-26s|07%s', $n, $r['key'], $val));
+            $this->picker($f, [[
+                'key'   => (string) $n,
+                'label' => sprintf('%-26s |08%s', $r['key'], $val),
+                'desc'  => (string) ($r['label'] ?? ''),
+            ]]);
         }
-        return $f->footer('number to edit · Q back  ·  (changes apply immediately)');
+        return $f->footer('↑↓ move  ·  ENTER edit  ·  Q back  ·  (changes apply immediately)');
     }
 
     // ===============================================================
@@ -386,9 +393,13 @@ final class AdminModule extends Module
                     $f->blank()->pipe('|14   [' . strtoupper($cur) . ']');
                 }
                 $en = $it['enabled'] ? '|07' : '|08';
-                $f->pipe(sprintf('   %s%2d %s[%-3s] %-28s |08%s:%s', $en, $n, $en, $it['hotkey'], $it['label'], $it['action'], $it['target']));
+                $this->picker($f, [[
+                    'key'   => (string) $n,
+                    'label' => $en . sprintf('[%-3s] %-28s', $it['hotkey'], $it['label']) . ' |08' . $it['action'] . ':' . $it['target'],
+                    'desc'  => ($it['enabled'] ? 'enabled' : 'disabled') . ' · sort ' . $it['sort'],
+                ]]);
             }
-            return $f->footer('number edit item · S screens · Q back');
+            return $f->footer('↑↓ move  ·  ENTER edit item  ·  S screens · Q back');
         }
 
         // screens list
@@ -407,10 +418,16 @@ final class AdminModule extends Module
             }
         }
         $f = Frame::make('screen')->title('Screen Editor')->mode('menu')->header('SysOp · Screens')->blank();
+        $choices = [];
         foreach ($screens as $i => $s) {
-            $f->pipe(sprintf('|08   %2d |11%-20s |08%-6s %s', $i + 1, $s['slug'], $s['content_type'], mb_substr($s['title'], 0, 60)));
+            $choices[] = [
+                'key'   => (string) ($i + 1),
+                'label' => sprintf('%-20s |08%s', $s['slug'], $s['content_type']),
+                'desc'  => mb_substr((string) $s['title'], 0, 60),
+            ];
         }
-        return $f->footer('number to edit · M menu editor · Q back');
+        $this->picker($f, $choices);
+        return $f->footer('↑↓ move  ·  ENTER edit  ·  M menu editor · Q back');
     }
 
     // ===============================================================
@@ -499,14 +516,18 @@ final class AdminModule extends Module
         $f = Frame::make('screen')->title('Discord Hooks')->mode('menu')->header('SysOp · Discord')->blank();
         foreach ($hooks as $i => $h) {
             $on = $h['enabled'] ? '|10ON ' : '|08OFF';
-            $f->pipe(sprintf('|08   [|15%d|08] %s |11%-16s |08%s', $i + 1, $on, $h['name'], mb_substr($h['events'], 0, 60)));
+            $this->picker($f, [[
+                'key'   => (string) ($i + 1),
+                'label' => $on . ' |11' . $h['name'] . '  |08' . mb_substr($h['events'], 0, 60),
+                'desc'  => preg_replace('#(/webhooks/\d+/).*#', '$1********', $h['url']) ?? (string) $h['url'],
+            ]]);
             $f->pipe('|08         ' . preg_replace('#(/webhooks/\d+/).*#', '$1********', $h['url']));
         }
         if (!$hooks) {
             $f->pipe('|08   No webhooks configured. Press A to add one.');
         }
         $f->blank()->pipe('|08   Events fired: ' . Config::setting('discord_events', ''));
-        return $f->footer('number toggle · A add · T test · Q back');
+        return $f->footer('↑↓ move  ·  ENTER toggle  ·  A add · T test · Q back');
     }
 
     // ===============================================================
@@ -568,14 +589,20 @@ final class AdminModule extends Module
             }
         }
         $f = Frame::make('screen')->title('Tickets')->mode('menu')->header('SysOp · Tickets', 'filter: ' . $filter)->blank();
+        $choices = [];
         foreach ($rows as $i => $r) {
             $sc = match ($r['status']) { 'open' => '|14', 'pending' => '|13', 'answered' => '|10', default => '|08' };
-            $f->pipe(sprintf('|08   [|15%2d|08] %s%-9s |11%-14s |07%-44s |08%s', $i + 1, $sc, $r['status'], mb_substr($r['handle'], 0, 14), mb_substr($r['subject'], 0, 44), date('m/d H:i', strtotime($r['updated_at']))));
+            $choices[] = [
+                'key'   => (string) ($i + 1),
+                'label' => $sc . sprintf('%-9s |11%-14s |07%s', $r['status'], mb_substr($r['handle'], 0, 14), mb_substr($r['subject'], 0, 44)),
+                'desc'  => 'updated ' . date('m/d H:i', strtotime($r['updated_at'])),
+            ];
         }
+        $this->picker($f, $choices);
         if (!$rows) {
             $f->pipe('|08   No tickets in this filter.');
         }
-        return $f->footer('number open · F cycle filter · Q back');
+        return $f->footer('↑↓ move  ·  ENTER open  ·  F cycle filter · Q back');
     }
 
     private function ticketOne(Engine $e, int $id, array &$st): Frame
@@ -744,10 +771,18 @@ final class AdminModule extends Module
             return $this->files($e, ['cmd' => 'render'], '', '', $st)->sound('beep');
         }
         $f = Frame::make('screen')->title('File Admin')->mode('menu')->header('SysOp · Upload Queue', count($queue) . ' pending')->blank();
+        $choices = [];
         foreach ($queue as $i => $q) {
-            $sel = (($st['sel'] ?? 0) === (int) $q['id']) ? '|12>' : '|08 ';
-            $f->pipe(sprintf('%s |08[|15%2d|08] |14%-28s |08%-14s |11%-12s |07%s', $sel, $i + 1, mb_substr($q['filename'], 0, 28), mb_substr($q['area'], 0, 14), mb_substr($q['uploader_handle'], 0, 12), number_format((int) $q['size_bytes'])));
+            $selMark = (($st['sel'] ?? 0) === (int) $q['id']) ? '|12> ' : '';
+            $choices[] = [
+                'key'   => (string) ($i + 1),
+                'label' => $selMark . '|14' . mb_substr($q['filename'], 0, 28) . '  |08' . mb_substr($q['area'], 0, 14)
+                    . '  |11' . mb_substr($q['uploader_handle'], 0, 12),
+                'desc'  => number_format((int) $q['size_bytes']) . ' bytes'
+                    . ((($st['sel'] ?? 0) === (int) $q['id']) ? ' · selected' : ''),
+            ];
         }
+        $this->picker($f, $choices);
         if (!$queue) {
             $f->pipe('|10   Upload queue is empty.');
         }
@@ -756,7 +791,7 @@ final class AdminModule extends Module
         foreach ($areas as $a) {
             $f->pipe(sprintf('|08   %-24s %4d files   upload rank >= %d', $a['name'], (int) $a['file_count'], (int) $a['min_upload_rank']));
         }
-        return $f->footer('number select · A approve · X reject · Q back');
+        return $f->footer('↑↓ move  ·  ENTER select  ·  A approve · X reject · Q back');
     }
 
     // ===============================================================
@@ -799,10 +834,16 @@ final class AdminModule extends Module
             }
         }
         $f = Frame::make('screen')->title('Polls')->mode('menu')->header('SysOp · Voting Booths')->blank();
+        $choices = [];
         foreach ($polls as $i => $p) {
             $on = $p['is_open'] ? '|10OPEN  ' : '|08CLOSED';
-            $f->pipe(sprintf('|08   [|15%2d|08] %s |07%-70s |14%d votes', $i + 1, $on, mb_substr($p['question'], 0, 70), (int) $p['votes']));
+            $choices[] = [
+                'key'   => (string) ($i + 1),
+                'label' => $on . ' |07' . mb_substr($p['question'], 0, 70),
+                'desc'  => (int) $p['votes'] . ' votes · ' . ($p['is_open'] ? 'open' : 'closed'),
+            ];
         }
-        return $f->footer('number open/close · N new poll · Q back');
+        $this->picker($f, $choices);
+        return $f->footer('↑↓ move  ·  ENTER open/close  ·  N new poll · Q back');
     }
 }
