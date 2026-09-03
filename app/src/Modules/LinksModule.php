@@ -129,17 +129,17 @@ final class LinksModule extends Module
         $total = array_sum(array_map(static fn ($c) => (int) $c['n'], $cats));
         $f = Frame::make('screen')->title('Links Directory')->mode('menu')
             ->header('Links Directory', $total . ' links in ' . count($cats) . ' categories')->blank();
+        $choices = [];
         foreach ($cats as $i => $c) {
-            $f->pipe(sprintf(
-                '|08 [|15%2s|08] |09%s |14%-24s |08%-3d |07%s',
-                self::label($i),
-                $c['icon'] !== '' ? $c['icon'] : ' ',
-                mb_substr($c['name'], 0, 24),
-                (int) $c['n'],
-                mb_substr($c['description'], 0, 52)
-            ));
+            $choices[] = [
+                'key'   => trim(self::label($i)),
+                'label' => ($c['icon'] !== '' ? $c['icon'] . ' ' : '')
+                    . mb_substr($c['name'], 0, 30) . '  (' . (int) $c['n'] . ')',
+                'desc'  => (string) $c['description'],
+            ];
         }
-        $hint = $e->guest() ? 'number to open · Q back' : 'number to open · S suggest a link · Q back';
+        $this->picker($f, $choices);
+        $hint = $e->guest() ? '↑↓ move · ENTER open · Q back' : '↑↓ move · ENTER open · S suggest · Q back';
         return $f->footer($hint);
     }
 
@@ -152,14 +152,18 @@ final class LinksModule extends Module
             $f->pipe('|08   ' . $cat['description'])->blank();
         }
         foreach ($links as $i => $l) {
-            $f->pipe(sprintf('|08 [|15%2s|08] |14%-26s |07%s', self::label($i), mb_substr($l['title'], 0, 26), mb_substr($l['description'], 0, 60)));
+            $this->picker($f, [[
+                'key'   => trim(self::label($i)),
+                'label' => mb_substr($l['title'], 0, 42),
+                'desc'  => (string) $l['description'],
+            ]]);
             $f->pipe(sprintf('      |08%s', mb_substr(preg_replace('#^https?://#', '', $l['url']) ?? $l['url'], 0, 88)));
         }
         if (!$links) {
             $f->pipe('|08   Nothing here yet.');
         }
-        $hint = $e->guest() ? 'number opens in a new tab · X categories · Q back'
-            : 'number opens in a new tab · S suggest · X categories · Q back';
+        $hint = $e->guest() ? '↑↓ move · ENTER opens in a new tab · X categories · Q back'
+            : '↑↓ move · ENTER opens · S suggest · X categories · Q back';
         return $f->footer($hint);
     }
 

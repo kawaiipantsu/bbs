@@ -61,14 +61,20 @@ final class PollModule extends Module
             ->header('Voting Booth', $totalVotes . ' votes cast')->blank()
             ->pipe('|15   ' . $poll['question'])->blank();
 
-        foreach ($options as $i => $o) {
-            $pct = $totalVotes ? round(100 * $o['votes'] / $totalVotes) : 0;
-            if ($hasVoted || !$uid || (int) $poll['is_open'] === 0) {
+        $canVote = $uid && !$hasVoted && (int) $poll['is_open'] === 1;
+
+        if ($canVote) {
+            $choices = [];
+            foreach ($options as $i => $o) {
+                $choices[] = ['key' => (string) ($i + 1), 'label' => (string) $o['label']];
+            }
+            $this->picker($f, $choices);
+        } else {
+            foreach ($options as $i => $o) {
+                $pct = $totalVotes ? round(100 * $o['votes'] / $totalVotes) : 0;
                 $bar = str_repeat('█', (int) round(48 * $pct / 100));
                 $f->pipe(sprintf('|08   %2d) |07%-42s', $i + 1, mb_substr($o['label'], 0, 42)));
                 $f->pipe(sprintf('       |10%-48s |14%3d%% |08(%d)', $bar, $pct, $o['votes']));
-            } else {
-                $f->pipe(sprintf('|08   [|15%d|08] |07%s', $i + 1, $o['label']));
             }
         }
 
@@ -79,10 +85,8 @@ final class PollModule extends Module
             $f->pipe('|10   Your vote is counted. Thanks.');
         } elseif ((int) $poll['is_open'] === 0) {
             $f->pipe('|08   This poll is closed.');
-        } else {
-            $f->pipe('|07   Press the number of your choice.');
         }
 
-        return $f->footer('1-9 vote · Q back');
+        return $f->footer($canVote ? '↑↓ move  ·  ENTER vote  ·  Q back' : 'Q back');
     }
 }

@@ -60,11 +60,14 @@ final class ExtrasModule extends Module
         $f = Frame::make('screen')->title('Bulletins')->mode('menu')->header('Bulletins')->blank();
         if (!$list) {
             $f->pipe('|08   No bulletins posted. A SysOp adds them as screens named bulletin.*');
+            return $f->footer('Q back');
         }
+        $choices = [];
         foreach ($list as $i => $b) {
-            $f->pipe(sprintf('|08 [|15%2d|08] |07%s', $i + 1, $b['title'] ?: $b['slug']));
+            $choices[] = ['key' => (string) ($i + 1), 'label' => (string) ($b['title'] ?: $b['slug'])];
         }
-        return $f->footer('number to read · Q back');
+        $this->picker($f, $choices);
+        return $f->footer('↑↓ move  ·  ENTER read  ·  Q back');
     }
 
     // ---------------------------------------------------------------

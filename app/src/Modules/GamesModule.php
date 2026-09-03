@@ -127,12 +127,16 @@ final class GamesModule extends Module
     {
         $games = Db::all('SELECT * FROM games WHERE enabled = 1 ORDER BY sort, id');
         $f = Frame::make('screen')->title('Game Room')->mode('menu')->header('Door Games', count($games) . ' games')->blank();
-        $col = 0;
+        $choices = [];
         foreach ($games as $i => $g) {
-            $lbl = self::indexLabel($i);
-            $f->pipe(sprintf('|08 [|15%2s|08] |14%-26s |08%s', $lbl, mb_substr($g['name'], 0, 26), mb_substr($g['description'], 0, 62)));
+            $choices[] = [
+                'key'   => trim(self::indexLabel($i)),
+                'label' => mb_substr($g['name'], 0, 40),
+                'desc'  => (string) $g['description'],
+            ];
         }
-        return $f->footer('press the letter / number to play · Q back');
+        $this->picker($f, $choices);
+        return $f->footer('↑↓ move  ·  ENTER play  ·  or press the letter  ·  Q back');
     }
 
     private function scores(Engine $e): Frame

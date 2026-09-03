@@ -43,4 +43,36 @@ abstract class Module
         }
         return $f->footer($footer);
     }
+
+    /**
+     * Append a keyboard-navigable choice list to a `mode('menu')` frame, with
+     * the same highlight bar / ▸ marker / description footer the DB main menu
+     * uses. The browser owns the arrow-key selection and turns ENTER into the
+     * chosen item's hotkey - the module only has to render and handle the
+     * hotkey it gets back.
+     *
+     * @param list<array{key:string,label:string,desc?:string}> $choices
+     */
+    protected function picker(Frame $f, array $choices, string $indent = '   '): Frame
+    {
+        $w    = Frame::width();
+        $pad  = mb_strlen($indent);
+        $items = $f->meta['items'] ?? [];
+        foreach ($choices as $c) {
+            $key   = (string) ($c['key'] ?? '');
+            $label = (string) ($c['label'] ?? '');
+            $row   = count($f->lines);
+            $f->pipe($indent . '|08[|15' . $key . '|08] |07' . $label);
+            $items[] = [
+                'hotkey'      => $key,
+                'label'       => $label,
+                'description' => (string) ($c['desc'] ?? ''),
+                'row'         => $row,
+                'col'         => $pad,
+                'w'           => max(24, min($w - $pad - 2, 6 + mb_strlen($label))),
+            ];
+        }
+        $f->meta(['items' => $items]);
+        return $f;
+    }
 }
