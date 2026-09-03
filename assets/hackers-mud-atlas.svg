@@ -1,0 +1,1413 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="4828" height="4326" viewBox="0 0 4828 4326" font-family="'DejaVu Sans','Helvetica Neue',Arial,sans-serif">
+<defs>
+  <radialGradient id="bg" cx="50%" cy="0%" r="120%">
+    <stop offset="0%" stop-color="#141026"/><stop offset="45%" stop-color="#0b0b16"/><stop offset="100%" stop-color="#05060c"/>
+  </radialGradient>
+  <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
+    <path d="M48 0H0V48" fill="none" stroke="#ffffff" stroke-opacity="0.035" stroke-width="1"/>
+  </pattern>
+  <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M0 0L10 5L0 10z" fill="#66e0ff" fill-opacity="0.75"/>
+  </marker>
+  <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+    <feGaussianBlur stdDeviation="3.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter>
+</defs>
+<rect width="4828" height="4326" fill="url(#bg)"/>
+<rect width="4828" height="4326" fill="url(#grid)"/>
+<g transform="translate(60,54)">
+<text x="0" y="0" fill="#ffffff" font-size="46" font-weight="800" letter-spacing="2" filter="url(#glow)">THUGS<tspan fill="#ff2d55">(red)</tspan> &#8226; HACKERS-MUD</text>
+<text x="2" y="34" fill="#66e0ff" font-size="17" letter-spacing="4" font-weight="600">CITY ATLAS &#160;&#8212;&#160; OFFLINE REFERENCE</text>
+<text x="2" y="62" fill="#8b90b2" font-size="14">13 districts &#183; 208 rooms &#183; 460 exits &#183; generated 2026-09-03 &#183; shows hidden passages (not the in-game fogged view)</text>
+</g>
+<g transform="translate(4298,34)" font-size="12.5" fill="#c9cde0">
+<rect x="-16" y="-16" width="486" height="150" rx="10" fill="#0b0c16" fill-opacity="0.85" stroke="#242841"/>
+<text x="0" y="4" fill="#8b90b2" font-size="11" letter-spacing="3" font-weight="700">LEGEND</text>
+<g transform="translate(0,26)"><circle cx="7" cy="0" r="7" fill="#0d0e18" stroke="#66e0ff" stroke-width="2"/><text x="26" y="4">room</text></g>
+<g transform="translate(0,45)"><circle cx="7" cy="0" r="8.5" fill="#ff2d55" stroke="#ff7a90" stroke-width="2"/><text x="26" y="4">boss room</text></g>
+<g transform="translate(0,64)"><circle cx="7" cy="0" r="7" fill="#0d0e18" stroke="#ffcf4a" stroke-width="2"/><circle cx="7" cy="0" r="11" fill="none" stroke="#ffcf4a" stroke-opacity="0.7"/><text x="26" y="4">shop (&#165;)</text></g>
+<g transform="translate(0,83)"><circle cx="7" cy="0" r="7" fill="#0d0e18" stroke="#3ce88b" stroke-width="2"/><text x="7" y="4" font-size="11" fill="#3ce88b" text-anchor="middle">&#9670;</text><text x="26" y="4">safe</text></g>
+<g transform="translate(0,102)"><text x="7" y="4" font-size="13" fill="#66e0ff" text-anchor="middle">$</text><text x="26" y="4">bank</text></g>
+<g transform="translate(0,121)"><text x="7" y="4" font-size="13" fill="#b98cff" text-anchor="middle">&#9636;</text><text x="26" y="4">board</text></g>
+<g transform="translate(240,26)"><line x1="-2" y1="0" x2="16" y2="0" stroke="#8b90b2" stroke-width="2"/><text x="26" y="4">exit</text></g>
+<g transform="translate(240,45)"><line x1="-2" y1="0" x2="16" y2="0" stroke="#ffcf4a" stroke-width="2" stroke-dasharray="4 3"/><text x="26" y="4">locked</text></g>
+<g transform="translate(240,64)"><line x1="-2" y1="0" x2="16" y2="0" stroke="#6b7192" stroke-width="2" stroke-dasharray="1 4" stroke-linecap="round"/><text x="26" y="4">hidden</text></g>
+<g transform="translate(240,83)"><text x="7" y="4" font-size="13" fill="#c9cde0" text-anchor="middle">&#9650;&#9660;</text><text x="26" y="4">up / down</text></g>
+<g transform="translate(240,102)"><line x1="-2" y1="0" x2="16" y2="0" stroke="#66e0ff" stroke-width="2" stroke-opacity="0.6" stroke-dasharray="6 5" marker-end="url(#arrow)"/><text x="26" y="4">district portal</text></g>
+<g transform="translate(240,121)"><circle cx="7" cy="0" r="7" fill="#0d0e18" stroke="#ffffff" stroke-width="2"/><text x="7" y="4" font-size="10" fill="#fff" text-anchor="middle">&#9733;</text><text x="26" y="4">start</text></g>
+</g>
+<g>
+<rect x="60" y="270" width="764" height="1906" rx="14" fill="#0b0c16" fill-opacity="0.72" stroke="#b79a6b" stroke-opacity="0.55" stroke-width="1.5"/>
+<rect x="60" y="270" width="764" height="46" rx="14" fill="#b79a6b" fill-opacity="0.10"/>
+<text x="78" y="300" font-size="19" font-weight="800" fill="#b79a6b" letter-spacing="1">THE UNDERCITY</text>
+<text x="808" y="299" font-size="12" fill="#8b90b2" text-anchor="end">L6&#8211;18 &#183; 21 rooms</text>
+</g>
+<g>
+<rect x="870" y="270" width="764" height="1606" rx="14" fill="#0b0c16" fill-opacity="0.72" stroke="#5be0a0" stroke-opacity="0.55" stroke-width="1.5"/>
+<rect x="870" y="270" width="764" height="46" rx="14" fill="#5be0a0" fill-opacity="0.10"/>
+<text x="888" y="300" font-size="19" font-weight="800" fill="#5be0a0" letter-spacing="1">NET TOWER</text>
+<text x="1618" y="299" font-size="12" fill="#8b90b2" text-anchor="end">L8&#8211;24 &#183; 17 rooms &#183; vertical (floors)</text>
+</g>
+<g>
+<rect x="1680" y="270" width="1644" height="1456" rx="14" fill="#0b0c16" fill-opacity="0.72" stroke="#ff2d55" stroke-opacity="0.55" stroke-width="1.5"/>
+<rect x="1680" y="270" width="1644" height="46" rx="14" fill="#ff2d55" fill-opacity="0.10"/>
+<text x="1698" y="300" font-size="19" font-weight="800" fill="#ff2d55" letter-spacing="1">KABUKI</text>
+<text x="3308" y="299" font-size="12" fill="#8b90b2" text-anchor="end">L1&#8211;6 &#183; 32 rooms</text>
+</g>
+<g>
+<rect x="3370" y="270" width="1116" height="1306" rx="14" fill="#0b0c16" fill-opacity="0.72" stroke="#ff9b45" stroke-opacity="0.55" stroke-width="1.5"/>
+<rect x="3370" y="270" width="1116" height="46" rx="14" fill="#ff9b45" fill-opacity="0.10"/>
+<text x="3388" y="300" font-size="19" font-weight="800" fill="#ff9b45" letter-spacing="1">WATSON DOCKS</text>
+<text x="4470" y="299" font-size="12" fill="#8b90b2" text-anchor="end">L3&#8211;10 &#183; 30 rooms</text>
+</g>
+<g>
+<rect x="60" y="2230" width="1116" height="1006" rx="14" fill="#0b0c16" fill-opacity="0.72" stroke="#66e0ff" stroke-opacity="0.55" stroke-width="1.5"/>
+<rect x="60" y="2230" width="1116" height="46" rx="14" fill="#66e0ff" fill-opacity="0.10"/>
+<text x="78" y="2260" font-size="19" font-weight="800" fill="#66e0ff" letter-spacing="1">CORPO PLAZA</text>
+<text x="1160" y="2259" font-size="12" fill="#8b90b2" text-anchor="end">L5&#8211;16 &#183; 19 rooms</text>
+</g>
+<g>
+<rect x="1222" y="2230" width="940" height="1006" rx="14" fill="#0b0c16" fill-opacity="0.72" stroke="#ff5555" stroke-opacity="0.55" stroke-width="1.5"/>
+<rect x="1222" y="2230" width="940" height="46" rx="14" fill="#ff5555" fill-opacity="0.10"/>
+<text x="1240" y="2260" font-size="19" font-weight="800" fill="#ff5555" letter-spacing="1">THE COMBAT ZONE</text>
+<text x="2146" y="2259" font-size="12" fill="#8b90b2" text-anchor="end">L9&#8211;20 &#183; 13 rooms</text>
+</g>
+<g>
+<rect x="2208" y="2230" width="588" height="1006" rx="14" fill="#0b0c16" fill-opacity="0.72" stroke="#b98cff" stroke-opacity="0.55" stroke-width="1.5"/>
+<rect x="2208" y="2230" width="588" height="46" rx="14" fill="#b98cff" fill-opacity="0.10"/>
+<text x="2226" y="2260" font-size="19" font-weight="800" fill="#b98cff" letter-spacing="1">THE BLACKWALL FRINGE</text>
+<text x="2780" y="2259" font-size="12" fill="#8b90b2" text-anchor="end">L16&#8211;30 &#183; 8 rooms</text>
+</g>
+<g>
+<rect x="2842" y="2230" width="764" height="1006" rx="14" fill="#0b0c16" fill-opacity="0.72" stroke="#e6cf5a" stroke-opacity="0.55" stroke-width="1.5"/>
+<rect x="2842" y="2230" width="764" height="46" rx="14" fill="#e6cf5a" fill-opacity="0.10"/>
+<text x="2860" y="2260" font-size="19" font-weight="800" fill="#e6cf5a" letter-spacing="1">NEURAL IMPLANT CHURCH</text>
+<text x="3590" y="2259" font-size="12" fill="#8b90b2" text-anchor="end">L6&#8211;18 &#183; 12 rooms</text>
+</g>
+<g>
+<rect x="3652" y="2230" width="1116" height="856" rx="14" fill="#0b0c16" fill-opacity="0.72" stroke="#4aa3ff" stroke-opacity="0.55" stroke-width="1.5"/>
+<rect x="3652" y="2230" width="1116" height="46" rx="14" fill="#4aa3ff" fill-opacity="0.10"/>
+<text x="3670" y="2260" font-size="19" font-weight="800" fill="#4aa3ff" letter-spacing="1">THE METRO</text>
+<text x="4752" y="2259" font-size="12" fill="#8b90b2" text-anchor="end">L5&#8211;15 &#183; 11 rooms</text>
+</g>
+<g>
+<rect x="60" y="3290" width="1116" height="856" rx="14" fill="#0b0c16" fill-opacity="0.72" stroke="#e0763a" stroke-opacity="0.55" stroke-width="1.5"/>
+<rect x="60" y="3290" width="1116" height="46" rx="14" fill="#e0763a" fill-opacity="0.10"/>
+<text x="78" y="3320" font-size="19" font-weight="800" fill="#e0763a" letter-spacing="1">THE WASTELANDS</text>
+<text x="1160" y="3319" font-size="12" fill="#8b90b2" text-anchor="end">L10&#8211;26 &#183; 14 rooms</text>
+</g>
+<g>
+<rect x="1222" y="3290" width="764" height="856" rx="14" fill="#0b0c16" fill-opacity="0.72" stroke="#33ff9e" stroke-opacity="0.55" stroke-width="1.5"/>
+<rect x="1222" y="3290" width="764" height="46" rx="14" fill="#33ff9e" fill-opacity="0.10"/>
+<text x="1240" y="3320" font-size="19" font-weight="800" fill="#33ff9e" letter-spacing="1">THE GRID</text>
+<text x="1970" y="3319" font-size="12" fill="#8b90b2" text-anchor="end">L16&#8211;32 &#183; 12 rooms</text>
+</g>
+<g>
+<rect x="2032" y="3290" width="764" height="706" rx="14" fill="#0b0c16" fill-opacity="0.72" stroke="#e0b44a" stroke-opacity="0.55" stroke-width="1.5"/>
+<rect x="2032" y="3290" width="764" height="46" rx="14" fill="#e0b44a" fill-opacity="0.10"/>
+<text x="2050" y="3320" font-size="19" font-weight="800" fill="#e0b44a" letter-spacing="1">THE BADLANDS EDGE</text>
+<text x="2780" y="3319" font-size="12" fill="#8b90b2" text-anchor="end">L6&#8211;20 &#183; 11 rooms</text>
+</g>
+<g>
+<rect x="2842" y="3290" width="1116" height="556" rx="14" fill="#0b0c16" fill-opacity="0.72" stroke="#ff5db1" stroke-opacity="0.55" stroke-width="1.5"/>
+<rect x="2842" y="3290" width="1116" height="46" rx="14" fill="#ff5db1" fill-opacity="0.10"/>
+<text x="2860" y="3320" font-size="19" font-weight="800" fill="#ff5db1" letter-spacing="1">THE NEON KITSUNE</text>
+<text x="3942" y="3319" font-size="12" fill="#8b90b2" text-anchor="end">L2&#8211;12 &#183; 8 rooms</text>
+</g>
+<g>
+<line x1="2150" y1="1471" x2="2150" y2="1321" stroke="#ff2d55" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="2150" y="1400" font-size="12" fill="#c9cde0" text-anchor="middle">&#9660;</text>
+<line x1="2150" y1="1321" x2="2150" y2="1171" stroke="#ff2d55" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="2150" y="1250" font-size="12" fill="#c9cde0" text-anchor="middle">&#9660;</text>
+<line x1="2150" y1="1171" x2="2150" y2="1021" stroke="#ff2d55" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2150" y1="1021" x2="2326" y2="1021" stroke="#ff2d55" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2150" y1="1021" x2="2150" y2="871" stroke="#ff2d55" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2150" y1="871" x2="1974" y2="871" stroke="#ff2d55" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2150" y1="871" x2="2326" y2="871" stroke="#ff2d55" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2150" y1="871" x2="2150" y2="721" stroke="#ff2d55" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2150" y1="721" x2="1974" y2="721" stroke="#ff2d55" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2150" y1="1171" x2="2326" y2="1171" stroke="#ff2d55" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2326" y1="1171" x2="2502" y2="1171" stroke="#ff2d55" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2502" y1="1171" x2="2678" y2="1171" stroke="#ff2d55" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2150" y1="1171" x2="1974" y2="1171" stroke="#ff2d55" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="1974" y1="1171" x2="1974" y2="1321" stroke="#ff2d55" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="1974" y1="1321" x2="1798" y2="1321" stroke="#ff2d55" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2150" y1="721" x2="2150" y2="571" stroke="#ff2d55" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2150" y1="571" x2="2150" y2="421" stroke="#ff2d55" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2326" y1="1171" x2="2502" y2="1021" stroke="#ff2d55" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2150" y1="871" x2="2502" y2="871" stroke="#ff2d55" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2150" y1="1021" x2="2326" y2="1321" stroke="#ff2d55" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="3840" y1="1471" x2="4016" y2="1321" stroke="#ff9b45" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="4016" y1="1321" x2="4016" y2="1171" stroke="#ff9b45" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="4016" y1="1171" x2="3664" y2="1171" stroke="#ff9b45" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="4016" y1="1171" x2="4192" y2="1021" stroke="#ff9b45" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="4016" y1="1171" x2="3840" y2="1021" stroke="#ff9b45" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="4016" y1="1321" x2="4192" y2="1171" stroke="#ff9b45" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="4192" y1="1171" x2="4368" y2="1171" stroke="#ff9b45" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="3840" y1="1021" x2="4016" y2="721" stroke="#ff9b45" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="4016" y1="721" x2="4016" y2="571" stroke="#ff9b45" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="4016" y="650" font-size="12" fill="#c9cde0" text-anchor="middle">&#9650;</text>
+<line x1="4016" y1="571" x2="4016" y2="421" stroke="#ff9b45" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="3664" y1="1171" x2="3664" y2="721" stroke="#ff9b45" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="3664" y1="721" x2="3488" y2="721" stroke="#ff9b45" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="3664" y1="721" x2="3664" y2="871" stroke="#ff9b45" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="4192" y1="1021" x2="4192" y2="721" stroke="#ff9b45" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="4192" y1="721" x2="4192" y2="571" stroke="#ff9b45" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="4192" y1="571" x2="4192" y2="421" stroke="#ff9b45" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="3840" y1="1471" x2="4016" y2="1471" stroke="#ff9b45" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="354" y1="2831" x2="354" y2="2981" stroke="#66e0ff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="354" y1="2831" x2="354" y2="2681" stroke="#66e0ff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="354" y1="2681" x2="530" y2="2681" stroke="#66e0ff" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="442" y="2685" font-size="12" fill="#c9cde0" text-anchor="middle">&#9650;</text>
+<line x1="530" y1="2681" x2="706" y2="2381" stroke="#66e0ff" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="618" y="2535" font-size="12" fill="#c9cde0" text-anchor="middle">&#9650;</text>
+<line x1="354" y1="2831" x2="178" y2="2831" stroke="#66e0ff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="354" y1="2831" x2="706" y2="2981" stroke="#66e0ff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="706" y1="2981" x2="530" y2="2831" stroke="#66e0ff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="354" y1="2831" x2="178" y2="2681" stroke="#66e0ff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="354" y1="2831" x2="530" y2="2981" stroke="#66e0ff" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="442" y="2910" font-size="12" fill="#c9cde0" text-anchor="middle">&#9650;</text>
+<line x1="530" y1="2981" x2="882" y2="2831" stroke="#66e0ff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="882" y1="2831" x2="354" y2="3131" stroke="#66e0ff" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="618" y="2985" font-size="12" fill="#c9cde0" text-anchor="middle">&#9660;</text>
+<line x1="354" y1="3131" x2="530" y2="3131" stroke="#66e0ff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="530" y1="3131" x2="354" y2="2831" stroke="#66e0ff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="882" y1="2831" x2="706" y2="2381" stroke="#6b7192" stroke-width="1.8" stroke-opacity="0.8" stroke-dasharray="1 4" stroke-linecap="round"/>
+<line x1="1516" y1="3131" x2="1516" y2="2981" stroke="#ff5555" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="1516" y1="2981" x2="1516" y2="2831" stroke="#ff5555" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="1516" y1="2831" x2="1692" y2="2681" stroke="#ff5555" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="1604" y="2760" font-size="12" fill="#c9cde0" text-anchor="middle">&#9650;</text>
+<line x1="1692" y1="2681" x2="1516" y2="2681" stroke="#ff5555" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="1692" y1="2681" x2="1868" y2="2681" stroke="#ff5555" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="1692" y1="2681" x2="1868" y2="2531" stroke="#ff5555" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="1780" y="2610" font-size="12" fill="#c9cde0" text-anchor="middle">&#9650;</text>
+<line x1="1868" y1="2531" x2="1692" y2="2531" stroke="#ff5555" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="1868" y1="2531" x2="2044" y2="2381" stroke="#ff5555" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="1956" y="2460" font-size="12" fill="#c9cde0" text-anchor="middle">&#9650;</text>
+<line x1="1516" y1="2981" x2="1692" y2="2981" stroke="#ff5555" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="1692" y1="2981" x2="1692" y2="3131" stroke="#ff5555" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="1516" y1="3131" x2="1340" y2="3131" stroke="#ff5555" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="1340" y1="3131" x2="1340" y2="2981" stroke="#ff5555" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="530" y1="2071" x2="530" y2="1921" stroke="#b79a6b" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="530" y1="2071" x2="354" y2="1921" stroke="#b79a6b" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="530" y1="2071" x2="706" y2="1921" stroke="#b79a6b" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="530" y1="1921" x2="530" y2="1771" stroke="#b79a6b" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="530" y1="1771" x2="530" y2="1621" stroke="#b79a6b" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="530" y1="2071" x2="354" y2="1771" stroke="#b79a6b" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="530" y1="1921" x2="706" y2="1771" stroke="#b79a6b" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="530" y1="1771" x2="530" y2="1471" stroke="#b79a6b" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="530" y1="1471" x2="530" y2="1321" stroke="#ffcf4a" stroke-width="2" stroke-opacity="0.85" stroke-dasharray="4 3"/>
+<line x1="530" y1="1621" x2="354" y2="1621" stroke="#b79a6b" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="530" y1="1621" x2="530" y2="1171" stroke="#b79a6b" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2502" y1="3131" x2="2502" y2="2981" stroke="#b98cff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2502" y1="3131" x2="2326" y2="3131" stroke="#b98cff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2502" y1="2981" x2="2502" y2="2831" stroke="#b98cff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2502" y1="2981" x2="2678" y2="2981" stroke="#b98cff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2502" y1="2831" x2="2502" y2="2681" stroke="#b98cff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2502" y1="2681" x2="2502" y2="2531" stroke="#b98cff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2502" y1="2531" x2="2502" y2="2381" stroke="#b98cff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2150" y1="1321" x2="2502" y2="1471" stroke="#ff2d55" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2502" y1="1471" x2="2502" y2="1621" stroke="#ff2d55" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2502" y1="1471" x2="2326" y2="1471" stroke="#ff2d55" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="2414" y="1475" font-size="12" fill="#c9cde0" text-anchor="middle">&#9650;</text>
+<line x1="2326" y1="1471" x2="2678" y2="1471" stroke="#ff2d55" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2678" y1="1471" x2="2854" y2="1471" stroke="#ff2d55" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2854" y1="1471" x2="3030" y2="1471" stroke="#ff2d55" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="3030" y1="1471" x2="3030" y2="1321" stroke="#ff2d55" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2678" y1="1471" x2="2854" y2="1321" stroke="#ff2d55" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2854" y1="1321" x2="3030" y2="1321" stroke="#ff2d55" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="3030" y1="1471" x2="3206" y2="1471" stroke="#ff2d55" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="3206" y1="1471" x2="3206" y2="1321" stroke="#ff2d55" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="3030" y1="1321" x2="3030" y2="1171" stroke="#ff2d55" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2502" y1="1021" x2="2678" y2="1471" stroke="#ff2d55" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="2590" y="1250" font-size="12" fill="#c9cde0" text-anchor="middle">&#9650;</text>
+<line x1="3312" y1="3741" x2="3136" y2="3741" stroke="#ff5db1" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="3312" y1="3741" x2="3488" y2="3741" stroke="#ff5db1" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="3136" y1="3741" x2="2960" y2="3741" stroke="#ffcf4a" stroke-width="2" stroke-opacity="0.85" stroke-dasharray="4 3"/>
+<line x1="3312" y1="3741" x2="3488" y2="3591" stroke="#ff5db1" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="3400" y="3670" font-size="12" fill="#c9cde0" text-anchor="middle">&#9650;</text>
+<line x1="3488" y1="3591" x2="3488" y2="3441" stroke="#ff5db1" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="3312" y1="3741" x2="3840" y2="3591" stroke="#ff5db1" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="3312" y1="3741" x2="3664" y2="3591" stroke="#ff5db1" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="882" y1="2831" x2="706" y2="2831" stroke="#66e0ff" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="794" y="2835" font-size="12" fill="#c9cde0" text-anchor="middle">&#9650;</text>
+<line x1="706" y1="2831" x2="882" y2="2681" stroke="#66e0ff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="882" y1="2681" x2="706" y2="2681" stroke="#66e0ff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="882" y1="2681" x2="1058" y2="2681" stroke="#66e0ff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="882" y1="2681" x2="706" y2="2531" stroke="#66e0ff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="706" y1="2531" x2="530" y2="2531" stroke="#66e0ff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="1058" y1="2681" x2="706" y2="2831" stroke="#66e0ff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2326" y1="3741" x2="2326" y2="3591" stroke="#e0b44a" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2326" y1="3591" x2="2326" y2="3441" stroke="#e0b44a" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2326" y1="3591" x2="2502" y2="3591" stroke="#e0b44a" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2326" y1="3591" x2="2150" y2="3591" stroke="#e0b44a" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2326" y1="3441" x2="2150" y2="3441" stroke="#e0b44a" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2326" y1="3441" x2="2502" y2="3441" stroke="#e0b44a" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2150" y1="3591" x2="2150" y2="3741" stroke="#e0b44a" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2326" y1="3441" x2="2502" y2="3741" stroke="#e0b44a" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2502" y1="3741" x2="2678" y2="3741" stroke="#e0b44a" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2502" y1="3741" x2="2326" y2="3891" stroke="#e0b44a" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="354" y1="1621" x2="354" y2="1021" stroke="#b79a6b" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="354" y="1325" font-size="12" fill="#c9cde0" text-anchor="middle">&#9660;</text>
+<line x1="354" y1="1021" x2="178" y2="1021" stroke="#b79a6b" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="354" y1="1021" x2="354" y2="871" stroke="#b79a6b" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="354" y1="871" x2="530" y2="871" stroke="#b79a6b" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="354" y1="871" x2="354" y2="721" stroke="#b79a6b" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="354" y1="721" x2="178" y2="721" stroke="#b79a6b" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="354" y1="721" x2="530" y2="721" stroke="#b79a6b" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="354" y1="871" x2="354" y2="571" stroke="#b79a6b" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="354" y1="571" x2="354" y2="421" stroke="#ffcf4a" stroke-width="2" stroke-opacity="0.85" stroke-dasharray="4 3"/>
+<line x1="4298" y1="2681" x2="4122" y2="2681" stroke="#4aa3ff" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="4210" y="2685" font-size="12" fill="#c9cde0" text-anchor="middle">&#9660;</text>
+<line x1="4122" y1="2681" x2="4122" y2="2531" stroke="#4aa3ff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="4122" y1="2681" x2="4122" y2="2831" stroke="#4aa3ff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="4650" y1="2681" x2="4122" y2="2531" stroke="#4aa3ff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="4122" y1="2531" x2="4122" y2="2381" stroke="#4aa3ff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="4122" y1="2381" x2="4298" y2="2381" stroke="#4aa3ff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="4298" y1="2381" x2="4122" y2="2831" stroke="#4aa3ff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="4122" y1="2831" x2="3946" y2="2831" stroke="#4aa3ff" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="4034" y="2835" font-size="12" fill="#c9cde0" text-anchor="middle">&#9660;</text>
+<line x1="3946" y1="2831" x2="3946" y2="2981" stroke="#4aa3ff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="3946" y1="2831" x2="3946" y2="2681" stroke="#4aa3ff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="3946" y1="2981" x2="3770" y2="2981" stroke="#4aa3ff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="3770" y1="2981" x2="4122" y2="2531" stroke="#4aa3ff" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="3946" y="2760" font-size="12" fill="#c9cde0" text-anchor="middle">&#9650;</text>
+<line x1="3136" y1="3131" x2="3136" y2="2981" stroke="#e6cf5a" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="3136" y1="2981" x2="2960" y2="2981" stroke="#e6cf5a" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="3136" y1="2981" x2="3488" y2="2981" stroke="#e6cf5a" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="3136" y1="2981" x2="3136" y2="2831" stroke="#e6cf5a" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="3136" y1="2981" x2="3312" y2="2981" stroke="#e6cf5a" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="3224" y="2985" font-size="12" fill="#c9cde0" text-anchor="middle">&#9650;</text>
+<line x1="3136" y1="2831" x2="2960" y2="2681" stroke="#e6cf5a" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="3048" y="2760" font-size="12" fill="#c9cde0" text-anchor="middle">&#9660;</text>
+<line x1="3136" y1="2831" x2="3312" y2="2831" stroke="#ffcf4a" stroke-width="2" stroke-opacity="0.85" stroke-dasharray="4 3"/>
+<line x1="2960" y1="2981" x2="2960" y2="2831" stroke="#e6cf5a" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2960" y1="2681" x2="2960" y2="2531" stroke="#e6cf5a" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="2960" y="2610" font-size="12" fill="#c9cde0" text-anchor="middle">&#9660;</text>
+<line x1="2960" y1="2531" x2="2960" y2="2381" stroke="#e6cf5a" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2960" y1="2381" x2="3136" y2="2381" stroke="#e6cf5a" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="3136" y1="2381" x2="2960" y2="2831" stroke="#e6cf5a" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="3048" y="2610" font-size="12" fill="#c9cde0" text-anchor="middle">&#9650;</text>
+<line x1="1164" y1="1621" x2="1164" y2="1471" stroke="#5be0a0" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="1164" y="1550" font-size="12" fill="#c9cde0" text-anchor="middle">&#9650;</text>
+<line x1="1164" y1="1471" x2="1164" y2="1321" stroke="#5be0a0" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="1164" y="1400" font-size="12" fill="#c9cde0" text-anchor="middle">&#9650;</text>
+<line x1="1164" y1="1321" x2="1164" y2="1171" stroke="#5be0a0" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="1164" y="1250" font-size="12" fill="#c9cde0" text-anchor="middle">&#9650;</text>
+<line x1="1164" y1="1171" x2="1164" y2="1021" stroke="#5be0a0" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="1164" y="1100" font-size="12" fill="#c9cde0" text-anchor="middle">&#9650;</text>
+<line x1="1164" y1="1021" x2="1164" y2="871" stroke="#5be0a0" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="1164" y="950" font-size="12" fill="#c9cde0" text-anchor="middle">&#9650;</text>
+<line x1="1164" y1="871" x2="1164" y2="721" stroke="#5be0a0" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="1164" y="800" font-size="12" fill="#c9cde0" text-anchor="middle">&#9650;</text>
+<line x1="1164" y1="721" x2="1164" y2="571" stroke="#5be0a0" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="1164" y="650" font-size="12" fill="#c9cde0" text-anchor="middle">&#9650;</text>
+<line x1="1164" y1="571" x2="1164" y2="421" stroke="#5be0a0" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="1164" y="500" font-size="12" fill="#c9cde0" text-anchor="middle">&#9650;</text>
+<line x1="1164" y1="1621" x2="1164" y2="1771" stroke="#5be0a0" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="1164" y="1700" font-size="12" fill="#c9cde0" text-anchor="middle">&#9660;</text>
+<line x1="1164" y1="1771" x2="988" y2="1771" stroke="#5be0a0" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="1076" y="1775" font-size="12" fill="#c9cde0" text-anchor="middle">&#9660;</text>
+<line x1="1164" y1="1321" x2="1340" y2="1321" stroke="#5be0a0" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="1340" y1="1321" x2="1516" y2="1321" stroke="#ffcf4a" stroke-width="2" stroke-opacity="0.85" stroke-dasharray="4 3"/>
+<line x1="1164" y1="1171" x2="1340" y2="1171" stroke="#5be0a0" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="1164" y1="721" x2="1340" y2="721" stroke="#5be0a0" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="1164" y1="571" x2="1340" y2="571" stroke="#5be0a0" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="1164" y1="1621" x2="1340" y2="1621" stroke="#5be0a0" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="1340" y1="1621" x2="1164" y2="421" stroke="#5be0a0" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="1252" y="1025" font-size="12" fill="#c9cde0" text-anchor="middle">&#8901;out</text>
+<line x1="1340" y1="1621" x2="1164" y2="1771" stroke="#5be0a0" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="1252" y="1700" font-size="12" fill="#c9cde0" text-anchor="middle">&#8901;in</text>
+<line x1="706" y1="3741" x2="530" y2="3591" stroke="#e0763a" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="530" y1="3591" x2="530" y2="3441" stroke="#e0763a" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="706" y1="3741" x2="354" y2="3741" stroke="#e0763a" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="354" y1="3741" x2="178" y2="3741" stroke="#e0763a" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="266" y="3745" font-size="12" fill="#c9cde0" text-anchor="middle">&#9660;</text>
+<line x1="706" y1="3741" x2="530" y2="3891" stroke="#e0763a" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="530" y1="3891" x2="530" y2="4041" stroke="#e0763a" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="530" y1="3441" x2="706" y2="3441" stroke="#e0763a" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="706" y1="3741" x2="882" y2="3741" stroke="#e0763a" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="882" y1="3741" x2="706" y2="3591" stroke="#e0763a" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="530" y1="3741" x2="354" y2="3891" stroke="#e0763a" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="354" y1="3891" x2="178" y2="3891" stroke="#e0763a" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="882" y1="3741" x2="1058" y2="3741" stroke="#e0763a" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="530" y1="3741" x2="882" y2="3741" stroke="#e0763a" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="1516" y1="4041" x2="1692" y2="4041" stroke="#33ff9e" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="1516" y1="4041" x2="1516" y2="3891" stroke="#33ff9e" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="1516" y1="3891" x2="1516" y2="3741" stroke="#ffcf4a" stroke-width="2" stroke-opacity="0.85" stroke-dasharray="4 3"/>
+<line x1="1516" y1="3741" x2="1516" y2="3591" stroke="#33ff9e" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="1692" y1="4041" x2="1868" y2="4041" stroke="#33ff9e" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="1516" y1="4041" x2="1340" y2="4041" stroke="#33ff9e" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="1340" y1="4041" x2="1340" y2="3741" stroke="#33ff9e" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="1340" y1="3741" x2="1340" y2="3591" stroke="#33ff9e" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="1340" y1="3891" x2="1340" y2="3741" stroke="#33ff9e" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="1340" y1="3591" x2="1340" y2="3441" stroke="#33ff9e" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="1340" y1="3441" x2="1868" y2="3891" stroke="#33ff9e" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="1516" y1="3591" x2="1868" y2="3891" stroke="#33ff9e" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="1692" y="3745" font-size="12" fill="#c9cde0" text-anchor="middle">&#9660;</text>
+<line x1="4016" y1="1171" x2="4016" y2="1021" stroke="#ff9b45" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="4016" y1="1171" x2="3664" y2="1021" stroke="#ff9b45" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="3840" y1="1021" x2="4192" y2="871" stroke="#ff9b45" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="3840" y1="1021" x2="3840" y2="1171" stroke="#ff9b45" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="3664" y1="1171" x2="3664" y2="1321" stroke="#ff9b45" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="3664" y1="1021" x2="3840" y2="721" stroke="#ff9b45" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="4016" y1="1021" x2="3840" y2="871" stroke="#ff9b45" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="3840" y1="871" x2="3840" y2="571" stroke="#ff9b45" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="3840" y="725" font-size="12" fill="#c9cde0" text-anchor="middle">&#9660;</text>
+<line x1="3840" y1="571" x2="3840" y2="421" stroke="#ff9b45" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="4192" y1="871" x2="4368" y2="871" stroke="#ff9b45" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="4368" y1="871" x2="4016" y2="871" stroke="#ff9b45" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="3664" y1="1321" x2="3840" y2="1321" stroke="#ff9b45" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="3752" y="1325" font-size="12" fill="#c9cde0" text-anchor="middle">&#9650;</text>
+<line x1="3840" y1="1321" x2="4016" y2="1021" stroke="#ff9b45" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="3664" y1="1021" x2="3840" y2="1171" stroke="#ff9b45" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2150" y1="1321" x2="2150" y2="1471" stroke="#ff2d55" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="2150" y="1400" font-size="12" fill="#c9cde0" text-anchor="middle">&#9650;</text>
+<line x1="2150" y1="1171" x2="2150" y2="1321" stroke="#ff2d55" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="2150" y="1250" font-size="12" fill="#c9cde0" text-anchor="middle">&#9650;</text>
+<line x1="2150" y1="1021" x2="2150" y2="1171" stroke="#ff2d55" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2326" y1="1021" x2="2150" y2="1021" stroke="#ff2d55" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2150" y1="871" x2="2150" y2="1021" stroke="#ff2d55" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="1974" y1="871" x2="2150" y2="871" stroke="#ff2d55" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2326" y1="871" x2="2150" y2="871" stroke="#ff2d55" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2150" y1="721" x2="2150" y2="871" stroke="#ff2d55" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="1974" y1="721" x2="2150" y2="721" stroke="#ff2d55" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2326" y1="1171" x2="2150" y2="1171" stroke="#ff2d55" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2502" y1="1171" x2="2326" y2="1171" stroke="#ff2d55" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2678" y1="1171" x2="2502" y2="1171" stroke="#ff2d55" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="1974" y1="1171" x2="2150" y2="1171" stroke="#ff2d55" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="1974" y1="1321" x2="1974" y2="1171" stroke="#ff2d55" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="1798" y1="1321" x2="1974" y2="1321" stroke="#ff2d55" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2150" y1="571" x2="2150" y2="721" stroke="#ff2d55" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2150" y1="421" x2="2150" y2="571" stroke="#ff2d55" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2502" y1="1021" x2="2326" y2="1171" stroke="#ff2d55" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2502" y1="871" x2="2150" y2="871" stroke="#ff2d55" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2326" y1="1321" x2="2150" y2="1021" stroke="#ff2d55" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="4016" y1="1321" x2="3840" y2="1471" stroke="#ff9b45" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="4016" y1="1171" x2="4016" y2="1321" stroke="#ff9b45" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="3664" y1="1171" x2="4016" y2="1171" stroke="#ff9b45" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="4192" y1="1021" x2="4016" y2="1171" stroke="#ff9b45" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="3840" y1="1021" x2="4016" y2="1171" stroke="#ff9b45" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="4192" y1="1171" x2="4016" y2="1321" stroke="#ff9b45" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="4368" y1="1171" x2="4192" y2="1171" stroke="#ff9b45" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="4016" y1="721" x2="3840" y2="1021" stroke="#ff9b45" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="4016" y1="571" x2="4016" y2="721" stroke="#ff9b45" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="4016" y="650" font-size="12" fill="#c9cde0" text-anchor="middle">&#9660;</text>
+<line x1="4016" y1="421" x2="4016" y2="571" stroke="#ff9b45" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="3664" y1="721" x2="3664" y2="1171" stroke="#ff9b45" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="3488" y1="721" x2="3664" y2="721" stroke="#ff9b45" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="3664" y1="871" x2="3664" y2="721" stroke="#ff9b45" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="4192" y1="721" x2="4192" y2="1021" stroke="#ff9b45" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="4192" y1="571" x2="4192" y2="721" stroke="#ff9b45" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="4192" y1="421" x2="4192" y2="571" stroke="#ff9b45" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="4016" y1="1471" x2="3840" y2="1471" stroke="#ff9b45" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="354" y1="2981" x2="354" y2="2831" stroke="#66e0ff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="354" y1="2681" x2="354" y2="2831" stroke="#66e0ff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="530" y1="2681" x2="354" y2="2681" stroke="#66e0ff" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="442" y="2685" font-size="12" fill="#c9cde0" text-anchor="middle">&#9660;</text>
+<line x1="706" y1="2381" x2="530" y2="2681" stroke="#66e0ff" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="618" y="2535" font-size="12" fill="#c9cde0" text-anchor="middle">&#9660;</text>
+<line x1="178" y1="2831" x2="354" y2="2831" stroke="#66e0ff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="706" y1="2981" x2="354" y2="2831" stroke="#66e0ff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="530" y1="2831" x2="706" y2="2981" stroke="#66e0ff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="178" y1="2681" x2="354" y2="2831" stroke="#66e0ff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="530" y1="2981" x2="354" y2="2831" stroke="#66e0ff" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="442" y="2910" font-size="12" fill="#c9cde0" text-anchor="middle">&#9660;</text>
+<line x1="882" y1="2831" x2="530" y2="2981" stroke="#66e0ff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="354" y1="3131" x2="882" y2="2831" stroke="#66e0ff" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="618" y="2985" font-size="12" fill="#c9cde0" text-anchor="middle">&#9650;</text>
+<line x1="530" y1="3131" x2="354" y2="3131" stroke="#66e0ff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="354" y1="2831" x2="530" y2="3131" stroke="#66e0ff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="706" y1="2381" x2="882" y2="2831" stroke="#6b7192" stroke-width="1.8" stroke-opacity="0.8" stroke-dasharray="1 4" stroke-linecap="round"/>
+<line x1="1516" y1="2981" x2="1516" y2="3131" stroke="#ff5555" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="1516" y1="2831" x2="1516" y2="2981" stroke="#ff5555" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="1692" y1="2681" x2="1516" y2="2831" stroke="#ff5555" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="1604" y="2760" font-size="12" fill="#c9cde0" text-anchor="middle">&#9660;</text>
+<line x1="1516" y1="2681" x2="1692" y2="2681" stroke="#ff5555" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="1868" y1="2681" x2="1692" y2="2681" stroke="#ff5555" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="1868" y1="2531" x2="1692" y2="2681" stroke="#ff5555" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="1780" y="2610" font-size="12" fill="#c9cde0" text-anchor="middle">&#9660;</text>
+<line x1="1692" y1="2531" x2="1868" y2="2531" stroke="#ff5555" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2044" y1="2381" x2="1868" y2="2531" stroke="#ff5555" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="1956" y="2460" font-size="12" fill="#c9cde0" text-anchor="middle">&#9660;</text>
+<line x1="1692" y1="2981" x2="1516" y2="2981" stroke="#ff5555" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="1692" y1="3131" x2="1692" y2="2981" stroke="#ff5555" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="1340" y1="3131" x2="1516" y2="3131" stroke="#ff5555" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="1340" y1="2981" x2="1340" y2="3131" stroke="#ff5555" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="530" y1="1921" x2="530" y2="2071" stroke="#b79a6b" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="354" y1="1921" x2="530" y2="2071" stroke="#b79a6b" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="706" y1="1921" x2="530" y2="2071" stroke="#b79a6b" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="530" y1="1771" x2="530" y2="1921" stroke="#b79a6b" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="530" y1="1621" x2="530" y2="1771" stroke="#b79a6b" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="354" y1="1771" x2="530" y2="2071" stroke="#b79a6b" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="706" y1="1771" x2="530" y2="1921" stroke="#b79a6b" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="530" y1="1471" x2="530" y2="1771" stroke="#b79a6b" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="530" y1="1321" x2="530" y2="1471" stroke="#ffcf4a" stroke-width="2" stroke-opacity="0.85" stroke-dasharray="4 3"/>
+<line x1="354" y1="1621" x2="530" y2="1621" stroke="#b79a6b" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="530" y1="1171" x2="530" y2="1621" stroke="#b79a6b" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2502" y1="2981" x2="2502" y2="3131" stroke="#b98cff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2326" y1="3131" x2="2502" y2="3131" stroke="#b98cff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2502" y1="2831" x2="2502" y2="2981" stroke="#b98cff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2678" y1="2981" x2="2502" y2="2981" stroke="#b98cff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2502" y1="2681" x2="2502" y2="2831" stroke="#b98cff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2502" y1="2531" x2="2502" y2="2681" stroke="#b98cff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2502" y1="2381" x2="2502" y2="2531" stroke="#b98cff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2502" y1="1471" x2="2150" y2="1321" stroke="#ff2d55" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2502" y1="1621" x2="2502" y2="1471" stroke="#ff2d55" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2326" y1="1471" x2="2502" y2="1471" stroke="#ff2d55" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="2414" y="1475" font-size="12" fill="#c9cde0" text-anchor="middle">&#9660;</text>
+<line x1="2678" y1="1471" x2="2326" y2="1471" stroke="#ff2d55" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2854" y1="1471" x2="2678" y2="1471" stroke="#ff2d55" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="3030" y1="1471" x2="2854" y2="1471" stroke="#ff2d55" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="3030" y1="1321" x2="3030" y2="1471" stroke="#ff2d55" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2854" y1="1321" x2="2678" y2="1471" stroke="#ff2d55" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="3030" y1="1321" x2="2854" y2="1321" stroke="#ff2d55" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="3206" y1="1471" x2="3030" y2="1471" stroke="#ff2d55" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="3206" y1="1321" x2="3206" y2="1471" stroke="#ff2d55" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="3030" y1="1171" x2="3030" y2="1321" stroke="#ff2d55" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2678" y1="1471" x2="2502" y2="1021" stroke="#ff2d55" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="2590" y="1250" font-size="12" fill="#c9cde0" text-anchor="middle">&#9660;</text>
+<line x1="3136" y1="3741" x2="3312" y2="3741" stroke="#ff5db1" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="3488" y1="3741" x2="3312" y2="3741" stroke="#ff5db1" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2960" y1="3741" x2="3136" y2="3741" stroke="#ffcf4a" stroke-width="2" stroke-opacity="0.85" stroke-dasharray="4 3"/>
+<line x1="3488" y1="3591" x2="3312" y2="3741" stroke="#ff5db1" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="3400" y="3670" font-size="12" fill="#c9cde0" text-anchor="middle">&#9660;</text>
+<line x1="3488" y1="3441" x2="3488" y2="3591" stroke="#ff5db1" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="3840" y1="3591" x2="3312" y2="3741" stroke="#ff5db1" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="3664" y1="3591" x2="3312" y2="3741" stroke="#ff5db1" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="706" y1="2831" x2="882" y2="2831" stroke="#66e0ff" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="794" y="2835" font-size="12" fill="#c9cde0" text-anchor="middle">&#9660;</text>
+<line x1="882" y1="2681" x2="706" y2="2831" stroke="#66e0ff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="706" y1="2681" x2="882" y2="2681" stroke="#66e0ff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="1058" y1="2681" x2="882" y2="2681" stroke="#66e0ff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="706" y1="2531" x2="882" y2="2681" stroke="#66e0ff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="530" y1="2531" x2="706" y2="2531" stroke="#66e0ff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="706" y1="2831" x2="1058" y2="2681" stroke="#66e0ff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2326" y1="3591" x2="2326" y2="3741" stroke="#e0b44a" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2326" y1="3441" x2="2326" y2="3591" stroke="#e0b44a" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2502" y1="3591" x2="2326" y2="3591" stroke="#e0b44a" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2150" y1="3591" x2="2326" y2="3591" stroke="#e0b44a" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2150" y1="3441" x2="2326" y2="3441" stroke="#e0b44a" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2502" y1="3441" x2="2326" y2="3441" stroke="#e0b44a" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2150" y1="3741" x2="2150" y2="3591" stroke="#e0b44a" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2502" y1="3741" x2="2326" y2="3441" stroke="#e0b44a" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2678" y1="3741" x2="2502" y2="3741" stroke="#e0b44a" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2326" y1="3891" x2="2502" y2="3741" stroke="#e0b44a" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="354" y1="1021" x2="354" y2="1621" stroke="#b79a6b" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="354" y="1325" font-size="12" fill="#c9cde0" text-anchor="middle">&#9650;</text>
+<line x1="178" y1="1021" x2="354" y2="1021" stroke="#b79a6b" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="354" y1="871" x2="354" y2="1021" stroke="#b79a6b" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="530" y1="871" x2="354" y2="871" stroke="#b79a6b" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="354" y1="721" x2="354" y2="871" stroke="#b79a6b" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="178" y1="721" x2="354" y2="721" stroke="#b79a6b" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="530" y1="721" x2="354" y2="721" stroke="#b79a6b" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="354" y1="571" x2="354" y2="871" stroke="#b79a6b" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="354" y1="421" x2="354" y2="571" stroke="#ffcf4a" stroke-width="2" stroke-opacity="0.85" stroke-dasharray="4 3"/>
+<line x1="4122" y1="2681" x2="4298" y2="2681" stroke="#4aa3ff" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="4210" y="2685" font-size="12" fill="#c9cde0" text-anchor="middle">&#9650;</text>
+<line x1="4122" y1="2531" x2="4122" y2="2681" stroke="#4aa3ff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="4122" y1="2831" x2="4122" y2="2681" stroke="#4aa3ff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="4122" y1="2531" x2="4650" y2="2681" stroke="#4aa3ff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="4122" y1="2381" x2="4122" y2="2531" stroke="#4aa3ff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="4298" y1="2381" x2="4122" y2="2381" stroke="#4aa3ff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="4122" y1="2831" x2="4298" y2="2381" stroke="#4aa3ff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="3946" y1="2831" x2="4122" y2="2831" stroke="#4aa3ff" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="4034" y="2835" font-size="12" fill="#c9cde0" text-anchor="middle">&#9650;</text>
+<line x1="3946" y1="2981" x2="3946" y2="2831" stroke="#4aa3ff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="3946" y1="2681" x2="3946" y2="2831" stroke="#4aa3ff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="3770" y1="2981" x2="3946" y2="2981" stroke="#4aa3ff" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="4122" y1="2531" x2="3770" y2="2981" stroke="#4aa3ff" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="3946" y="2760" font-size="12" fill="#c9cde0" text-anchor="middle">&#9660;</text>
+<line x1="3136" y1="2981" x2="3136" y2="3131" stroke="#e6cf5a" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2960" y1="2981" x2="3136" y2="2981" stroke="#e6cf5a" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="3488" y1="2981" x2="3136" y2="2981" stroke="#e6cf5a" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="3136" y1="2831" x2="3136" y2="2981" stroke="#e6cf5a" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="3312" y1="2981" x2="3136" y2="2981" stroke="#e6cf5a" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="3224" y="2985" font-size="12" fill="#c9cde0" text-anchor="middle">&#9660;</text>
+<line x1="2960" y1="2681" x2="3136" y2="2831" stroke="#e6cf5a" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="3048" y="2760" font-size="12" fill="#c9cde0" text-anchor="middle">&#9650;</text>
+<line x1="3312" y1="2831" x2="3136" y2="2831" stroke="#ffcf4a" stroke-width="2" stroke-opacity="0.85" stroke-dasharray="4 3"/>
+<line x1="2960" y1="2831" x2="2960" y2="2981" stroke="#e6cf5a" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2960" y1="2531" x2="2960" y2="2681" stroke="#e6cf5a" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="2960" y="2610" font-size="12" fill="#c9cde0" text-anchor="middle">&#9650;</text>
+<line x1="2960" y1="2381" x2="2960" y2="2531" stroke="#e6cf5a" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="3136" y1="2381" x2="2960" y2="2381" stroke="#e6cf5a" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="2960" y1="2831" x2="3136" y2="2381" stroke="#e6cf5a" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="3048" y="2610" font-size="12" fill="#c9cde0" text-anchor="middle">&#9660;</text>
+<line x1="1164" y1="1471" x2="1164" y2="1621" stroke="#5be0a0" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="1164" y="1550" font-size="12" fill="#c9cde0" text-anchor="middle">&#9660;</text>
+<line x1="1164" y1="1321" x2="1164" y2="1471" stroke="#5be0a0" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="1164" y="1400" font-size="12" fill="#c9cde0" text-anchor="middle">&#9660;</text>
+<line x1="1164" y1="1171" x2="1164" y2="1321" stroke="#5be0a0" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="1164" y="1250" font-size="12" fill="#c9cde0" text-anchor="middle">&#9660;</text>
+<line x1="1164" y1="1021" x2="1164" y2="1171" stroke="#5be0a0" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="1164" y="1100" font-size="12" fill="#c9cde0" text-anchor="middle">&#9660;</text>
+<line x1="1164" y1="871" x2="1164" y2="1021" stroke="#5be0a0" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="1164" y="950" font-size="12" fill="#c9cde0" text-anchor="middle">&#9660;</text>
+<line x1="1164" y1="721" x2="1164" y2="871" stroke="#5be0a0" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="1164" y="800" font-size="12" fill="#c9cde0" text-anchor="middle">&#9660;</text>
+<line x1="1164" y1="571" x2="1164" y2="721" stroke="#5be0a0" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="1164" y="650" font-size="12" fill="#c9cde0" text-anchor="middle">&#9660;</text>
+<line x1="1164" y1="421" x2="1164" y2="571" stroke="#5be0a0" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="1164" y="500" font-size="12" fill="#c9cde0" text-anchor="middle">&#9660;</text>
+<line x1="1164" y1="1771" x2="1164" y2="1621" stroke="#5be0a0" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="1164" y="1700" font-size="12" fill="#c9cde0" text-anchor="middle">&#9650;</text>
+<line x1="988" y1="1771" x2="1164" y2="1771" stroke="#5be0a0" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="1076" y="1775" font-size="12" fill="#c9cde0" text-anchor="middle">&#9650;</text>
+<line x1="1340" y1="1321" x2="1164" y2="1321" stroke="#5be0a0" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="1516" y1="1321" x2="1340" y2="1321" stroke="#ffcf4a" stroke-width="2" stroke-opacity="0.85" stroke-dasharray="4 3"/>
+<line x1="1340" y1="1171" x2="1164" y2="1171" stroke="#5be0a0" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="1340" y1="721" x2="1164" y2="721" stroke="#5be0a0" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="1340" y1="571" x2="1164" y2="571" stroke="#5be0a0" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="1340" y1="1621" x2="1164" y2="1621" stroke="#5be0a0" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="1164" y1="421" x2="1340" y2="1621" stroke="#5be0a0" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="1252" y="1025" font-size="12" fill="#c9cde0" text-anchor="middle">&#8901;in</text>
+<line x1="1164" y1="1771" x2="1340" y2="1621" stroke="#5be0a0" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="1252" y="1700" font-size="12" fill="#c9cde0" text-anchor="middle">&#8901;out</text>
+<line x1="530" y1="3591" x2="706" y2="3741" stroke="#e0763a" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="530" y1="3441" x2="530" y2="3591" stroke="#e0763a" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="354" y1="3741" x2="706" y2="3741" stroke="#e0763a" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="178" y1="3741" x2="354" y2="3741" stroke="#e0763a" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="266" y="3745" font-size="12" fill="#c9cde0" text-anchor="middle">&#9650;</text>
+<line x1="530" y1="3891" x2="706" y2="3741" stroke="#e0763a" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="530" y1="4041" x2="530" y2="3891" stroke="#e0763a" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="706" y1="3441" x2="530" y2="3441" stroke="#e0763a" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="882" y1="3741" x2="706" y2="3741" stroke="#e0763a" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="706" y1="3591" x2="882" y2="3741" stroke="#e0763a" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="354" y1="3891" x2="530" y2="3741" stroke="#e0763a" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="178" y1="3891" x2="354" y2="3891" stroke="#e0763a" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="1058" y1="3741" x2="882" y2="3741" stroke="#e0763a" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="882" y1="3741" x2="530" y2="3741" stroke="#e0763a" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="1692" y1="4041" x2="1516" y2="4041" stroke="#33ff9e" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="1516" y1="3891" x2="1516" y2="4041" stroke="#33ff9e" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="1516" y1="3741" x2="1516" y2="3891" stroke="#ffcf4a" stroke-width="2" stroke-opacity="0.85" stroke-dasharray="4 3"/>
+<line x1="1516" y1="3591" x2="1516" y2="3741" stroke="#33ff9e" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="1868" y1="4041" x2="1692" y2="4041" stroke="#33ff9e" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="1340" y1="4041" x2="1516" y2="4041" stroke="#33ff9e" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="1340" y1="3741" x2="1340" y2="4041" stroke="#33ff9e" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="1340" y1="3591" x2="1340" y2="3741" stroke="#33ff9e" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="1340" y1="3741" x2="1340" y2="3891" stroke="#33ff9e" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="1340" y1="3441" x2="1340" y2="3591" stroke="#33ff9e" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="1868" y1="3891" x2="1340" y2="3441" stroke="#33ff9e" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="1868" y1="3891" x2="1516" y2="3591" stroke="#33ff9e" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="1692" y="3745" font-size="12" fill="#c9cde0" text-anchor="middle">&#9650;</text>
+<line x1="4016" y1="1021" x2="4016" y2="1171" stroke="#ff9b45" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="3664" y1="1021" x2="4016" y2="1171" stroke="#ff9b45" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="4192" y1="871" x2="3840" y2="1021" stroke="#ff9b45" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="3840" y1="1171" x2="3840" y2="1021" stroke="#ff9b45" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="3664" y1="1321" x2="3664" y2="1171" stroke="#ff9b45" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="3840" y1="721" x2="3664" y2="1021" stroke="#ff9b45" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="3840" y1="871" x2="4016" y2="1021" stroke="#ff9b45" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="3840" y1="571" x2="3840" y2="871" stroke="#ff9b45" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="3840" y="725" font-size="12" fill="#c9cde0" text-anchor="middle">&#9650;</text>
+<line x1="3840" y1="421" x2="3840" y2="571" stroke="#ff9b45" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="4368" y1="871" x2="4192" y2="871" stroke="#ff9b45" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="4016" y1="871" x2="4368" y2="871" stroke="#ff9b45" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="3840" y1="1321" x2="3664" y2="1321" stroke="#ff9b45" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="3752" y="1325" font-size="12" fill="#c9cde0" text-anchor="middle">&#9660;</text>
+<line x1="4016" y1="1021" x2="3840" y2="1321" stroke="#ff9b45" stroke-width="1.5" stroke-opacity="0.5"/>
+<line x1="3840" y1="1171" x2="3664" y2="1021" stroke="#ff9b45" stroke-width="1.5" stroke-opacity="0.5"/>
+</g>
+<g>
+<line x1="2150" y1="421" x2="530" y2="2071" stroke="#66e0ff" stroke-opacity="0.28" stroke-width="1.6" stroke-dasharray="6 5" marker-end="url(#arrow)"/>
+<line x1="2150" y1="571" x2="3840" y2="1471" stroke="#66e0ff" stroke-opacity="0.28" stroke-width="1.6" stroke-dasharray="6 5" marker-end="url(#arrow)"/>
+<line x1="4192" y1="421" x2="530" y2="1921" stroke="#66e0ff" stroke-opacity="0.28" stroke-width="1.6" stroke-dasharray="6 5" marker-end="url(#arrow)"/>
+<line x1="4016" y1="1471" x2="354" y2="2981" stroke="#66e0ff" stroke-opacity="0.28" stroke-width="1.6" stroke-dasharray="6 5" marker-end="url(#arrow)"/>
+<line x1="1516" y1="3131" x2="530" y2="3131" stroke="#66e0ff" stroke-opacity="0.28" stroke-width="1.6" stroke-dasharray="6 5" marker-end="url(#arrow)"/>
+<line x1="1340" y1="2981" x2="530" y2="1771" stroke="#66e0ff" stroke-opacity="0.28" stroke-width="1.6" stroke-dasharray="6 5" marker-end="url(#arrow)"/>
+<line x1="530" y1="1171" x2="2502" y2="3131" stroke="#66e0ff" stroke-opacity="0.28" stroke-width="1.6" stroke-dasharray="6 5" marker-end="url(#arrow)"/>
+<line x1="3206" y1="1321" x2="3488" y2="3591" stroke="#66e0ff" stroke-opacity="0.28" stroke-width="1.6" stroke-dasharray="6 5" marker-end="url(#arrow)"/>
+<line x1="3664" y1="3591" x2="2502" y2="1021" stroke="#66e0ff" stroke-opacity="0.28" stroke-width="1.6" stroke-dasharray="6 5" marker-end="url(#arrow)"/>
+<line x1="3840" y1="3591" x2="2326" y2="1171" stroke="#66e0ff" stroke-opacity="0.28" stroke-width="1.6" stroke-dasharray="6 5" marker-end="url(#arrow)"/>
+<line x1="354" y1="2981" x2="2326" y2="3741" stroke="#66e0ff" stroke-opacity="0.28" stroke-width="1.6" stroke-dasharray="6 5" marker-end="url(#arrow)"/>
+<line x1="2150" y1="3741" x2="2502" y2="3131" stroke="#66e0ff" stroke-opacity="0.28" stroke-width="1.6" stroke-dasharray="6 5" marker-end="url(#arrow)"/>
+<line x1="530" y1="1621" x2="4650" y2="2681" stroke="#66e0ff" stroke-opacity="0.28" stroke-width="1.6" stroke-dasharray="6 5" marker-end="url(#arrow)"/>
+<line x1="2150" y1="1021" x2="4298" y2="2681" stroke="#66e0ff" stroke-opacity="0.28" stroke-width="1.6" stroke-dasharray="6 5" marker-end="url(#arrow)"/>
+<line x1="1974" y1="871" x2="3136" y2="3131" stroke="#66e0ff" stroke-opacity="0.28" stroke-width="1.6" stroke-dasharray="6 5" marker-end="url(#arrow)"/>
+<line x1="4192" y1="1021" x2="3136" y2="3131" stroke="#66e0ff" stroke-opacity="0.28" stroke-width="1.6" stroke-dasharray="6 5" marker-end="url(#arrow)"/>
+<line x1="530" y1="2981" x2="1164" y2="1621" stroke="#66e0ff" stroke-opacity="0.28" stroke-width="1.6" stroke-dasharray="6 5" marker-end="url(#arrow)"/>
+<line x1="354" y1="2981" x2="1164" y2="1621" stroke="#66e0ff" stroke-opacity="0.28" stroke-width="1.6" stroke-dasharray="6 5" marker-end="url(#arrow)"/>
+<line x1="2502" y1="3741" x2="706" y2="3741" stroke="#66e0ff" stroke-opacity="0.28" stroke-width="1.6" stroke-dasharray="6 5" marker-end="url(#arrow)"/>
+<line x1="2150" y1="3741" x2="530" y2="3741" stroke="#66e0ff" stroke-opacity="0.28" stroke-width="1.6" stroke-dasharray="6 5" marker-end="url(#arrow)"/>
+<line x1="2502" y1="2531" x2="1516" y2="4041" stroke="#66e0ff" stroke-opacity="0.28" stroke-width="1.6" stroke-dasharray="6 5" marker-end="url(#arrow)"/>
+<line x1="2502" y1="2381" x2="1340" y2="3891" stroke="#66e0ff" stroke-opacity="0.28" stroke-width="1.6" stroke-dasharray="6 5" marker-end="url(#arrow)"/>
+</g>
+<g>
+<circle cx="530" cy="2071" r="7" fill="#0d0e18" stroke="#b79a6b" stroke-width="2"/>
+<text x="530" y="2093" font-size="9" fill="#aab0c8" text-anchor="middle">Undercity Junction</text>
+<text x="530" y="2059" font-size="7.5" fill="#5b6086" text-anchor="middle">1400</text>
+<circle cx="530" cy="1921" r="7" fill="#0d0e18" stroke="#b79a6b" stroke-width="2"/>
+<text x="530" y="1943" font-size="9" fill="#aab0c8" text-anchor="middle">Main Line</text>
+<text x="530" y="1909" font-size="7.5" fill="#5b6086" text-anchor="middle">1401</text>
+<circle cx="354" cy="1921" r="9" fill="#ff2d55" stroke="#ff9db0" stroke-width="2" filter="url(#glow)"/>
+<text x="354" y="1943" font-size="9" fill="#aab0c8" text-anchor="middle">The Rat King&apos;s Court</text>
+<text x="354" y="1909" font-size="7.5" fill="#5b6086" text-anchor="middle">1402</text>
+<circle cx="706" cy="1921" r="7" fill="#0d0e18" stroke="#b79a6b" stroke-width="2"/>
+<text x="706" y="1943" font-size="9" fill="#aab0c8" text-anchor="middle">Flooded Gallery</text>
+<text x="706" y="1909" font-size="7.5" fill="#5b6086" text-anchor="middle">1403</text>
+<circle cx="530" cy="1771" r="7" fill="#0d0e18" stroke="#b79a6b" stroke-width="2"/>
+<text x="530" y="1793" font-size="9" fill="#aab0c8" text-anchor="middle">Old Metro Platform</text>
+<text x="530" y="1759" font-size="7.5" fill="#5b6086" text-anchor="middle">1404</text>
+<circle cx="530" cy="1621" r="7" fill="#0d0e18" stroke="#b79a6b" stroke-width="2"/>
+<text x="530" y="1624.4" font-size="10" fill="#3ce88b" text-anchor="middle">&#9670;</text>
+<text x="530" y="1643" font-size="9" fill="#aab0c8" text-anchor="middle">Nomad Camp</text>
+<text x="530" y="1609" font-size="7.5" fill="#5b6086" text-anchor="middle">1405</text>
+<circle cx="354" cy="1771" r="11.5" fill="none" stroke="#ffcf4a" stroke-opacity="0.75"/>
+<circle cx="354" cy="1771" r="7" fill="#0d0e18" stroke="#b79a6b" stroke-width="2"/>
+<text x="364" y="1763" font-size="11" fill="#ffcf4a" font-weight="700">&#165;</text>
+<text x="354" y="1793" font-size="9" fill="#aab0c8" text-anchor="middle">Maintenance Room 12</text>
+<text x="354" y="1759" font-size="7.5" fill="#5b6086" text-anchor="middle">1406</text>
+<circle cx="706" cy="1771" r="7" fill="#0d0e18" stroke="#b79a6b" stroke-width="2"/>
+<text x="706" y="1793" font-size="9" fill="#aab0c8" text-anchor="middle">The Sump</text>
+<text x="706" y="1759" font-size="7.5" fill="#5b6086" text-anchor="middle">1407</text>
+<circle cx="530" cy="1471" r="7" fill="#0d0e18" stroke="#b79a6b" stroke-width="2"/>
+<text x="530" y="1493" font-size="9" fill="#aab0c8" text-anchor="middle">Sealed Door</text>
+<text x="530" y="1459" font-size="7.5" fill="#5b6086" text-anchor="middle">1408</text>
+<circle cx="530" cy="1321" r="7" fill="#0d0e18" stroke="#b79a6b" stroke-width="2"/>
+<text x="530" y="1343" font-size="9" fill="#aab0c8" text-anchor="middle">Cold Room</text>
+<text x="530" y="1309" font-size="7.5" fill="#5b6086" text-anchor="middle">1409</text>
+<circle cx="354" cy="1621" r="7" fill="#0d0e18" stroke="#b79a6b" stroke-width="2"/>
+<text x="354" y="1643" font-size="9" fill="#aab0c8" text-anchor="middle">Cistern</text>
+<text x="354" y="1609" font-size="7.5" fill="#5b6086" text-anchor="middle">1410</text>
+<circle cx="530" cy="1171" r="7" fill="#0d0e18" stroke="#b79a6b" stroke-width="2"/>
+<text x="530" y="1193" font-size="9" fill="#aab0c8" text-anchor="middle">Access Shaft to Blackwall…</text>
+<text x="530" y="1159" font-size="7.5" fill="#5b6086" text-anchor="middle">1411</text>
+<circle cx="354" cy="1021" r="7" fill="#0d0e18" stroke="#b79a6b" stroke-width="2"/>
+<text x="354" y="1043" font-size="9" fill="#aab0c8" text-anchor="middle">The Deep Junction</text>
+<text x="354" y="1009" font-size="7.5" fill="#5b6086" text-anchor="middle">1750</text>
+<circle cx="178" cy="1021" r="7" fill="#0d0e18" stroke="#b79a6b" stroke-width="2"/>
+<text x="178" y="1043" font-size="9" fill="#aab0c8" text-anchor="middle">Fungal Gallery</text>
+<text x="178" y="1009" font-size="7.5" fill="#5b6086" text-anchor="middle">1751</text>
+<circle cx="354" cy="871" r="11.5" fill="none" stroke="#ffcf4a" stroke-opacity="0.75"/>
+<circle cx="354" cy="871" r="7" fill="#0d0e18" stroke="#b79a6b" stroke-width="2"/>
+<text x="364" y="863" font-size="11" fill="#ffcf4a" font-weight="700">&#165;</text>
+<text x="354" y="893" font-size="9" fill="#aab0c8" text-anchor="middle">The Cathedral of Pipes</text>
+<text x="354" y="859" font-size="7.5" fill="#5b6086" text-anchor="middle">1752</text>
+<circle cx="530" cy="871" r="7" fill="#0d0e18" stroke="#b79a6b" stroke-width="2"/>
+<text x="530" y="893" font-size="9" fill="#aab0c8" text-anchor="middle">Bone Pit</text>
+<text x="530" y="859" font-size="7.5" fill="#5b6086" text-anchor="middle">1753</text>
+<circle cx="354" cy="721" r="7" fill="#0d0e18" stroke="#b79a6b" stroke-width="2"/>
+<text x="354" y="743" font-size="9" fill="#aab0c8" text-anchor="middle">Lost Line Terminus</text>
+<text x="354" y="709" font-size="7.5" fill="#5b6086" text-anchor="middle">1754</text>
+<circle cx="178" cy="721" r="7" fill="#0d0e18" stroke="#b79a6b" stroke-width="2"/>
+<text x="178" y="743" font-size="9" fill="#aab0c8" text-anchor="middle">The Still Pool</text>
+<text x="178" y="709" font-size="7.5" fill="#5b6086" text-anchor="middle">1755</text>
+<circle cx="530" cy="721" r="7" fill="#0d0e18" stroke="#b79a6b" stroke-width="2"/>
+<text x="530" y="743" font-size="9" fill="#aab0c8" text-anchor="middle">Nest of the Blind</text>
+<text x="530" y="709" font-size="7.5" fill="#5b6086" text-anchor="middle">1756</text>
+<circle cx="354" cy="571" r="7" fill="#0d0e18" stroke="#b79a6b" stroke-width="2"/>
+<text x="354" y="593" font-size="9" fill="#aab0c8" text-anchor="middle">Bunker Door</text>
+<text x="354" y="559" font-size="7.5" fill="#5b6086" text-anchor="middle">1757</text>
+<circle cx="354" cy="421" r="9" fill="#ff2d55" stroke="#ff9db0" stroke-width="2" filter="url(#glow)"/>
+<text x="354" y="443" font-size="9" fill="#aab0c8" text-anchor="middle">Pre-War Bunker</text>
+<text x="354" y="409" font-size="7.5" fill="#5b6086" text-anchor="middle">1758</text>
+</g>
+<g>
+<circle cx="1164" cy="1621" r="7" fill="#0d0e18" stroke="#5be0a0" stroke-width="2"/>
+<text x="1164" y="1624.4" font-size="10" fill="#3ce88b" text-anchor="middle">&#9670;</text>
+<text x="1164" y="1643" font-size="9" fill="#aab0c8" text-anchor="middle">Ground Lobby</text>
+<text x="1164" y="1609" font-size="7.5" fill="#5b6086" text-anchor="middle">1840</text>
+<circle cx="1340" cy="1621" r="7" fill="#0d0e18" stroke="#5be0a0" stroke-width="2"/>
+<text x="1340" y="1643" font-size="9" fill="#aab0c8" text-anchor="middle">The Lift Car</text>
+<text x="1340" y="1609" font-size="7.5" fill="#5b6086" text-anchor="middle">1841</text>
+<circle cx="1164" cy="1471" r="7" fill="#0d0e18" stroke="#5be0a0" stroke-width="2"/>
+<text x="1164" y="1493" font-size="9" fill="#aab0c8" text-anchor="middle">2nd Floor Offices</text>
+<text x="1164" y="1459" font-size="7.5" fill="#5b6086" text-anchor="middle">1842</text>
+<circle cx="1164" cy="1321" r="7" fill="#0d0e18" stroke="#5be0a0" stroke-width="2"/>
+<text x="1164" y="1343" font-size="9" fill="#aab0c8" text-anchor="middle">4th Floor Server Farm</text>
+<text x="1164" y="1309" font-size="7.5" fill="#5b6086" text-anchor="middle">1843</text>
+<circle cx="1340" cy="1321" r="7" fill="#0d0e18" stroke="#5be0a0" stroke-width="2"/>
+<text x="1340" y="1343" font-size="9" fill="#aab0c8" text-anchor="middle">Server Cage Aisle</text>
+<text x="1340" y="1309" font-size="7.5" fill="#5b6086" text-anchor="middle">1844</text>
+<circle cx="1164" cy="1171" r="7" fill="#0d0e18" stroke="#5be0a0" stroke-width="2"/>
+<text x="1164" y="1193" font-size="9" fill="#aab0c8" text-anchor="middle">6th Floor (Squatted)</text>
+<text x="1164" y="1159" font-size="7.5" fill="#5b6086" text-anchor="middle">1845</text>
+<circle cx="1340" cy="1171" r="11.5" fill="none" stroke="#ffcf4a" stroke-opacity="0.75"/>
+<circle cx="1340" cy="1171" r="7" fill="#0d0e18" stroke="#5be0a0" stroke-width="2"/>
+<text x="1340" y="1174.4" font-size="10" fill="#3ce88b" text-anchor="middle">&#9670;</text>
+<text x="1350" y="1163" font-size="11" fill="#ffcf4a" font-weight="700">&#165;</text>
+<text x="1340" y="1193" font-size="9" fill="#aab0c8" text-anchor="middle">Squat Commons</text>
+<text x="1340" y="1159" font-size="7.5" fill="#5b6086" text-anchor="middle">1846</text>
+<circle cx="1164" cy="1021" r="7" fill="#0d0e18" stroke="#5be0a0" stroke-width="2"/>
+<text x="1164" y="1043" font-size="9" fill="#aab0c8" text-anchor="middle">8th Floor Comms Relay</text>
+<text x="1164" y="1009" font-size="7.5" fill="#5b6086" text-anchor="middle">1847</text>
+<circle cx="1164" cy="871" r="7" fill="#0d0e18" stroke="#5be0a0" stroke-width="2"/>
+<text x="1164" y="893" font-size="9" fill="#aab0c8" text-anchor="middle">10th Floor Legal</text>
+<text x="1164" y="859" font-size="7.5" fill="#5b6086" text-anchor="middle">1848</text>
+<circle cx="1164" cy="721" r="7" fill="#0d0e18" stroke="#5be0a0" stroke-width="2"/>
+<text x="1164" y="743" font-size="9" fill="#aab0c8" text-anchor="middle">12th Floor Executive</text>
+<text x="1164" y="709" font-size="7.5" fill="#5b6086" text-anchor="middle">1849</text>
+<circle cx="1340" cy="721" r="7" fill="#0d0e18" stroke="#5be0a0" stroke-width="2"/>
+<text x="1340" y="743" font-size="9" fill="#aab0c8" text-anchor="middle">The Boardroom</text>
+<text x="1340" y="709" font-size="7.5" fill="#5b6086" text-anchor="middle">1850</text>
+<circle cx="1164" cy="571" r="7" fill="#0d0e18" stroke="#5be0a0" stroke-width="2"/>
+<text x="1164" y="593" font-size="9" fill="#aab0c8" text-anchor="middle">14th Floor Penthouse</text>
+<text x="1164" y="559" font-size="7.5" fill="#5b6086" text-anchor="middle">1851</text>
+<circle cx="1340" cy="571" r="7" fill="#0d0e18" stroke="#5be0a0" stroke-width="2"/>
+<text x="1340" y="593" font-size="9" fill="#aab0c8" text-anchor="middle">Penthouse Terrace</text>
+<text x="1340" y="559" font-size="7.5" fill="#5b6086" text-anchor="middle">1852</text>
+<circle cx="1164" cy="421" r="7" fill="#0d0e18" stroke="#5be0a0" stroke-width="2"/>
+<text x="1164" y="443" font-size="9" fill="#aab0c8" text-anchor="middle">Roof Helipad</text>
+<text x="1164" y="409" font-size="7.5" fill="#5b6086" text-anchor="middle">1853</text>
+<circle cx="1164" cy="1771" r="7" fill="#0d0e18" stroke="#5be0a0" stroke-width="2"/>
+<text x="1164" y="1793" font-size="9" fill="#aab0c8" text-anchor="middle">Maintenance Sub-Basement</text>
+<text x="1164" y="1759" font-size="7.5" fill="#5b6086" text-anchor="middle">1854</text>
+<circle cx="988" cy="1771" r="7" fill="#0d0e18" stroke="#5be0a0" stroke-width="2"/>
+<text x="988" y="1793" font-size="9" fill="#aab0c8" text-anchor="middle">Sub-Basement Plant</text>
+<text x="988" y="1759" font-size="7.5" fill="#5b6086" text-anchor="middle">1855</text>
+<circle cx="1516" cy="1321" r="9" fill="#ff2d55" stroke="#ff9db0" stroke-width="2" filter="url(#glow)"/>
+<text x="1516" y="1343" font-size="9" fill="#aab0c8" text-anchor="middle">Server Floor Control</text>
+<text x="1516" y="1309" font-size="7.5" fill="#5b6086" text-anchor="middle">1856</text>
+</g>
+<g>
+<circle cx="2150" cy="1471" r="8" fill="#0d0e18" stroke="#ffffff" stroke-width="2.5"/><text x="2150" y="1475" font-size="11" fill="#fff" text-anchor="middle">&#9733;</text>
+<text x="2150" y="1474.4" font-size="10" fill="#3ce88b" text-anchor="middle">&#9670;</text>
+<text x="2150" y="1493" font-size="9" fill="#aab0c8" text-anchor="middle">Kabuki Hab-Stack</text>
+<text x="2150" y="1459" font-size="7.5" fill="#5b6086" text-anchor="middle">1000</text>
+<circle cx="2150" cy="1321" r="7" fill="#0d0e18" stroke="#ff2d55" stroke-width="2"/>
+<text x="2150" y="1343" font-size="9" fill="#aab0c8" text-anchor="middle">Hab-Stack Stairwell</text>
+<text x="2150" y="1309" font-size="7.5" fill="#5b6086" text-anchor="middle">1001</text>
+<circle cx="2150" cy="1171" r="7" fill="#0d0e18" stroke="#ff2d55" stroke-width="2"/>
+<text x="2150" y="1174.4" font-size="10" fill="#3ce88b" text-anchor="middle">&#9670;</text>
+<text x="2150" y="1193" font-size="9" fill="#aab0c8" text-anchor="middle">Jig-Jig Street</text>
+<text x="2150" y="1159" font-size="7.5" fill="#5b6086" text-anchor="middle">1002</text>
+<circle cx="2150" cy="1021" r="7" fill="#0d0e18" stroke="#ff2d55" stroke-width="2"/>
+<text x="2150" y="1024.4" font-size="10" fill="#3ce88b" text-anchor="middle">&#9670;</text>
+<text x="2150" y="1043" font-size="9" fill="#aab0c8" text-anchor="middle">Jig-Jig Street, North End</text>
+<text x="2150" y="1009" font-size="7.5" fill="#5b6086" text-anchor="middle">1003</text>
+<circle cx="2326" cy="1021" r="11.5" fill="none" stroke="#ffcf4a" stroke-opacity="0.75"/>
+<circle cx="2326" cy="1021" r="7" fill="#0d0e18" stroke="#ff2d55" stroke-width="2"/>
+<text x="2326" y="1024.4" font-size="10" fill="#3ce88b" text-anchor="middle">&#9670;</text>
+<text x="2336" y="1013" font-size="11" fill="#ffcf4a" font-weight="700">&#165;</text>
+<text x="2326" y="1043" font-size="9" fill="#aab0c8" text-anchor="middle">Wakako&apos;s Noodle Bar</text>
+<text x="2326" y="1009" font-size="7.5" fill="#5b6086" text-anchor="middle">1004</text>
+<circle cx="2150" cy="871" r="7" fill="#0d0e18" stroke="#ff2d55" stroke-width="2"/>
+<text x="2150" y="874.4" font-size="10" fill="#3ce88b" text-anchor="middle">&#9670;</text>
+<text x="2132" y="883" font-size="11" fill="#b98cff">&#9636;</text>
+<text x="2150" y="893" font-size="9" fill="#aab0c8" text-anchor="middle">Kabuki Market Gate</text>
+<text x="2150" y="859" font-size="7.5" fill="#5b6086" text-anchor="middle">1005</text>
+<circle cx="1974" cy="871" r="11.5" fill="none" stroke="#ffcf4a" stroke-opacity="0.75"/>
+<circle cx="1974" cy="871" r="7" fill="#0d0e18" stroke="#ff2d55" stroke-width="2"/>
+<text x="1974" y="874.4" font-size="10" fill="#3ce88b" text-anchor="middle">&#9670;</text>
+<text x="1984" y="863" font-size="11" fill="#ffcf4a" font-weight="700">&#165;</text>
+<text x="1974" y="893" font-size="9" fill="#aab0c8" text-anchor="middle">Chrome Row</text>
+<text x="1974" y="859" font-size="7.5" fill="#5b6086" text-anchor="middle">1006</text>
+<circle cx="2326" cy="871" r="11.5" fill="none" stroke="#ffcf4a" stroke-opacity="0.75"/>
+<circle cx="2326" cy="871" r="7" fill="#0d0e18" stroke="#ff2d55" stroke-width="2"/>
+<text x="2326" y="874.4" font-size="10" fill="#3ce88b" text-anchor="middle">&#9670;</text>
+<text x="2336" y="863" font-size="11" fill="#ffcf4a" font-weight="700">&#165;</text>
+<text x="2326" y="893" font-size="9" fill="#aab0c8" text-anchor="middle">Ramen Row</text>
+<text x="2326" y="859" font-size="7.5" fill="#5b6086" text-anchor="middle">1007</text>
+<circle cx="2150" cy="721" r="11.5" fill="none" stroke="#ffcf4a" stroke-opacity="0.75"/>
+<circle cx="2150" cy="721" r="7" fill="#0d0e18" stroke="#ff2d55" stroke-width="2"/>
+<text x="2160" y="713" font-size="11" fill="#ffcf4a" font-weight="700">&#165;</text>
+<text x="2150" y="743" font-size="9" fill="#aab0c8" text-anchor="middle">The Gristle</text>
+<text x="2150" y="709" font-size="7.5" fill="#5b6086" text-anchor="middle">1008</text>
+<circle cx="1974" cy="721" r="11.5" fill="none" stroke="#ffcf4a" stroke-opacity="0.75"/>
+<circle cx="1974" cy="721" r="7" fill="#0d0e18" stroke="#ff2d55" stroke-width="2"/>
+<text x="1974" y="724.4" font-size="10" fill="#3ce88b" text-anchor="middle">&#9670;</text>
+<text x="1984" y="713" font-size="11" fill="#ffcf4a" font-weight="700">&#165;</text>
+<text x="1974" y="743" font-size="9" fill="#aab0c8" text-anchor="middle">Pawnshop &apos;Last Resort&apos;</text>
+<text x="1974" y="709" font-size="7.5" fill="#5b6086" text-anchor="middle">1009</text>
+<circle cx="2326" cy="1171" r="7" fill="#0d0e18" stroke="#ff2d55" stroke-width="2"/>
+<text x="2326" y="1193" font-size="9" fill="#aab0c8" text-anchor="middle">Gomorrah Lane</text>
+<text x="2326" y="1159" font-size="7.5" fill="#5b6086" text-anchor="middle">1010</text>
+<circle cx="2502" cy="1171" r="7" fill="#0d0e18" stroke="#ff2d55" stroke-width="2"/>
+<text x="2502" y="1174.4" font-size="10" fill="#3ce88b" text-anchor="middle">&#9670;</text>
+<text x="2502" y="1193" font-size="9" fill="#aab0c8" text-anchor="middle">The Afterlife Queue</text>
+<text x="2502" y="1159" font-size="7.5" fill="#5b6086" text-anchor="middle">1011</text>
+<circle cx="2678" cy="1171" r="7" fill="#0d0e18" stroke="#ff2d55" stroke-width="2"/>
+<text x="2678" y="1174.4" font-size="10" fill="#3ce88b" text-anchor="middle">&#9670;</text>
+<text x="2660" y="1183" font-size="11" fill="#b98cff">&#9636;</text>
+<text x="2678" y="1193" font-size="9" fill="#aab0c8" text-anchor="middle">Back Booth</text>
+<text x="2678" y="1159" font-size="7.5" fill="#5b6086" text-anchor="middle">1012</text>
+<circle cx="1974" cy="1171" r="7" fill="#0d0e18" stroke="#ff2d55" stroke-width="2"/>
+<text x="1974" y="1193" font-size="9" fill="#aab0c8" text-anchor="middle">Ozob&apos;s Alley</text>
+<text x="1974" y="1159" font-size="7.5" fill="#5b6086" text-anchor="middle">1013</text>
+<circle cx="1974" cy="1321" r="7" fill="#0d0e18" stroke="#ff2d55" stroke-width="2"/>
+<text x="1974" y="1343" font-size="9" fill="#aab0c8" text-anchor="middle">Wire Street</text>
+<text x="1974" y="1309" font-size="7.5" fill="#5b6086" text-anchor="middle">1014</text>
+<circle cx="1798" cy="1321" r="7" fill="#0d0e18" stroke="#ff2d55" stroke-width="2"/>
+<text x="1798" y="1343" font-size="9" fill="#aab0c8" text-anchor="middle">Bufo Bend</text>
+<text x="1798" y="1309" font-size="7.5" fill="#5b6086" text-anchor="middle">1015</text>
+<circle cx="2150" cy="571" r="7" fill="#0d0e18" stroke="#ff2d55" stroke-width="2"/>
+<text x="2150" y="593" font-size="9" fill="#aab0c8" text-anchor="middle">Kabuki Underpass</text>
+<text x="2150" y="559" font-size="7.5" fill="#5b6086" text-anchor="middle">1016</text>
+<circle cx="2150" cy="421" r="7" fill="#0d0e18" stroke="#ff2d55" stroke-width="2"/>
+<text x="2150" y="443" font-size="9" fill="#aab0c8" text-anchor="middle">Drain Mouth</text>
+<text x="2150" y="409" font-size="7.5" fill="#5b6086" text-anchor="middle">1017</text>
+<circle cx="2326" cy="1471" r="7" fill="#0d0e18" stroke="#ff2d55" stroke-width="2"/>
+<text x="2326" y="1493" font-size="9" fill="#aab0c8" text-anchor="middle">Kabuki Hab-Stack</text>
+<text x="2326" y="1459" font-size="7.5" fill="#5b6086" text-anchor="middle">1018</text>
+<circle cx="2502" cy="1021" r="7" fill="#0d0e18" stroke="#ff2d55" stroke-width="2"/>
+<text x="2502" y="1043" font-size="9" fill="#aab0c8" text-anchor="middle">Ping Alley</text>
+<text x="2502" y="1009" font-size="7.5" fill="#5b6086" text-anchor="middle">1019</text>
+<circle cx="2502" cy="871" r="7" fill="#0d0e18" stroke="#ff2d55" stroke-width="2"/>
+<text x="2502" y="893" font-size="9" fill="#aab0c8" text-anchor="middle">Copper Kettle Yard</text>
+<text x="2502" y="859" font-size="7.5" fill="#5b6086" text-anchor="middle">1020</text>
+<circle cx="2326" cy="1321" r="7" fill="#0d0e18" stroke="#ff2d55" stroke-width="2"/>
+<text x="2326" y="1324.4" font-size="10" fill="#3ce88b" text-anchor="middle">&#9670;</text>
+<text x="2326" y="1343" font-size="9" fill="#aab0c8" text-anchor="middle">Waiting Room</text>
+<text x="2326" y="1309" font-size="7.5" fill="#5b6086" text-anchor="middle">1021</text>
+<circle cx="2678" cy="1471" r="7" fill="#0d0e18" stroke="#ff2d55" stroke-width="2"/>
+<text x="2678" y="1493" font-size="9" fill="#aab0c8" text-anchor="middle">Kabuki Rooftops</text>
+<text x="2678" y="1459" font-size="7.5" fill="#5b6086" text-anchor="middle">1600</text>
+<circle cx="2854" cy="1471" r="7" fill="#0d0e18" stroke="#ff2d55" stroke-width="2"/>
+<text x="2854" y="1493" font-size="9" fill="#aab0c8" text-anchor="middle">The Gap</text>
+<text x="2854" y="1459" font-size="7.5" fill="#5b6086" text-anchor="middle">1601</text>
+<circle cx="3030" cy="1471" r="11.5" fill="none" stroke="#ffcf4a" stroke-opacity="0.75"/>
+<circle cx="3030" cy="1471" r="7" fill="#0d0e18" stroke="#ff2d55" stroke-width="2"/>
+<text x="3030" y="1474.4" font-size="10" fill="#3ce88b" text-anchor="middle">&#9670;</text>
+<text x="3040" y="1463" font-size="11" fill="#ffcf4a" font-weight="700">&#165;</text>
+<text x="3012" y="1483" font-size="11" fill="#b98cff">&#9636;</text>
+<text x="3030" y="1493" font-size="9" fill="#aab0c8" text-anchor="middle">Wirehead&apos;s Nest</text>
+<text x="3030" y="1459" font-size="7.5" fill="#5b6086" text-anchor="middle">1602</text>
+<circle cx="3030" cy="1321" r="7" fill="#0d0e18" stroke="#ff2d55" stroke-width="2"/>
+<text x="3030" y="1343" font-size="9" fill="#aab0c8" text-anchor="middle">Antenna Cluster</text>
+<text x="3030" y="1309" font-size="7.5" fill="#5b6086" text-anchor="middle">1603</text>
+<circle cx="3206" cy="1471" r="7" fill="#0d0e18" stroke="#ff2d55" stroke-width="2"/>
+<text x="3206" y="1493" font-size="9" fill="#aab0c8" text-anchor="middle">The Pigeon Coop</text>
+<text x="3206" y="1459" font-size="7.5" fill="#5b6086" text-anchor="middle">1604</text>
+<circle cx="2854" cy="1321" r="7" fill="#0d0e18" stroke="#ff2d55" stroke-width="2"/>
+<text x="2854" y="1324.4" font-size="10" fill="#3ce88b" text-anchor="middle">&#9670;</text>
+<text x="2854" y="1343" font-size="9" fill="#aab0c8" text-anchor="middle">Rooftop Garden</text>
+<text x="2854" y="1309" font-size="7.5" fill="#5b6086" text-anchor="middle">1605</text>
+<circle cx="3206" cy="1321" r="7" fill="#0d0e18" stroke="#ff2d55" stroke-width="2"/>
+<text x="3206" y="1343" font-size="9" fill="#aab0c8" text-anchor="middle">Roof Access</text>
+<text x="3206" y="1309" font-size="7.5" fill="#5b6086" text-anchor="middle">1606</text>
+<circle cx="3030" cy="1171" r="7" fill="#0d0e18" stroke="#ff2d55" stroke-width="2"/>
+<text x="3030" y="1193" font-size="9" fill="#aab0c8" text-anchor="middle">Comms Mast Platform</text>
+<text x="3030" y="1159" font-size="7.5" fill="#5b6086" text-anchor="middle">1607</text>
+<circle cx="2502" cy="1471" r="11.5" fill="none" stroke="#ffcf4a" stroke-opacity="0.75"/>
+<circle cx="2502" cy="1471" r="7" fill="#0d0e18" stroke="#ff2d55" stroke-width="2"/>
+<text x="2502" y="1474.4" font-size="10" fill="#3ce88b" text-anchor="middle">&#9670;</text>
+<text x="2512" y="1463" font-size="11" fill="#ffcf4a" font-weight="700">&#165;</text>
+<text x="2484" y="1483" font-size="11" fill="#b98cff">&#9636;</text>
+<text x="2502" y="1493" font-size="9" fill="#aab0c8" text-anchor="middle">Hab-Stack Common Deck</text>
+<text x="2502" y="1459" font-size="7.5" fill="#5b6086" text-anchor="middle">1022</text>
+<circle cx="2502" cy="1621" r="11.5" fill="none" stroke="#ffcf4a" stroke-opacity="0.75"/>
+<circle cx="2502" cy="1621" r="7" fill="#0d0e18" stroke="#ff2d55" stroke-width="2"/>
+<text x="2502" y="1624.4" font-size="10" fill="#3ce88b" text-anchor="middle">&#9670;</text>
+<text x="2512" y="1613" font-size="11" fill="#ffcf4a" font-weight="700">&#165;</text>
+<text x="2502" y="1643" font-size="9" fill="#aab0c8" text-anchor="middle">Kabuki Coin Laundry</text>
+<text x="2502" y="1609" font-size="7.5" fill="#5b6086" text-anchor="middle">1023</text>
+</g>
+<g>
+<circle cx="3840" cy="1471" r="7" fill="#0d0e18" stroke="#ff9b45" stroke-width="2"/>
+<text x="3840" y="1493" font-size="9" fill="#aab0c8" text-anchor="middle">Kabuki-Watson Overpass</text>
+<text x="3840" y="1459" font-size="7.5" fill="#5b6086" text-anchor="middle">1100</text>
+<circle cx="4016" cy="1321" r="7" fill="#0d0e18" stroke="#ff9b45" stroke-width="2"/>
+<text x="4016" y="1343" font-size="9" fill="#aab0c8" text-anchor="middle">Dogtown Cut</text>
+<text x="4016" y="1309" font-size="7.5" fill="#5b6086" text-anchor="middle">1101</text>
+<circle cx="4016" cy="1171" r="11.5" fill="none" stroke="#ffcf4a" stroke-opacity="0.75"/>
+<circle cx="4016" cy="1171" r="7" fill="#0d0e18" stroke="#ff9b45" stroke-width="2"/>
+<text x="4026" y="1163" font-size="11" fill="#ffcf4a" font-weight="700">&#165;</text>
+<text x="3998" y="1183" font-size="11" fill="#b98cff">&#9636;</text>
+<text x="4016" y="1193" font-size="9" fill="#aab0c8" text-anchor="middle">Main Aisle</text>
+<text x="4016" y="1159" font-size="7.5" fill="#5b6086" text-anchor="middle">1102</text>
+<circle cx="3664" cy="1171" r="11.5" fill="none" stroke="#ffcf4a" stroke-opacity="0.75"/>
+<circle cx="3664" cy="1171" r="7" fill="#0d0e18" stroke="#ff9b45" stroke-width="2"/>
+<text x="3674" y="1163" font-size="11" fill="#ffcf4a" font-weight="700">&#165;</text>
+<text x="3664" y="1193" font-size="9" fill="#aab0c8" text-anchor="middle">Iron Container</text>
+<text x="3664" y="1159" font-size="7.5" fill="#5b6086" text-anchor="middle">1103</text>
+<circle cx="4192" cy="1021" r="11.5" fill="none" stroke="#ffcf4a" stroke-opacity="0.75"/>
+<circle cx="4192" cy="1021" r="7" fill="#0d0e18" stroke="#ff9b45" stroke-width="2"/>
+<text x="4202" y="1013" font-size="11" fill="#ffcf4a" font-weight="700">&#165;</text>
+<text x="4192" y="1043" font-size="9" fill="#aab0c8" text-anchor="middle">Chrome Container</text>
+<text x="4192" y="1009" font-size="7.5" fill="#5b6086" text-anchor="middle">1104</text>
+<circle cx="3840" cy="1021" r="11.5" fill="none" stroke="#ffcf4a" stroke-opacity="0.75"/>
+<circle cx="3840" cy="1021" r="7" fill="#0d0e18" stroke="#ff9b45" stroke-width="2"/>
+<text x="3850" y="1013" font-size="11" fill="#ffcf4a" font-weight="700">&#165;</text>
+<text x="3840" y="1043" font-size="9" fill="#aab0c8" text-anchor="middle">Apothecary</text>
+<text x="3840" y="1009" font-size="7.5" fill="#5b6086" text-anchor="middle">1105</text>
+<circle cx="4192" cy="1171" r="7" fill="#0d0e18" stroke="#ff9b45" stroke-width="2"/>
+<text x="4192" y="1193" font-size="9" fill="#aab0c8" text-anchor="middle">East</text>
+<text x="4192" y="1159" font-size="7.5" fill="#5b6086" text-anchor="middle">1106</text>
+<circle cx="4368" cy="1171" r="7" fill="#0d0e18" stroke="#ff9b45" stroke-width="2"/>
+<text x="4368" y="1193" font-size="9" fill="#aab0c8" text-anchor="middle">Dead Drop</text>
+<text x="4368" y="1159" font-size="7.5" fill="#5b6086" text-anchor="middle">1107</text>
+<circle cx="4016" cy="721" r="7" fill="#0d0e18" stroke="#ff9b45" stroke-width="2"/>
+<text x="4016" y="743" font-size="9" fill="#aab0c8" text-anchor="middle">Warehouse 7 - Loading Bay</text>
+<text x="4016" y="709" font-size="7.5" fill="#5b6086" text-anchor="middle">1108</text>
+<circle cx="4016" cy="571" r="7" fill="#0d0e18" stroke="#ff9b45" stroke-width="2"/>
+<text x="4016" y="593" font-size="9" fill="#aab0c8" text-anchor="middle">Warehouse 7 - Gantry</text>
+<text x="4016" y="559" font-size="7.5" fill="#5b6086" text-anchor="middle">1109</text>
+<circle cx="4016" cy="421" r="9" fill="#ff2d55" stroke="#ff9db0" stroke-width="2" filter="url(#glow)"/>
+<text x="4016" y="443" font-size="9" fill="#aab0c8" text-anchor="middle">Warehouse 7 - Boss Office</text>
+<text x="4016" y="409" font-size="7.5" fill="#5b6086" text-anchor="middle">1110</text>
+<circle cx="3664" cy="721" r="7" fill="#0d0e18" stroke="#ff9b45" stroke-width="2"/>
+<text x="3664" y="743" font-size="9" fill="#aab0c8" text-anchor="middle">Pier 9</text>
+<text x="3664" y="709" font-size="7.5" fill="#5b6086" text-anchor="middle">1111</text>
+<circle cx="3488" cy="721" r="7" fill="#0d0e18" stroke="#ff9b45" stroke-width="2"/>
+<text x="3488" y="743" font-size="9" fill="#aab0c8" text-anchor="middle">Pier 9 - Tug Boat</text>
+<text x="3488" y="709" font-size="7.5" fill="#5b6086" text-anchor="middle">1112</text>
+<circle cx="3664" cy="871" r="11.5" fill="none" stroke="#ffcf4a" stroke-opacity="0.75"/>
+<circle cx="3664" cy="871" r="7" fill="#0d0e18" stroke="#ff9b45" stroke-width="2"/>
+<text x="3664" y="874.4" font-size="10" fill="#3ce88b" text-anchor="middle">&#9670;</text>
+<text x="3674" y="863" font-size="11" fill="#ffcf4a" font-weight="700">&#165;</text>
+<text x="3646" y="883" font-size="11" fill="#b98cff">&#9636;</text>
+<text x="3664" y="893" font-size="9" fill="#aab0c8" text-anchor="middle">Smuggler&apos;s Rest</text>
+<text x="3664" y="859" font-size="7.5" fill="#5b6086" text-anchor="middle">1113</text>
+<circle cx="4192" cy="721" r="7" fill="#0d0e18" stroke="#ff9b45" stroke-width="2"/>
+<text x="4192" y="743" font-size="9" fill="#aab0c8" text-anchor="middle">Wire Yard</text>
+<text x="4192" y="709" font-size="7.5" fill="#5b6086" text-anchor="middle">1114</text>
+<circle cx="4192" cy="571" r="7" fill="#0d0e18" stroke="#ff9b45" stroke-width="2"/>
+<text x="4192" y="593" font-size="9" fill="#aab0c8" text-anchor="middle">Silicon Gulch</text>
+<text x="4192" y="559" font-size="7.5" fill="#5b6086" text-anchor="middle">1115</text>
+<circle cx="4192" cy="421" r="7" fill="#0d0e18" stroke="#ff9b45" stroke-width="2"/>
+<text x="4192" y="443" font-size="9" fill="#aab0c8" text-anchor="middle">Drain Confluence</text>
+<text x="4192" y="409" font-size="7.5" fill="#5b6086" text-anchor="middle">1116</text>
+<circle cx="4016" cy="1471" r="7" fill="#0d0e18" stroke="#ff9b45" stroke-width="2"/>
+<text x="4016" y="1493" font-size="9" fill="#aab0c8" text-anchor="middle">Watson-Corpo Checkpoint</text>
+<text x="4016" y="1459" font-size="7.5" fill="#5b6086" text-anchor="middle">1117</text>
+<circle cx="4016" cy="1021" r="7" fill="#0d0e18" stroke="#ff9b45" stroke-width="2"/>
+<text x="4016" y="1043" font-size="9" fill="#aab0c8" text-anchor="middle">Auction Pit</text>
+<text x="4016" y="1009" font-size="7.5" fill="#5b6086" text-anchor="middle">1892</text>
+<circle cx="4192" cy="871" r="11.5" fill="none" stroke="#ffcf4a" stroke-opacity="0.75"/>
+<circle cx="4192" cy="871" r="7" fill="#0d0e18" stroke="#ff9b45" stroke-width="2"/>
+<text x="4202" y="863" font-size="11" fill="#ffcf4a" font-weight="700">&#165;</text>
+<text x="4192" y="893" font-size="9" fill="#aab0c8" text-anchor="middle">Food Row</text>
+<text x="4192" y="859" font-size="7.5" fill="#5b6086" text-anchor="middle">1893</text>
+<circle cx="3664" cy="1021" r="7" fill="#0d0e18" stroke="#ff9b45" stroke-width="2"/>
+<text x="3664" y="1043" font-size="9" fill="#aab0c8" text-anchor="middle">Back Alley</text>
+<text x="3664" y="1009" font-size="7.5" fill="#5b6086" text-anchor="middle">1894</text>
+<circle cx="3840" cy="721" r="11.5" fill="none" stroke="#ffcf4a" stroke-opacity="0.75"/>
+<circle cx="3840" cy="721" r="7" fill="#0d0e18" stroke="#ff9b45" stroke-width="2"/>
+<text x="3850" y="713" font-size="11" fill="#ffcf4a" font-weight="700">&#165;</text>
+<text x="3840" y="743" font-size="9" fill="#aab0c8" text-anchor="middle">The Fence&apos;s Corner</text>
+<text x="3840" y="709" font-size="7.5" fill="#5b6086" text-anchor="middle">1895</text>
+<circle cx="3664" cy="1321" r="11.5" fill="none" stroke="#ffcf4a" stroke-opacity="0.75"/>
+<circle cx="3664" cy="1321" r="7" fill="#0d0e18" stroke="#ff9b45" stroke-width="2"/>
+<text x="3674" y="1313" font-size="11" fill="#ffcf4a" font-weight="700">&#165;</text>
+<text x="3664" y="1343" font-size="9" fill="#aab0c8" text-anchor="middle">Salvage Stalls</text>
+<text x="3664" y="1309" font-size="7.5" fill="#5b6086" text-anchor="middle">1896</text>
+<circle cx="3840" cy="871" r="7" fill="#0d0e18" stroke="#ff9b45" stroke-width="2"/>
+<text x="3840" y="893" font-size="9" fill="#aab0c8" text-anchor="middle">Lost &amp; Found</text>
+<text x="3840" y="859" font-size="7.5" fill="#5b6086" text-anchor="middle">1897</text>
+<circle cx="3840" cy="571" r="7" fill="#0d0e18" stroke="#ff9b45" stroke-width="2"/>
+<text x="3840" y="593" font-size="9" fill="#aab0c8" text-anchor="middle">Lost &amp; Found - Aisle of C…</text>
+<text x="3840" y="559" font-size="7.5" fill="#5b6086" text-anchor="middle">1898</text>
+<circle cx="3840" cy="421" r="7" fill="#0d0e18" stroke="#ff9b45" stroke-width="2"/>
+<text x="3840" y="443" font-size="9" fill="#aab0c8" text-anchor="middle">Lost &amp; Found - The Deep R…</text>
+<text x="3840" y="409" font-size="7.5" fill="#5b6086" text-anchor="middle">1899</text>
+<circle cx="3840" cy="1171" r="11.5" fill="none" stroke="#ffcf4a" stroke-opacity="0.75"/>
+<circle cx="3840" cy="1171" r="7" fill="#0d0e18" stroke="#ff9b45" stroke-width="2"/>
+<text x="3850" y="1163" font-size="11" fill="#ffcf4a" font-weight="700">&#165;</text>
+<text x="3840" y="1193" font-size="9" fill="#aab0c8" text-anchor="middle">Powder Alley</text>
+<text x="3840" y="1159" font-size="7.5" fill="#5b6086" text-anchor="middle">1900</text>
+<circle cx="4016" cy="871" r="7" fill="#0d0e18" stroke="#ff9b45" stroke-width="2"/>
+<text x="4016" y="874.4" font-size="10" fill="#3ce88b" text-anchor="middle">&#9670;</text>
+<text x="3998" y="883" font-size="11" fill="#b98cff">&#9636;</text>
+<text x="4016" y="893" font-size="9" fill="#aab0c8" text-anchor="middle">Tea House</text>
+<text x="4016" y="859" font-size="7.5" fill="#5b6086" text-anchor="middle">1901</text>
+<circle cx="4368" cy="871" r="7" fill="#0d0e18" stroke="#ff9b45" stroke-width="2"/>
+<text x="4368" y="893" font-size="9" fill="#aab0c8" text-anchor="middle">The Gauntlet</text>
+<text x="4368" y="859" font-size="7.5" fill="#5b6086" text-anchor="middle">1902</text>
+<circle cx="3840" cy="1321" r="7" fill="#0d0e18" stroke="#ff9b45" stroke-width="2"/>
+<text x="3840" y="1343" font-size="9" fill="#aab0c8" text-anchor="middle">Rooftop Tarps</text>
+<text x="3840" y="1309" font-size="7.5" fill="#5b6086" text-anchor="middle">1903</text>
+</g>
+<g>
+<circle cx="354" cy="2831" r="7" fill="#0d0e18" stroke="#66e0ff" stroke-width="2"/>
+<text x="354" y="2834.4" font-size="10" fill="#3ce88b" text-anchor="middle">&#9670;</text>
+<text x="354" y="2853" font-size="9" fill="#aab0c8" text-anchor="middle">Corporate Plaza</text>
+<text x="354" y="2819" font-size="7.5" fill="#5b6086" text-anchor="middle">1200</text>
+<circle cx="354" cy="2981" r="7" fill="#0d0e18" stroke="#66e0ff" stroke-width="2"/>
+<text x="354" y="2984.4" font-size="10" fill="#3ce88b" text-anchor="middle">&#9670;</text>
+<text x="354" y="3003" font-size="9" fill="#aab0c8" text-anchor="middle">Transit Stop</text>
+<text x="354" y="2969" font-size="7.5" fill="#5b6086" text-anchor="middle">1201</text>
+<circle cx="354" cy="2681" r="7" fill="#0d0e18" stroke="#66e0ff" stroke-width="2"/>
+<text x="354" y="2684.4" font-size="10" fill="#3ce88b" text-anchor="middle">&#9670;</text>
+<text x="354" y="2703" font-size="9" fill="#aab0c8" text-anchor="middle">Lobby</text>
+<text x="354" y="2669" font-size="7.5" fill="#5b6086" text-anchor="middle">1202</text>
+<circle cx="530" cy="2681" r="7" fill="#0d0e18" stroke="#66e0ff" stroke-width="2"/>
+<text x="530" y="2703" font-size="9" fill="#aab0c8" text-anchor="middle">Mezzanine</text>
+<text x="530" y="2669" font-size="7.5" fill="#5b6086" text-anchor="middle">1203</text>
+<circle cx="706" cy="2381" r="7" fill="#0d0e18" stroke="#66e0ff" stroke-width="2"/>
+<text x="706" y="2403" font-size="9" fill="#aab0c8" text-anchor="middle">Server Floor</text>
+<text x="706" y="2369" font-size="7.5" fill="#5b6086" text-anchor="middle">1204</text>
+<circle cx="178" cy="2831" r="11.5" fill="none" stroke="#ffcf4a" stroke-opacity="0.75"/>
+<circle cx="178" cy="2831" r="7" fill="#0d0e18" stroke="#66e0ff" stroke-width="2"/>
+<text x="178" y="2834.4" font-size="10" fill="#3ce88b" text-anchor="middle">&#9670;</text>
+<text x="188" y="2823" font-size="11" fill="#ffcf4a" font-weight="700">&#165;</text>
+<text x="178" y="2853" font-size="9" fill="#aab0c8" text-anchor="middle">Militech Boutique</text>
+<text x="178" y="2819" font-size="7.5" fill="#5b6086" text-anchor="middle">1205</text>
+<circle cx="706" cy="2981" r="7" fill="#0d0e18" stroke="#66e0ff" stroke-width="2"/>
+<text x="706" y="2984.4" font-size="10" fill="#3ce88b" text-anchor="middle">&#9670;</text>
+<text x="716" y="2993" font-size="12" fill="#66e0ff" font-weight="700">$</text>
+<text x="706" y="3003" font-size="9" fill="#aab0c8" text-anchor="middle">Floor</text>
+<text x="706" y="2969" font-size="7.5" fill="#5b6086" text-anchor="middle">1206</text>
+<circle cx="530" cy="2831" r="11.5" fill="none" stroke="#ffcf4a" stroke-opacity="0.75"/>
+<circle cx="530" cy="2831" r="7" fill="#0d0e18" stroke="#66e0ff" stroke-width="2"/>
+<text x="530" y="2834.4" font-size="10" fill="#3ce88b" text-anchor="middle">&#9670;</text>
+<text x="540" y="2823" font-size="11" fill="#ffcf4a" font-weight="700">&#165;</text>
+<text x="530" y="2853" font-size="9" fill="#aab0c8" text-anchor="middle">The Gold Room</text>
+<text x="530" y="2819" font-size="7.5" fill="#5b6086" text-anchor="middle">1207</text>
+<circle cx="178" cy="2681" r="7" fill="#0d0e18" stroke="#66e0ff" stroke-width="2"/>
+<text x="178" y="2684.4" font-size="10" fill="#3ce88b" text-anchor="middle">&#9670;</text>
+<text x="178" y="2703" font-size="9" fill="#aab0c8" text-anchor="middle">Reception</text>
+<text x="178" y="2669" font-size="7.5" fill="#5b6086" text-anchor="middle">1208</text>
+<circle cx="530" cy="2981" r="7" fill="#0d0e18" stroke="#66e0ff" stroke-width="2"/>
+<text x="530" y="3003" font-size="9" fill="#aab0c8" text-anchor="middle">Plaza Sky-Bridge</text>
+<text x="530" y="2969" font-size="7.5" fill="#5b6086" text-anchor="middle">1209</text>
+<circle cx="882" cy="2831" r="7" fill="#0d0e18" stroke="#66e0ff" stroke-width="2"/>
+<text x="882" y="2853" font-size="9" fill="#aab0c8" text-anchor="middle">Tower Maintenance Spine</text>
+<text x="882" y="2819" font-size="7.5" fill="#5b6086" text-anchor="middle">1210</text>
+<circle cx="354" cy="3131" r="7" fill="#0d0e18" stroke="#66e0ff" stroke-width="2"/>
+<text x="354" y="3153" font-size="9" fill="#aab0c8" text-anchor="middle">Executive Car Park</text>
+<text x="354" y="3119" font-size="7.5" fill="#5b6086" text-anchor="middle">1211</text>
+<circle cx="530" cy="3131" r="7" fill="#0d0e18" stroke="#66e0ff" stroke-width="2"/>
+<text x="530" y="3153" font-size="9" fill="#aab0c8" text-anchor="middle">Loading Dock</text>
+<text x="530" y="3119" font-size="7.5" fill="#5b6086" text-anchor="middle">1212</text>
+<circle cx="706" cy="2831" r="7" fill="#0d0e18" stroke="#66e0ff" stroke-width="2"/>
+<text x="706" y="2853" font-size="9" fill="#aab0c8" text-anchor="middle">40th Floor Lobby</text>
+<text x="706" y="2819" font-size="7.5" fill="#5b6086" text-anchor="middle">1650</text>
+<circle cx="882" cy="2681" r="7" fill="#0d0e18" stroke="#66e0ff" stroke-width="2"/>
+<text x="882" y="2703" font-size="9" fill="#aab0c8" text-anchor="middle">Cubicle Farm</text>
+<text x="882" y="2669" font-size="7.5" fill="#5b6086" text-anchor="middle">1651</text>
+<circle cx="706" cy="2681" r="7" fill="#0d0e18" stroke="#66e0ff" stroke-width="2"/>
+<text x="706" y="2703" font-size="9" fill="#aab0c8" text-anchor="middle">40th</text>
+<text x="706" y="2669" font-size="7.5" fill="#5b6086" text-anchor="middle">1652</text>
+<circle cx="1058" cy="2681" r="11.5" fill="none" stroke="#ffcf4a" stroke-opacity="0.75"/>
+<circle cx="1058" cy="2681" r="7" fill="#0d0e18" stroke="#66e0ff" stroke-width="2"/>
+<text x="1068" y="2673" font-size="11" fill="#ffcf4a" font-weight="700">&#165;</text>
+<text x="1058" y="2703" font-size="9" fill="#aab0c8" text-anchor="middle">40th</text>
+<text x="1058" y="2669" font-size="7.5" fill="#5b6086" text-anchor="middle">1653</text>
+<circle cx="706" cy="2531" r="9" fill="#ff2d55" stroke="#ff9db0" stroke-width="2" filter="url(#glow)"/>
+<text x="706" y="2553" font-size="9" fill="#aab0c8" text-anchor="middle">40th</text>
+<text x="706" y="2519" font-size="7.5" fill="#5b6086" text-anchor="middle">1654</text>
+<circle cx="530" cy="2531" r="7" fill="#0d0e18" stroke="#66e0ff" stroke-width="2"/>
+<text x="530" y="2553" font-size="9" fill="#aab0c8" text-anchor="middle">Executive Washroom</text>
+<text x="530" y="2519" font-size="7.5" fill="#5b6086" text-anchor="middle">1655</text>
+</g>
+<g>
+<circle cx="1516" cy="3131" r="7" fill="#0d0e18" stroke="#ff5555" stroke-width="2"/>
+<text x="1516" y="3153" font-size="9" fill="#aab0c8" text-anchor="middle">Broken Doors</text>
+<text x="1516" y="3119" font-size="7.5" fill="#5b6086" text-anchor="middle">1300</text>
+<circle cx="1516" cy="2981" r="7" fill="#0d0e18" stroke="#ff5555" stroke-width="2"/>
+<text x="1516" y="3003" font-size="9" fill="#aab0c8" text-anchor="middle">Mall Concourse</text>
+<text x="1516" y="2969" font-size="7.5" fill="#5b6086" text-anchor="middle">1301</text>
+<circle cx="1516" cy="2831" r="7" fill="#0d0e18" stroke="#ff5555" stroke-width="2"/>
+<text x="1516" y="2853" font-size="9" fill="#aab0c8" text-anchor="middle">Collapsed Escalators</text>
+<text x="1516" y="2819" font-size="7.5" fill="#5b6086" text-anchor="middle">1302</text>
+<circle cx="1692" cy="2681" r="7" fill="#0d0e18" stroke="#ff5555" stroke-width="2"/>
+<text x="1692" y="2703" font-size="9" fill="#aab0c8" text-anchor="middle">Food Court</text>
+<text x="1692" y="2669" font-size="7.5" fill="#5b6086" text-anchor="middle">1303</text>
+<circle cx="1516" cy="2681" r="7" fill="#0d0e18" stroke="#ff5555" stroke-width="2"/>
+<text x="1516" y="2703" font-size="9" fill="#aab0c8" text-anchor="middle">Operating Stall</text>
+<text x="1516" y="2669" font-size="7.5" fill="#5b6086" text-anchor="middle">1304</text>
+<circle cx="1868" cy="2681" r="9" fill="#ff2d55" stroke="#ff9db0" stroke-width="2" filter="url(#glow)"/>
+<text x="1868" y="2703" font-size="9" fill="#aab0c8" text-anchor="middle">Boss Pit</text>
+<text x="1868" y="2669" font-size="7.5" fill="#5b6086" text-anchor="middle">1305</text>
+<circle cx="1868" cy="2531" r="7" fill="#0d0e18" stroke="#ff5555" stroke-width="2"/>
+<text x="1868" y="2553" font-size="9" fill="#aab0c8" text-anchor="middle">Arcade</text>
+<text x="1868" y="2519" font-size="7.5" fill="#5b6086" text-anchor="middle">1306</text>
+<circle cx="1692" cy="2531" r="7" fill="#0d0e18" stroke="#ff5555" stroke-width="2"/>
+<text x="1692" y="2553" font-size="9" fill="#aab0c8" text-anchor="middle">Cinema 4</text>
+<text x="1692" y="2519" font-size="7.5" fill="#5b6086" text-anchor="middle">1307</text>
+<circle cx="2044" cy="2381" r="7" fill="#0d0e18" stroke="#ff5555" stroke-width="2"/>
+<text x="2044" y="2403" font-size="9" fill="#aab0c8" text-anchor="middle">Rooftop Car Park</text>
+<text x="2044" y="2369" font-size="7.5" fill="#5b6086" text-anchor="middle">1308</text>
+<circle cx="1692" cy="2981" r="7" fill="#0d0e18" stroke="#ff5555" stroke-width="2"/>
+<text x="1692" y="3003" font-size="9" fill="#aab0c8" text-anchor="middle">Service Corridor</text>
+<text x="1692" y="2969" font-size="7.5" fill="#5b6086" text-anchor="middle">1309</text>
+<circle cx="1692" cy="3131" r="7" fill="#0d0e18" stroke="#ff5555" stroke-width="2"/>
+<text x="1692" y="3153" font-size="9" fill="#aab0c8" text-anchor="middle">Arroyo Mall</text>
+<text x="1692" y="3119" font-size="7.5" fill="#5b6086" text-anchor="middle">1310</text>
+<circle cx="1340" cy="2981" r="7" fill="#0d0e18" stroke="#ff5555" stroke-width="2"/>
+<text x="1340" y="3003" font-size="9" fill="#aab0c8" text-anchor="middle">Maintenance Stair to Unde…</text>
+<text x="1340" y="2969" font-size="7.5" fill="#5b6086" text-anchor="middle">1311</text>
+<circle cx="1340" cy="3131" r="7" fill="#0d0e18" stroke="#ff5555" stroke-width="2"/>
+<text x="1340" y="3153" font-size="9" fill="#aab0c8" text-anchor="middle">Level P2</text>
+<text x="1340" y="3119" font-size="7.5" fill="#5b6086" text-anchor="middle">1312</text>
+</g>
+<g>
+<circle cx="2502" cy="3131" r="7" fill="#0d0e18" stroke="#b98cff" stroke-width="2"/>
+<text x="2502" y="3153" font-size="9" fill="#aab0c8" text-anchor="middle">Cage Row</text>
+<text x="2502" y="3119" font-size="7.5" fill="#5b6086" text-anchor="middle">1500</text>
+<circle cx="2502" cy="2981" r="7" fill="#0d0e18" stroke="#b98cff" stroke-width="2"/>
+<text x="2502" y="3003" font-size="9" fill="#aab0c8" text-anchor="middle">NOC</text>
+<text x="2502" y="2969" font-size="7.5" fill="#5b6086" text-anchor="middle">1501</text>
+<circle cx="2326" cy="3131" r="7" fill="#0d0e18" stroke="#b98cff" stroke-width="2"/>
+<text x="2326" y="3153" font-size="9" fill="#aab0c8" text-anchor="middle">Cold Storage</text>
+<text x="2326" y="3119" font-size="7.5" fill="#5b6086" text-anchor="middle">1502</text>
+<circle cx="2502" cy="2831" r="7" fill="#0d0e18" stroke="#b98cff" stroke-width="2"/>
+<text x="2502" y="2853" font-size="9" fill="#aab0c8" text-anchor="middle">The Antenna Field</text>
+<text x="2502" y="2819" font-size="7.5" fill="#5b6086" text-anchor="middle">1503</text>
+<circle cx="2678" cy="2981" r="7" fill="#0d0e18" stroke="#b98cff" stroke-width="2"/>
+<text x="2678" y="3003" font-size="9" fill="#aab0c8" text-anchor="middle">Substation</text>
+<text x="2678" y="2969" font-size="7.5" fill="#5b6086" text-anchor="middle">1504</text>
+<circle cx="2502" cy="2681" r="7" fill="#0d0e18" stroke="#b98cff" stroke-width="2"/>
+<text x="2502" y="2703" font-size="9" fill="#aab0c8" text-anchor="middle">Deep Dive</text>
+<text x="2502" y="2669" font-size="7.5" fill="#5b6086" text-anchor="middle">1505</text>
+<circle cx="2502" cy="2531" r="7" fill="#0d0e18" stroke="#b98cff" stroke-width="2"/>
+<text x="2502" y="2553" font-size="9" fill="#aab0c8" text-anchor="middle">Lattice</text>
+<text x="2502" y="2519" font-size="7.5" fill="#5b6086" text-anchor="middle">1506</text>
+<circle cx="2502" cy="2381" r="9" fill="#ff2d55" stroke="#ff9db0" stroke-width="2" filter="url(#glow)"/>
+<text x="2502" y="2403" font-size="9" fill="#aab0c8" text-anchor="middle">The Sculpture Garden</text>
+<text x="2502" y="2369" font-size="7.5" fill="#5b6086" text-anchor="middle">1507</text>
+</g>
+<g>
+<circle cx="3136" cy="3131" r="7" fill="#0d0e18" stroke="#e6cf5a" stroke-width="2"/>
+<text x="3136" y="3153" font-size="9" fill="#aab0c8" text-anchor="middle">Steps</text>
+<text x="3136" y="3119" font-size="7.5" fill="#5b6086" text-anchor="middle">1820</text>
+<circle cx="3136" cy="2981" r="7" fill="#0d0e18" stroke="#e6cf5a" stroke-width="2"/>
+<text x="3136" y="3003" font-size="9" fill="#aab0c8" text-anchor="middle">The Nave</text>
+<text x="3136" y="2969" font-size="7.5" fill="#5b6086" text-anchor="middle">1821</text>
+<circle cx="2960" cy="2981" r="11.5" fill="none" stroke="#ffcf4a" stroke-opacity="0.75"/>
+<circle cx="2960" cy="2981" r="7" fill="#0d0e18" stroke="#e6cf5a" stroke-width="2"/>
+<text x="2970" y="2973" font-size="11" fill="#ffcf4a" font-weight="700">&#165;</text>
+<text x="2960" y="3003" font-size="9" fill="#aab0c8" text-anchor="middle">Confessional Row</text>
+<text x="2960" y="2969" font-size="7.5" fill="#5b6086" text-anchor="middle">1822</text>
+<circle cx="3488" cy="2981" r="7" fill="#0d0e18" stroke="#e6cf5a" stroke-width="2"/>
+<text x="3488" y="3003" font-size="9" fill="#aab0c8" text-anchor="middle">The Baptistery</text>
+<text x="3488" y="2969" font-size="7.5" fill="#5b6086" text-anchor="middle">1823</text>
+<circle cx="3136" cy="2831" r="7" fill="#0d0e18" stroke="#e6cf5a" stroke-width="2"/>
+<text x="3136" y="2853" font-size="9" fill="#aab0c8" text-anchor="middle">The Reliquary</text>
+<text x="3136" y="2819" font-size="7.5" fill="#5b6086" text-anchor="middle">1824</text>
+<circle cx="2960" cy="2681" r="7" fill="#0d0e18" stroke="#e6cf5a" stroke-width="2"/>
+<text x="2960" y="2703" font-size="9" fill="#aab0c8" text-anchor="middle">Crypt of Donated Chrome</text>
+<text x="2960" y="2669" font-size="7.5" fill="#5b6086" text-anchor="middle">1825</text>
+<circle cx="3312" cy="2831" r="9" fill="#ff2d55" stroke="#ff9db0" stroke-width="2" filter="url(#glow)"/>
+<text x="3312" y="2853" font-size="9" fill="#aab0c8" text-anchor="middle">The Bishop&apos;s Office</text>
+<text x="3312" y="2819" font-size="7.5" fill="#5b6086" text-anchor="middle">1826</text>
+<circle cx="2960" cy="2531" r="7" fill="#0d0e18" stroke="#e6cf5a" stroke-width="2"/>
+<text x="2960" y="2553" font-size="9" fill="#aab0c8" text-anchor="middle">Nave Level</text>
+<text x="2960" y="2519" font-size="7.5" fill="#5b6086" text-anchor="middle">1827</text>
+<circle cx="2960" cy="2381" r="7" fill="#0d0e18" stroke="#e6cf5a" stroke-width="2"/>
+<text x="2960" y="2403" font-size="9" fill="#aab0c8" text-anchor="middle">Deep</text>
+<text x="2960" y="2369" font-size="7.5" fill="#5b6086" text-anchor="middle">1828</text>
+<circle cx="2960" cy="2831" r="11.5" fill="none" stroke="#ffcf4a" stroke-opacity="0.75"/>
+<circle cx="2960" cy="2831" r="7" fill="#0d0e18" stroke="#e6cf5a" stroke-width="2"/>
+<text x="2970" y="2823" font-size="11" fill="#ffcf4a" font-weight="700">&#165;</text>
+<text x="2960" y="2853" font-size="9" fill="#aab0c8" text-anchor="middle">The Vestry</text>
+<text x="2960" y="2819" font-size="7.5" fill="#5b6086" text-anchor="middle">1829</text>
+<circle cx="3312" cy="2981" r="7" fill="#0d0e18" stroke="#e6cf5a" stroke-width="2"/>
+<text x="3312" y="3003" font-size="9" fill="#aab0c8" text-anchor="middle">Bell Tower</text>
+<text x="3312" y="2969" font-size="7.5" fill="#5b6086" text-anchor="middle">1830</text>
+<circle cx="3136" cy="2381" r="7" fill="#0d0e18" stroke="#e6cf5a" stroke-width="2"/>
+<text x="3136" y="2403" font-size="9" fill="#aab0c8" text-anchor="middle">Ossuary of Circuits</text>
+<text x="3136" y="2369" font-size="7.5" fill="#5b6086" text-anchor="middle">1831</text>
+</g>
+<g>
+<circle cx="4650" cy="2681" r="7" fill="#0d0e18" stroke="#4aa3ff" stroke-width="2"/>
+<text x="4650" y="2703" font-size="9" fill="#aab0c8" text-anchor="middle">Metro Junction Platform</text>
+<text x="4650" y="2669" font-size="7.5" fill="#5b6086" text-anchor="middle">1800</text>
+<circle cx="4298" cy="2681" r="7" fill="#0d0e18" stroke="#4aa3ff" stroke-width="2"/>
+<text x="4298" y="2703" font-size="9" fill="#aab0c8" text-anchor="middle">Ticket Hall</text>
+<text x="4298" y="2669" font-size="7.5" fill="#5b6086" text-anchor="middle">1801</text>
+<circle cx="4122" cy="2681" r="7" fill="#0d0e18" stroke="#4aa3ff" stroke-width="2"/>
+<text x="4122" y="2703" font-size="9" fill="#aab0c8" text-anchor="middle">Turnstile Mezzanine</text>
+<text x="4122" y="2669" font-size="7.5" fill="#5b6086" text-anchor="middle">1802</text>
+<circle cx="4122" cy="2531" r="7" fill="#0d0e18" stroke="#4aa3ff" stroke-width="2"/>
+<text x="4122" y="2553" font-size="9" fill="#aab0c8" text-anchor="middle">Northbound Platform</text>
+<text x="4122" y="2519" font-size="7.5" fill="#5b6086" text-anchor="middle">1803</text>
+<circle cx="4122" cy="2831" r="7" fill="#0d0e18" stroke="#4aa3ff" stroke-width="2"/>
+<text x="4122" y="2853" font-size="9" fill="#aab0c8" text-anchor="middle">Southbound Platform</text>
+<text x="4122" y="2819" font-size="7.5" fill="#5b6086" text-anchor="middle">1804</text>
+<circle cx="4122" cy="2381" r="7" fill="#0d0e18" stroke="#4aa3ff" stroke-width="2"/>
+<text x="4122" y="2403" font-size="9" fill="#aab0c8" text-anchor="middle">Forward Car</text>
+<text x="4122" y="2369" font-size="7.5" fill="#5b6086" text-anchor="middle">1805</text>
+<circle cx="4298" cy="2381" r="7" fill="#0d0e18" stroke="#4aa3ff" stroke-width="2"/>
+<text x="4298" y="2403" font-size="9" fill="#aab0c8" text-anchor="middle">Rear Car</text>
+<text x="4298" y="2369" font-size="7.5" fill="#5b6086" text-anchor="middle">1806</text>
+<circle cx="3946" cy="2831" r="7" fill="#0d0e18" stroke="#4aa3ff" stroke-width="2"/>
+<text x="3946" y="2853" font-size="9" fill="#aab0c8" text-anchor="middle">Service Tunnel</text>
+<text x="3946" y="2819" font-size="7.5" fill="#5b6086" text-anchor="middle">1807</text>
+<circle cx="3946" cy="2981" r="7" fill="#0d0e18" stroke="#4aa3ff" stroke-width="2"/>
+<text x="3946" y="3003" font-size="9" fill="#aab0c8" text-anchor="middle">Flooded Section</text>
+<text x="3946" y="2969" font-size="7.5" fill="#5b6086" text-anchor="middle">1808</text>
+<circle cx="3946" cy="2681" r="11.5" fill="none" stroke="#ffcf4a" stroke-opacity="0.75"/>
+<circle cx="3946" cy="2681" r="7" fill="#0d0e18" stroke="#4aa3ff" stroke-width="2"/>
+<text x="3946" y="2684.4" font-size="10" fill="#3ce88b" text-anchor="middle">&#9670;</text>
+<text x="3956" y="2673" font-size="11" fill="#ffcf4a" font-weight="700">&#165;</text>
+<text x="3946" y="2703" font-size="9" fill="#aab0c8" text-anchor="middle">Tunnel Nomad Squat</text>
+<text x="3946" y="2669" font-size="7.5" fill="#5b6086" text-anchor="middle">1809</text>
+<circle cx="3770" cy="2981" r="9" fill="#ff2d55" stroke="#ff9db0" stroke-width="2" filter="url(#glow)"/>
+<text x="3770" y="3003" font-size="9" fill="#aab0c8" text-anchor="middle">The Signal Room</text>
+<text x="3770" y="2969" font-size="7.5" fill="#5b6086" text-anchor="middle">1810</text>
+</g>
+<g>
+<circle cx="706" cy="3741" r="7" fill="#0d0e18" stroke="#e0763a" stroke-width="2"/>
+<text x="706" y="3763" font-size="9" fill="#aab0c8" text-anchor="middle">The Open Waste</text>
+<text x="706" y="3729" font-size="7.5" fill="#5b6086" text-anchor="middle">1860</text>
+<circle cx="530" cy="3591" r="9" fill="#ff2d55" stroke="#ff9db0" stroke-width="2" filter="url(#glow)"/>
+<text x="530" y="3613" font-size="9" fill="#aab0c8" text-anchor="middle">The Standing Storm</text>
+<text x="530" y="3579" font-size="7.5" fill="#5b6086" text-anchor="middle">1861</text>
+<circle cx="530" cy="3441" r="9" fill="#ff2d55" stroke="#ff9db0" stroke-width="2" filter="url(#glow)"/>
+<text x="530" y="3463" font-size="9" fill="#aab0c8" text-anchor="middle">Eye of the Storm</text>
+<text x="530" y="3429" font-size="7.5" fill="#5b6086" text-anchor="middle">1862</text>
+<circle cx="354" cy="3741" r="7" fill="#0d0e18" stroke="#e0763a" stroke-width="2"/>
+<text x="354" y="3763" font-size="9" fill="#aab0c8" text-anchor="middle">Skylight</text>
+<text x="354" y="3729" font-size="7.5" fill="#5b6086" text-anchor="middle">1863</text>
+<circle cx="178" cy="3741" r="7" fill="#0d0e18" stroke="#e0763a" stroke-width="2"/>
+<text x="178" y="3763" font-size="9" fill="#aab0c8" text-anchor="middle">Sunken Court</text>
+<text x="178" y="3729" font-size="7.5" fill="#5b6086" text-anchor="middle">1864</text>
+<circle cx="530" cy="3891" r="7" fill="#0d0e18" stroke="#e0763a" stroke-width="2"/>
+<text x="530" y="3913" font-size="9" fill="#aab0c8" text-anchor="middle">The Wire</text>
+<text x="530" y="3879" font-size="7.5" fill="#5b6086" text-anchor="middle">1865</text>
+<circle cx="530" cy="4041" r="7" fill="#0d0e18" stroke="#e0763a" stroke-width="2"/>
+<text x="530" y="4063" font-size="9" fill="#aab0c8" text-anchor="middle">Motor Yard</text>
+<text x="530" y="4029" font-size="7.5" fill="#5b6086" text-anchor="middle">1866</text>
+<circle cx="706" cy="3441" r="7" fill="#0d0e18" stroke="#e0763a" stroke-width="2"/>
+<text x="706" y="3463" font-size="9" fill="#aab0c8" text-anchor="middle">The Crashed AV</text>
+<text x="706" y="3429" font-size="7.5" fill="#5b6086" text-anchor="middle">1867</text>
+<circle cx="882" cy="3741" r="7" fill="#0d0e18" stroke="#e0763a" stroke-width="2"/>
+<text x="882" y="3763" font-size="9" fill="#aab0c8" text-anchor="middle">Main Street</text>
+<text x="882" y="3729" font-size="7.5" fill="#5b6086" text-anchor="middle">1868</text>
+<circle cx="706" cy="3591" r="9" fill="#ff2d55" stroke="#ff9db0" stroke-width="2" filter="url(#glow)"/>
+<text x="706" y="3613" font-size="9" fill="#aab0c8" text-anchor="middle">The Chapel</text>
+<text x="706" y="3579" font-size="7.5" fill="#5b6086" text-anchor="middle">1869</text>
+<circle cx="530" cy="3741" r="7" fill="#0d0e18" stroke="#e0763a" stroke-width="2"/>
+<text x="530" y="3763" font-size="9" fill="#aab0c8" text-anchor="middle">Solar-Panel Graveyard</text>
+<text x="530" y="3729" font-size="7.5" fill="#5b6086" text-anchor="middle">1870</text>
+<circle cx="354" cy="3891" r="7" fill="#0d0e18" stroke="#e0763a" stroke-width="2"/>
+<text x="354" y="3913" font-size="9" fill="#aab0c8" text-anchor="middle">The Inverter Rows</text>
+<text x="354" y="3879" font-size="7.5" fill="#5b6086" text-anchor="middle">1871</text>
+<circle cx="178" cy="3891" r="11.5" fill="none" stroke="#ffcf4a" stroke-opacity="0.75"/>
+<circle cx="178" cy="3891" r="7" fill="#0d0e18" stroke="#e0763a" stroke-width="2"/>
+<text x="178" y="3894.4" font-size="10" fill="#3ce88b" text-anchor="middle">&#9670;</text>
+<text x="188" y="3883" font-size="11" fill="#ffcf4a" font-weight="700">&#165;</text>
+<text x="160" y="3903" font-size="11" fill="#b98cff">&#9636;</text>
+<text x="178" y="3913" font-size="9" fill="#aab0c8" text-anchor="middle">The Hermit&apos;s Shack</text>
+<text x="178" y="3879" font-size="7.5" fill="#5b6086" text-anchor="middle">1872</text>
+<circle cx="1058" cy="3741" r="7" fill="#0d0e18" stroke="#e0763a" stroke-width="2"/>
+<text x="1058" y="3763" font-size="9" fill="#aab0c8" text-anchor="middle">The Salt Marker</text>
+<text x="1058" y="3729" font-size="7.5" fill="#5b6086" text-anchor="middle">1873</text>
+</g>
+<g>
+<circle cx="1516" cy="4041" r="7" fill="#0d0e18" stroke="#33ff9e" stroke-width="2"/>
+<text x="1516" y="4063" font-size="9" fill="#aab0c8" text-anchor="middle">Ingress</text>
+<text x="1516" y="4029" font-size="7.5" fill="#5b6086" text-anchor="middle">1880</text>
+<circle cx="1692" cy="4041" r="11.5" fill="none" stroke="#ffcf4a" stroke-opacity="0.75"/>
+<circle cx="1692" cy="4041" r="7" fill="#0d0e18" stroke="#33ff9e" stroke-width="2"/>
+<text x="1702" y="4033" font-size="11" fill="#ffcf4a" font-weight="700">&#165;</text>
+<text x="1692" y="4063" font-size="9" fill="#aab0c8" text-anchor="middle">The Data Souk</text>
+<text x="1692" y="4029" font-size="7.5" fill="#5b6086" text-anchor="middle">1881</text>
+<circle cx="1516" cy="3891" r="7" fill="#0d0e18" stroke="#33ff9e" stroke-width="2"/>
+<text x="1516" y="3913" font-size="9" fill="#aab0c8" text-anchor="middle">The ICE Wall</text>
+<text x="1516" y="3879" font-size="7.5" fill="#5b6086" text-anchor="middle">1882</text>
+<circle cx="1516" cy="3741" r="7" fill="#0d0e18" stroke="#33ff9e" stroke-width="2"/>
+<text x="1516" y="3763" font-size="9" fill="#aab0c8" text-anchor="middle">Fortress Gate</text>
+<text x="1516" y="3729" font-size="7.5" fill="#5b6086" text-anchor="middle">1883</text>
+<circle cx="1516" cy="3591" r="7" fill="#0d0e18" stroke="#33ff9e" stroke-width="2"/>
+<text x="1516" y="3613" font-size="9" fill="#aab0c8" text-anchor="middle">The Vault</text>
+<text x="1516" y="3579" font-size="7.5" fill="#5b6086" text-anchor="middle">1884</text>
+<circle cx="1340" cy="4041" r="7" fill="#0d0e18" stroke="#33ff9e" stroke-width="2"/>
+<text x="1340" y="4063" font-size="9" fill="#aab0c8" text-anchor="middle">The Recursion Loop</text>
+<text x="1340" y="4029" font-size="7.5" fill="#5b6086" text-anchor="middle">1885</text>
+<circle cx="1340" cy="3891" r="9" fill="#ff2d55" stroke="#ff9db0" stroke-width="2" filter="url(#glow)"/>
+<text x="1340" y="3913" font-size="9" fill="#aab0c8" text-anchor="middle">The Dead AI&apos;s Shrine</text>
+<text x="1340" y="3879" font-size="7.5" fill="#5b6086" text-anchor="middle">1886</text>
+<circle cx="1340" cy="3741" r="7" fill="#0d0e18" stroke="#33ff9e" stroke-width="2"/>
+<text x="1340" y="3763" font-size="9" fill="#aab0c8" text-anchor="middle">Null Sector</text>
+<text x="1340" y="3729" font-size="7.5" fill="#5b6086" text-anchor="middle">1887</text>
+<circle cx="1340" cy="3591" r="7" fill="#0d0e18" stroke="#33ff9e" stroke-width="2"/>
+<text x="1340" y="3613" font-size="9" fill="#aab0c8" text-anchor="middle">The Blackwall&apos;s Edge</text>
+<text x="1340" y="3579" font-size="7.5" fill="#5b6086" text-anchor="middle">1888</text>
+<circle cx="1868" cy="4041" r="11.5" fill="none" stroke="#ffcf4a" stroke-opacity="0.75"/>
+<circle cx="1868" cy="4041" r="7" fill="#0d0e18" stroke="#33ff9e" stroke-width="2"/>
+<text x="1878" y="4033" font-size="11" fill="#ffcf4a" font-weight="700">&#165;</text>
+<text x="1868" y="4063" font-size="9" fill="#aab0c8" text-anchor="middle">The Broken Ledger</text>
+<text x="1868" y="4029" font-size="7.5" fill="#5b6086" text-anchor="middle">1889</text>
+<circle cx="1340" cy="3441" r="7" fill="#0d0e18" stroke="#33ff9e" stroke-width="2"/>
+<text x="1340" y="3463" font-size="9" fill="#aab0c8" text-anchor="middle">The Spindle</text>
+<text x="1340" y="3429" font-size="7.5" fill="#5b6086" text-anchor="middle">1890</text>
+<circle cx="1868" cy="3891" r="7" fill="#0d0e18" stroke="#33ff9e" stroke-width="2"/>
+<text x="1868" y="3913" font-size="9" fill="#aab0c8" text-anchor="middle">Cache Heap</text>
+<text x="1868" y="3879" font-size="7.5" fill="#5b6086" text-anchor="middle">1891</text>
+</g>
+<g>
+<circle cx="2326" cy="3741" r="7" fill="#0d0e18" stroke="#e0b44a" stroke-width="2"/>
+<text x="2326" y="3763" font-size="9" fill="#aab0c8" text-anchor="middle">City Limits Gate</text>
+<text x="2326" y="3729" font-size="7.5" fill="#5b6086" text-anchor="middle">1700</text>
+<circle cx="2326" cy="3591" r="7" fill="#0d0e18" stroke="#e0b44a" stroke-width="2"/>
+<text x="2326" y="3613" font-size="9" fill="#aab0c8" text-anchor="middle">The Old Highway</text>
+<text x="2326" y="3579" font-size="7.5" fill="#5b6086" text-anchor="middle">1701</text>
+<circle cx="2502" cy="3591" r="7" fill="#0d0e18" stroke="#e0b44a" stroke-width="2"/>
+<text x="2502" y="3613" font-size="9" fill="#aab0c8" text-anchor="middle">Overturned Rig</text>
+<text x="2502" y="3579" font-size="7.5" fill="#5b6086" text-anchor="middle">1702</text>
+<circle cx="2326" cy="3441" r="7" fill="#0d0e18" stroke="#e0b44a" stroke-width="2"/>
+<text x="2326" y="3444.4" font-size="10" fill="#3ce88b" text-anchor="middle">&#9670;</text>
+<text x="2308" y="3453" font-size="11" fill="#b98cff">&#9636;</text>
+<text x="2326" y="3463" font-size="9" fill="#aab0c8" text-anchor="middle">Aldecaldo Camp</text>
+<text x="2326" y="3429" font-size="7.5" fill="#5b6086" text-anchor="middle">1703</text>
+<circle cx="2150" cy="3441" r="11.5" fill="none" stroke="#ffcf4a" stroke-opacity="0.75"/>
+<circle cx="2150" cy="3441" r="7" fill="#0d0e18" stroke="#e0b44a" stroke-width="2"/>
+<text x="2150" y="3444.4" font-size="10" fill="#3ce88b" text-anchor="middle">&#9670;</text>
+<text x="2160" y="3433" font-size="11" fill="#ffcf4a" font-weight="700">&#165;</text>
+<text x="2150" y="3463" font-size="9" fill="#aab0c8" text-anchor="middle">Elder&apos;s Rig</text>
+<text x="2150" y="3429" font-size="7.5" fill="#5b6086" text-anchor="middle">1704</text>
+<circle cx="2502" cy="3441" r="11.5" fill="none" stroke="#ffcf4a" stroke-opacity="0.75"/>
+<circle cx="2502" cy="3441" r="7" fill="#0d0e18" stroke="#e0b44a" stroke-width="2"/>
+<text x="2502" y="3444.4" font-size="10" fill="#3ce88b" text-anchor="middle">&#9670;</text>
+<text x="2512" y="3433" font-size="11" fill="#ffcf4a" font-weight="700">&#165;</text>
+<text x="2502" y="3463" font-size="9" fill="#aab0c8" text-anchor="middle">The Motorpool</text>
+<text x="2502" y="3429" font-size="7.5" fill="#5b6086" text-anchor="middle">1705</text>
+<circle cx="2150" cy="3591" r="7" fill="#0d0e18" stroke="#e0b44a" stroke-width="2"/>
+<text x="2150" y="3613" font-size="9" fill="#aab0c8" text-anchor="middle">Solar Farm Ruins</text>
+<text x="2150" y="3579" font-size="7.5" fill="#5b6086" text-anchor="middle">1706</text>
+<circle cx="2150" cy="3741" r="7" fill="#0d0e18" stroke="#e0b44a" stroke-width="2"/>
+<text x="2150" y="3763" font-size="9" fill="#aab0c8" text-anchor="middle">Radio Tower</text>
+<text x="2150" y="3729" font-size="7.5" fill="#5b6086" text-anchor="middle">1707</text>
+<circle cx="2502" cy="3741" r="11.5" fill="none" stroke="#ffcf4a" stroke-opacity="0.75"/>
+<circle cx="2502" cy="3741" r="7" fill="#0d0e18" stroke="#e0b44a" stroke-width="2"/>
+<text x="2512" y="3733" font-size="11" fill="#ffcf4a" font-weight="700">&#165;</text>
+<text x="2502" y="3763" font-size="9" fill="#aab0c8" text-anchor="middle">The Dust Bowl</text>
+<text x="2502" y="3729" font-size="7.5" fill="#5b6086" text-anchor="middle">1708</text>
+<circle cx="2678" cy="3741" r="9" fill="#ff2d55" stroke="#ff9db0" stroke-width="2" filter="url(#glow)"/>
+<text x="2678" y="3763" font-size="9" fill="#aab0c8" text-anchor="middle">Raffen Shiv Camp</text>
+<text x="2678" y="3729" font-size="7.5" fill="#5b6086" text-anchor="middle">1709</text>
+<circle cx="2326" cy="3891" r="7" fill="#0d0e18" stroke="#e0b44a" stroke-width="2"/>
+<text x="2326" y="3913" font-size="9" fill="#aab0c8" text-anchor="middle">Buried Gas Station</text>
+<text x="2326" y="3879" font-size="7.5" fill="#5b6086" text-anchor="middle">1710</text>
+</g>
+<g>
+<circle cx="3312" cy="3741" r="7" fill="#0d0e18" stroke="#ff5db1" stroke-width="2"/>
+<text x="3312" y="3744.4" font-size="10" fill="#3ce88b" text-anchor="middle">&#9670;</text>
+<text x="3312" y="3763" font-size="9" fill="#aab0c8" text-anchor="middle">Main Floor</text>
+<text x="3312" y="3729" font-size="7.5" fill="#5b6086" text-anchor="middle">1610</text>
+<circle cx="3136" cy="3741" r="7" fill="#0d0e18" stroke="#ff5db1" stroke-width="2"/>
+<text x="3136" y="3763" font-size="9" fill="#aab0c8" text-anchor="middle">BD Booth Row</text>
+<text x="3136" y="3729" font-size="7.5" fill="#5b6086" text-anchor="middle">1611</text>
+<circle cx="3488" cy="3741" r="11.5" fill="none" stroke="#ffcf4a" stroke-opacity="0.75"/>
+<circle cx="3488" cy="3741" r="7" fill="#0d0e18" stroke="#ff5db1" stroke-width="2"/>
+<text x="3498" y="3733" font-size="11" fill="#ffcf4a" font-weight="700">&#165;</text>
+<text x="3488" y="3763" font-size="9" fill="#aab0c8" text-anchor="middle">The Arcade</text>
+<text x="3488" y="3729" font-size="7.5" fill="#5b6086" text-anchor="middle">1612</text>
+<circle cx="2960" cy="3741" r="11.5" fill="none" stroke="#ffcf4a" stroke-opacity="0.75"/>
+<circle cx="2960" cy="3741" r="7" fill="#0d0e18" stroke="#ff5db1" stroke-width="2"/>
+<text x="2970" y="3733" font-size="11" fill="#ffcf4a" font-weight="700">&#165;</text>
+<text x="2960" y="3763" font-size="9" fill="#aab0c8" text-anchor="middle">The Back Room</text>
+<text x="2960" y="3729" font-size="7.5" fill="#5b6086" text-anchor="middle">1613</text>
+<circle cx="3488" cy="3591" r="7" fill="#0d0e18" stroke="#ff5db1" stroke-width="2"/>
+<text x="3488" y="3613" font-size="9" fill="#aab0c8" text-anchor="middle">VIP Lounge</text>
+<text x="3488" y="3579" font-size="7.5" fill="#5b6086" text-anchor="middle">1614</text>
+<circle cx="3488" cy="3441" r="9" fill="#ff2d55" stroke="#ff9db0" stroke-width="2" filter="url(#glow)"/>
+<text x="3488" y="3463" font-size="9" fill="#aab0c8" text-anchor="middle">The Kitsune&apos;s Office</text>
+<text x="3488" y="3429" font-size="7.5" fill="#5b6086" text-anchor="middle">1615</text>
+<circle cx="3840" cy="3591" r="7" fill="#0d0e18" stroke="#ff5db1" stroke-width="2"/>
+<text x="3840" y="3613" font-size="9" fill="#aab0c8" text-anchor="middle">Loading Dock</text>
+<text x="3840" y="3579" font-size="7.5" fill="#5b6086" text-anchor="middle">1616</text>
+<circle cx="3664" cy="3591" r="7" fill="#0d0e18" stroke="#ff5db1" stroke-width="2"/>
+<text x="3664" y="3613" font-size="9" fill="#aab0c8" text-anchor="middle">Fire Stairs</text>
+<text x="3664" y="3579" font-size="7.5" fill="#5b6086" text-anchor="middle">1617</text>
+</g>
+<g transform="translate(60,4234)" font-size="12">
+<text x="0" y="0" fill="#8b90b2" font-size="11" letter-spacing="3" font-weight="700">DISTRICT INDEX</text>
+<g transform="translate(0,20)"><rect x="0" y="-9" width="12" height="12" rx="3" fill="#ff2d55"/><text x="20" y="1" fill="#c9cde0">Kabuki</text><text x="215" y="1" fill="#6b7192">L1&#8211;6</text><text x="300" y="1" fill="#6b7192">vnum 1000&#8211;1607</text></g>
+<g transform="translate(0,40)"><rect x="0" y="-9" width="12" height="12" rx="3" fill="#ff9b45"/><text x="20" y="1" fill="#c9cde0">Watson Docks</text><text x="215" y="1" fill="#6b7192">L3&#8211;10</text><text x="300" y="1" fill="#6b7192">vnum 1100&#8211;1903</text></g>
+<g transform="translate(0,60)"><rect x="0" y="-9" width="12" height="12" rx="3" fill="#66e0ff"/><text x="20" y="1" fill="#c9cde0">Corpo Plaza</text><text x="215" y="1" fill="#6b7192">L5&#8211;16</text><text x="300" y="1" fill="#6b7192">vnum 1200&#8211;1655</text></g>
+<g transform="translate(0,80)"><rect x="0" y="-9" width="12" height="12" rx="3" fill="#ff5555"/><text x="20" y="1" fill="#c9cde0">The Combat Zone</text><text x="215" y="1" fill="#6b7192">L9&#8211;20</text><text x="300" y="1" fill="#6b7192">vnum 1300&#8211;1312</text></g>
+<g transform="translate(0,100)"><rect x="0" y="-9" width="12" height="12" rx="3" fill="#b79a6b"/><text x="20" y="1" fill="#c9cde0">The Undercity</text><text x="215" y="1" fill="#6b7192">L6&#8211;18</text><text x="300" y="1" fill="#6b7192">vnum 1400&#8211;1758</text></g>
+<g transform="translate(430,20)"><rect x="0" y="-9" width="12" height="12" rx="3" fill="#b98cff"/><text x="20" y="1" fill="#c9cde0">The Blackwall Fringe</text><text x="215" y="1" fill="#6b7192">L16&#8211;30</text><text x="300" y="1" fill="#6b7192">vnum 1500&#8211;1507</text></g>
+<g transform="translate(430,40)"><rect x="0" y="-9" width="12" height="12" rx="3" fill="#ff5db1"/><text x="20" y="1" fill="#c9cde0">The Neon Kitsune</text><text x="215" y="1" fill="#6b7192">L2&#8211;12</text><text x="300" y="1" fill="#6b7192">vnum 1610&#8211;1617</text></g>
+<g transform="translate(430,60)"><rect x="0" y="-9" width="12" height="12" rx="3" fill="#e0b44a"/><text x="20" y="1" fill="#c9cde0">The Badlands Edge</text><text x="215" y="1" fill="#6b7192">L6&#8211;20</text><text x="300" y="1" fill="#6b7192">vnum 1700&#8211;1710</text></g>
+<g transform="translate(430,80)"><rect x="0" y="-9" width="12" height="12" rx="3" fill="#4aa3ff"/><text x="20" y="1" fill="#c9cde0">The Metro</text><text x="215" y="1" fill="#6b7192">L5&#8211;15</text><text x="300" y="1" fill="#6b7192">vnum 1800&#8211;1810</text></g>
+<g transform="translate(430,100)"><rect x="0" y="-9" width="12" height="12" rx="3" fill="#e6cf5a"/><text x="20" y="1" fill="#c9cde0">Neural Implant Church</text><text x="215" y="1" fill="#6b7192">L6&#8211;18</text><text x="300" y="1" fill="#6b7192">vnum 1820&#8211;1831</text></g>
+<g transform="translate(860,20)"><rect x="0" y="-9" width="12" height="12" rx="3" fill="#5be0a0"/><text x="20" y="1" fill="#c9cde0">Net Tower</text><text x="215" y="1" fill="#6b7192">L8&#8211;24</text><text x="300" y="1" fill="#6b7192">vnum 1840&#8211;1856</text></g>
+<g transform="translate(860,40)"><rect x="0" y="-9" width="12" height="12" rx="3" fill="#e0763a"/><text x="20" y="1" fill="#c9cde0">The Wastelands</text><text x="215" y="1" fill="#6b7192">L10&#8211;26</text><text x="300" y="1" fill="#6b7192">vnum 1860&#8211;1873</text></g>
+<g transform="translate(860,60)"><rect x="0" y="-9" width="12" height="12" rx="3" fill="#33ff9e"/><text x="20" y="1" fill="#c9cde0">The Grid</text><text x="215" y="1" fill="#6b7192">L16&#8211;32</text><text x="300" y="1" fill="#6b7192">vnum 1880&#8211;1891</text></g>
+</g>
+</svg>
