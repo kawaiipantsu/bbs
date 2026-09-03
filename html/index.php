@@ -29,6 +29,11 @@ Config::loadSettings();
 // ---------------------------------------------------------------------
 //  Security headers for every dynamic response
 // ---------------------------------------------------------------------
+// per-response nonce so the shell's tiny bootstrap <script> can run under a
+// strict script-src (no 'unsafe-inline'); exposed to views via BBS_CSP_NONCE.
+$cspNonce = rtrim(strtr(base64_encode(random_bytes(16)), '+/', '-_'), '=');
+define('BBS_CSP_NONCE', $cspNonce);
+
 if (!headers_sent()) {
     header_remove('X-Powered-By');
     $csp = implode('; ', [
@@ -40,7 +45,7 @@ if (!headers_sent()) {
         "media-src 'self' blob: data:",
         "font-src 'self' data:",
         "style-src 'self' 'unsafe-inline'",
-        "script-src 'self'",
+        "script-src 'self' 'nonce-{$cspNonce}'",
         "connect-src 'self'",
         "worker-src 'self' blob:",
     ]);

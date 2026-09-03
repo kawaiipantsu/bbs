@@ -144,6 +144,7 @@ final class PageController
             'site'     => $this->siteName(),
             'buildver' => Config::setting('version', '1.0.0'),
             'asset_v'  => $this->assetVersion(),
+            'nonce'    => defined('BBS_CSP_NONCE') ? BBS_CSP_NONCE : '',
         ]);
         return Response::html($html)->withHeader('Cache-Control', 'no-cache');
     }

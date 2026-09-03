@@ -94,7 +94,7 @@ $jsonld = $meta['jsonld'] ?? null;
 <?php /* self-heal: if a stale cached module throws "x is not a function",
          reload once past the cache. Helps devices with no easy hard-refresh
          (iOS Safari). The HTML itself is Cache-Control: no-cache. */ ?>
-<script>
+<script<?= isset($nonce) && $nonce !== '' ? ' nonce="' . $e($nonce) . '"' : '' ?>>
 (function () {
   var AV = '<?= $e($asset_v) ?>', KEY = 'bbs_reload_' + AV, tried = false;
   try { tried = sessionStorage.getItem(KEY) === '1'; } catch (_) {}
