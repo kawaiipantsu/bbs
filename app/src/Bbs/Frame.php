@@ -135,10 +135,16 @@ final class Frame
         return $this->pipe($color . str_repeat('─', self::width()));
     }
 
-    public function footer(string $hint): self
+    public function footer(string $hint, string $right = ''): self
     {
-        return $this->pipe('|08' . str_repeat('─', self::width()))
-                    ->pipe('|08 ' . $hint);
+        $this->pipe('|08' . str_repeat('─', self::width()));
+        $line = '|08 ' . $hint;
+        if ($right !== '') {
+            $w   = self::width();
+            $pad = max(2, $w - mb_strlen($hint) - mb_strlen($right) - 3);
+            $line .= str_repeat(' ', $pad) . '|07' . $right . ' ';
+        }
+        return $this->pipe($line);
     }
 
     public function toArray(): array

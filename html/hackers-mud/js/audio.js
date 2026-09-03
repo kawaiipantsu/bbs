@@ -25,7 +25,16 @@ class Audio {
     // per-bus gains so music can sit low under the effects
     this.sfxG = this.ctx.createGain(); this.sfxG.gain.value = this.mix.sfx; this.sfxG.connect(this.master);
     this.ambG = this.ctx.createGain(); this.ambG.gain.value = this.mix.amb; this.ambG.connect(this.master);
-    this.musG = this.ctx.createGain(); this.musG.gain.value = this.mix.musicOn ? this.mix.music : 0; this.musG.connect(this.master);
+    this.musG = this.ctx.createGain(); this.musG.gain.value = this.mix.musicOn ? this.mix.music : 0;
+    // a transparent brick-wall limiter on the music bus - it never touches the
+    // normal mix but catches any transient pile-up (e.g. the scheduler catching
+    // up after the main thread stalls) so a hitch can't turn into a loud crack.
+    try {
+      const lim = this.ctx.createDynamicsCompressor();
+      lim.threshold.value = -3; lim.knee.value = 0; lim.ratio.value = 20;
+      lim.attack.value = 0.002; lim.release.value = 0.12;
+      this.musG.connect(lim); lim.connect(this.master);
+    } catch (_) { this.musG.connect(this.master); }
     this.ctx.onstatechange = () => { if (this._unlocked && this.ctx.state === 'suspended') this.ctx.resume().catch(() => {}); };
   }
 
@@ -237,8 +246,17 @@ class Audio {
   _musSchedule() {
     const m = this._mus; if (!m || !this.ctx) return;
     const stepDur = 60 / m.bpm / 4;
-    while (m.nextT < this.ctx.currentTime + 0.16) {
-      this._musStep(m.step, m.nextT);
+    const now = this.ctx.currentTime;
+    // if the scheduler fell behind (tab throttle, GC, a heavy render frame),
+    // fast-forward the step counter WITHOUT emitting sound - otherwise the
+    // catch-up dumps a dozen past-timed notes that all fire at once = crack.
+    if (m.nextT < now - 0.03) {
+      const skip = Math.ceil((now - m.nextT) / stepDur);
+      m.step += skip; m.nextT += skip * stepDur;
+    }
+    let guard = 0;
+    while (m.nextT < now + 0.2 && guard++ < 48) {
+      this._musStep(m.step, Math.max(m.nextT, now + 0.004));  // never schedule in the past
       m.step++; m.nextT += stepDur;
     }
   }
@@ -282,24 +300,30 @@ class Audio {
     }
   }
   _pad(t, notes, dur) {
-    if (this._musPad) { try { this._musPad.g.gain.setTargetAtTime(0.0001, t, 0.5); this._musPad.o.forEach(o => o.stop(t + 1.5)); } catch (_) {} }
-    const g = this.ctx.createGain(); g.gain.setValueAtTime(0.0001, t);
+    // the previous pad has a self-terminating envelope (below) that is already
+    // at floor by now - just make sure its oscillators are released.
+    if (this._musPad) { try { this._musPad.o.forEach(o => o.stop(t + 0.3)); } catch (_) {} }
+    const g = this.ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t);
     g.gain.linearRampToValueAtTime(0.03, t + 0.6);
-    g.gain.setTargetAtTime(0.0001, t + dur * 0.6, dur * 0.4);
+    g.gain.setValueAtTime(0.03, t + dur * 0.55);
+    g.gain.linearRampToValueAtTime(0.0001, t + dur);   // linear ramp to true floor - no residual to click on
     const lp = this.ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 700;
     g.connect(lp).connect(this.musG);
     const o = notes.map((mm, k) => {
       const osc = this.ctx.createOscillator();
       osc.type = k === 0 ? 'sawtooth' : 'triangle';
       osc.frequency.value = this._hz(mm); osc.detune.value = (Math.random() - 0.5) * 10;
-      osc.connect(g); osc.start(t); osc.stop(t + dur + 1.5); return osc;
+      osc.connect(g); osc.start(t); osc.stop(t + dur + 0.08); return osc;
     });
     this._musPad = { g, o };
   }
   _kick(t) {
     const o = this.ctx.createOscillator(), g = this.ctx.createGain();
     o.frequency.setValueAtTime(140, t); o.frequency.exponentialRampToValueAtTime(42, t + 0.12);
-    g.gain.setValueAtTime(0.5, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.16);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.5, t + 0.004);   // 4ms attack instead of an instant jump
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.16);
     o.connect(g).connect(this.musG); o.start(t); o.stop(t + 0.2);
   }
   _snare(t, v = 1) {

@@ -133,7 +133,11 @@ final class Menu
         }
 
         $frame->blank();
-        $frame->footer('↑↓ move  ·  ENTER select  ·  press a letter to jump  ·  ESC back');
+        $who = $session->user();
+        $frame->footer(
+            '↑↓ move  ·  ENTER select  ·  press a letter to jump  ·  ESC back',
+            $who ? ('Logged in as ' . $who['handle']) : ''
+        );
 
         $picks = array_values(array_filter($items, static fn ($i) => $i['action'] !== 'divider'));
         $frame->meta([
