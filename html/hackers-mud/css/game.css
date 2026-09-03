@@ -106,7 +106,8 @@ kbd { font-family:var(--mono); background:#0c0d16; border:1px solid var(--line2)
 #top .wanted.w1 i.a,#top .wanted.w2 i.a { background:var(--org); box-shadow:0 0 8px var(--org); }
 #top .wanted.w2 i { background:var(--red); box-shadow:0 0 8px var(--red); }
 #top .icons { display:flex; gap:4px; }
-#top .icons .btn { padding:.3em .5em; font-size:15px; line-height:1; }
+#top .icons .btn { padding:.3em .5em; font-size:15px; line-height:1; position:relative; }
+#top .icons .btn .badge { font-size:9px; }
 
 #left { grid-area:left; }
 #stage { grid-area:stage; padding:0; background:#05060c; }

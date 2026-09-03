@@ -1,0 +1,13 @@
+# =====================================================================
+#  Hackers-MUD graphical client
+#  The ES modules import each other with bare relative paths (no ?v=),
+#  so a day-long browser cache can pair a fresh entry file with a stale
+#  dependency - which showed up as items rendering with the wrong / old
+#  icons. Force revalidation on every load; ETag keeps it a cheap 304.
+# =====================================================================
+<IfModule mod_headers.c>
+    <FilesMatch "\.(js|mjs|css)$">
+        Header set Cache-Control "no-cache, must-revalidate"
+        Header unset Expires
+    </FilesMatch>
+</IfModule>

@@ -7,6 +7,8 @@ const root = document.getElementById('dex');
 (() => {
   const s = document.createElement('style');
   s.textContent = `
+  html,body{overflow:auto!important;height:auto!important;min-height:100%;position:static!important}
+  #dex{position:static!important;overflow:visible!important;height:auto!important;min-height:100vh}
   .dexload{max-width:520px;margin:16vh auto 0;padding:28px;text-align:center;
     border:1px solid var(--line2);border-radius:12px;background:linear-gradient(180deg,#14152400,#141524)}
   .dexload .brand{font-size:22px;margin-bottom:18px}
@@ -146,7 +148,7 @@ function renderChunked(items) {
         // draw icons for the batch we just added
         grid.querySelectorAll('canvas[data-icon]:not([data-done])').forEach(c => {
           c.dataset.done = '1';
-          try { c.getContext('2d').drawImage(iconCanvas(c.dataset.icon, 56), 0, 0); } catch (_) {}
+          try { c.getContext('2d').drawImage(iconCanvas(c.dataset.icon, 56, c.dataset.seed || ''), 0, 0); } catch (_) {}
         });
         bar.style.width = Math.round((i / list.length) * 100) + '%';
         if (i < list.length) requestAnimationFrame(step);
@@ -172,7 +174,7 @@ function card(it) {
   if (it.eff) stats.push(it.eff.join(', '));
   if (it.lvl > 1) stats.push('lv ' + it.lvl);
   el.innerHTML = `
-    <canvas width="56" height="56" data-icon="${esc(it.icon)}"></canvas>
+    <canvas width="56" height="56" data-icon="${esc(it.icon)}" data-seed="${esc(it.vnum)}"></canvas>
     <div class="di">
       <b>${esc(it.name)}</b>
       <div class="dm">${esc(it.type)}${it.slot ? ' · &lt;' + esc(it.slot.replace('implant_', '')) + '&gt;' : ''} · ¥${it.value.toLocaleString()} · ${it.weight}kg</div>

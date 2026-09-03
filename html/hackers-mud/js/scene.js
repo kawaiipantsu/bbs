@@ -462,12 +462,15 @@ export class Scene {
     for (let y = 0; y < GH; y++) for (let x = 0; x < GW; x++) {
       const c = this.grid[y][x];
       if (c.prop === 'portal') {
-        ctx.save(); ctx.globalAlpha = 0.5 + 0.4 * Math.sin(this.tt / 300);
-        ctx.fillStyle = th.glow; ctx.shadowColor = th.glow; ctx.shadowBlur = 20;
-        ctx.beginPath(); ctx.ellipse(x * this.T + this.T / 2, y * this.T + this.T / 2, this.T * 0.34, this.T * 0.18, 0, 0, 7); ctx.fill();
+        const dirs = (c.portalExits || []).map(e => e.dir);
+        const kind = dirs.includes('u') && !dirs.includes('d') ? 'stairsup'
+          : dirs.includes('d') && !dirs.includes('u') ? 'stairsdown' : 'stairs';
+        drawProp(ctx, x * this.T, y * this.T, this.T, this.theme, kind, c.seed);
+        ctx.save();
+        ctx.globalAlpha = 0.22 + 0.22 * Math.sin(this.tt / 300);
+        ctx.strokeStyle = th.glow; ctx.lineWidth = 2; ctx.shadowColor = th.glow; ctx.shadowBlur = 10;
+        ctx.strokeRect(x * this.T + 2.5, y * this.T + 2.5, this.T - 5, this.T - 5);
         ctx.restore();
-        ctx.fillStyle = '#05060c'; ctx.font = `bold ${Math.round(this.T * 0.3)}px ui-monospace`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.fillText('⇅', x * this.T + this.T / 2, y * this.T + this.T / 2);
       } else if (c.prop) drawProp(ctx, x * this.T, y * this.T, this.T, this.theme, c.prop, c.seed);
     }
     // sort entities + player by y for depth
@@ -482,7 +485,7 @@ export class Scene {
       } else {
         const e = d.e;
         const cx = e.gx * this.T + this.T / 2, cy = e.gy * this.T + this.T * 0.9;
-        if (e.kind === 'item') drawGroundItem(ctx, cx, e.gy * this.T + this.T / 2, this.T, e.data.icon, this.tt);
+        if (e.kind === 'item') drawGroundItem(ctx, cx, e.gy * this.T + this.T / 2, this.T, e.data.icon, this.tt, e.data.name || e.data.kw || '');
         else {
           const m = e.data;
           drawActor(ctx, cx, cy, this.T * 1.12, m.sprite || 'civ', { tt: this.tt + e.bob * 100, boss: m.boss, hurt: m.state === 'fighting', facing: 's' });

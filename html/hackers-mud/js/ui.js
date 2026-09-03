@@ -1,5 +1,6 @@
 /* ui.js - DOM chrome: top bar, side panels, log, modals. Renders from state. */
 import { iconCanvas, actorCanvas } from './sprites.js';
+import { audio } from './audio.js';
 
 const PIPE = ['#0c0c0c', '#a01f2d', '#2f8f4f', '#b98a1e', '#2b5fa8', '#7a3f9a', '#3aa6a6', '#b8bcc8',
   '#5b6086', '#ff2d55', '#3ce88b', '#ffcf4a', '#66aaff', '#b98cff', '#66e0ff', '#f2f4ff'];
@@ -44,8 +45,10 @@ export class UI {
           <button class="btn" data-modal="gear" title="Wear / Gear (G)">\u{1F9E5}</button>
           <button class="btn" data-modal="sheet" title="Character (C)">\u{1F464}</button>
           <button class="btn" data-modal="map" title="Map (M)">\u{1F5FA}️</button>
+          <button class="btn" data-modal="social" title="Messages (P)">\u{1F4F1}<span class="badge" id="unread" hidden>0</span></button>
           <button class="btn" data-modal="help" title="Help">?</button>
-          <button class="btn" id="btnSnd" title="Sound">\u{1F50A}</button>
+          <button class="btn" id="btnSnd" title="Sound &amp; music">\u{1F50A}</button>
+          <button class="btn" id="btnQuit" title="Save &amp; exit">⏻</button>
         </div>
       </div>
 
@@ -91,7 +94,8 @@ export class UI {
       e.stopPropagation();
     });
     root.querySelectorAll('[data-modal]').forEach(b => b.onclick = () => this.emit('modal', b.dataset.modal));
-    this.el('btnSnd').onclick = () => this.emit('sound');
+    this.el('btnSnd').onclick = () => this._toggleMixer();
+    this.el('btnQuit').onclick = () => this.emit('quit');
 
     addEventListener('keydown', e => {
       if (/input|textarea/i.test(e.target.tagName)) return;
@@ -99,8 +103,10 @@ export class UI {
       else if (e.key === 'm' || e.key === 'M') this.emit('modal', 'map');
       else if (e.key === 'c' || e.key === 'C') this.emit('modal', 'sheet');
       else if (e.key === 'g' || e.key === 'G') this.emit('modal', 'gear');
+      else if (e.key === 'l' || e.key === 'L') this.emit('modal', 'loot');
+      else if (e.key === 'p' || e.key === 'P') this.emit('modal', 'social');
       else if (e.key === 'Enter') { e.preventDefault(); this.el('cmdIn').focus(); }
-      else if (e.key === 'Escape') this.closeModal();
+      else if (e.key === 'Escape') { this.closeModal(); this._closeMixer(); }
     });
     return this.stageHost;
   }
@@ -113,8 +119,6 @@ export class UI {
     this.el('cmdIn').value = '';
     this.emit('cmd', v);
   }
-
-  soundIcon(on) { this.el('btnSnd').textContent = on ? '\u{1F50A}' : '\u{1F507}'; }
 
   /* ---- render ---- */
   render(state) {
@@ -137,6 +141,9 @@ export class UI {
     this._here(state);
     this._minimap(state.map);
     this._quests(state);
+
+    const ub = this.el('unread');
+    if (ub) { ub.textContent = state.unread > 9 ? '9+' : (state.unread || 0); ub.hidden = !state.unread; }
 
     // track hp for damage flashes elsewhere
     this.last = { hp: p.hp, level: p.level };
@@ -176,15 +183,31 @@ export class UI {
       const c = add(m.sprite, m.name, `lv ${m.level} · ${m.faction}`, act, cmd,
         (m.hostile ? 'hostile ' : '') + (m.boss ? 'boss' : ''), (m.hostile || m.boss) ? m.hpPct : null);
       c.getContext('2d').drawImage(actorCanvas(m.sprite, 30), 0, 0);
+      // inspect eye on the same card
+      const eye = document.createElement('span');
+      eye.className = 'act'; eye.textContent = '\u{1F441}️'; eye.title = 'inspect';
+      eye.style.cssText = 'margin-left:4px';
+      eye.onclick = ev => { ev.stopPropagation(); this.emit('inspect', m); };
+      c.parentElement.appendChild(eye);
     }
     for (const op of r.players) {
       const c = add('civ', op.name, `lv ${op.level} · ${op.archetype}` + (op.title ? ' · ' + op.title : ''), 'look', 'look ' + op.name.toLowerCase());
       c.getContext('2d').drawImage(actorCanvas('civ', 30), 0, 0);
     }
-    if (r.items.length) box.insertAdjacentHTML('beforeend', '<div class="sect">On the ground</div>');
+    if (r.items.length) {
+      const sec = document.createElement('div');
+      sec.className = 'sect';
+      sec.style.cssText = 'display:flex;align-items:center;justify-content:space-between';
+      sec.innerHTML = `<span>On the ground</span>`;
+      const lb = document.createElement('button');
+      lb.className = 'btn sm'; lb.textContent = `LOOT (${r.items.length})`;
+      lb.onclick = () => this.emit('modal', 'loot');
+      sec.appendChild(lb);
+      box.appendChild(sec);
+    }
     for (const it of r.items) {
       const c = add(it.icon, it.name, 'item', 'grab', 'get ' + it.kw);
-      c.getContext('2d').drawImage(iconCanvas(it.icon, 30), 0, 0);
+      c.getContext('2d').drawImage(iconCanvas(it.icon, 30, it.name || ''), 0, 0);
     }
     if (r.extras.length) {
       box.insertAdjacentHTML('beforeend', '<div class="sect">Look at…</div>');
@@ -279,12 +302,12 @@ export class UI {
   inventory(state) {
     const inv = state.inventory, eq = state.equipment;
     const cell = (it, equipped) => `<div class="slot ${equipped ? 'eq' : ''}" data-cmd="${it._cmd}">
-      <canvas width="44" height="44" data-icon="${it.icon}"></canvas>
+      <canvas width="44" height="44" data-icon="${it.icon}" data-seed="${this._esc(it.name)}"></canvas>
       <div class="nm">${this._esc(it.name)}${it.illegal ? ' <span style="color:var(--red)">⚠</span>' : ''}</div>
       ${it.qty > 1 ? `<div class="qn">x${it.qty}</div>` : ''}</div>`;
     const eqList = Object.entries(eq).map(([slot, it]) => {
       it._cmd = 'uninstall ' + it.kw; it._cmd = slot.startsWith('implant_') ? 'uninstall ' + it.kw : 'remove ' + it.kw;
-      return `<div class="slot eq" data-cmd="${it._cmd}"><canvas width="44" height="44" data-icon="${it.icon}"></canvas>
+      return `<div class="slot eq" data-cmd="${it._cmd}"><canvas width="44" height="44" data-icon="${it.icon}" data-seed="${this._esc(it.name)}"></canvas>
         <div class="nm">&lt;${slot.replace('implant_', '')}&gt;<br>${this._esc(it.name)}</div></div>`;
     }).join('') || '<p style="color:var(--dim)">Nothing equipped.</p>';
     const invList = inv.map(it => {
@@ -295,7 +318,7 @@ export class UI {
     const root = this._modal(`Inventory  <span class="chip">${state.player.carry} / ${state.player.maxCarry} kg</span>`,
       `<div class="sect">Worn / wired</div><div class="grid">${eqList}</div>
        <div class="sect" style="margin-top:16px">Carrying</div><div class="grid">${invList}</div>`);
-    root.querySelectorAll('canvas[data-icon]').forEach(c => c.getContext('2d').drawImage(iconCanvas(c.dataset.icon, 44), 0, 0));
+    root.querySelectorAll('canvas[data-icon]').forEach(c => c.getContext('2d').drawImage(iconCanvas(c.dataset.icon, 44, c.dataset.seed || ''), 0, 0));
     root.querySelectorAll('.slot[data-cmd]').forEach(s => s.onclick = () => { this.emit('act', s.dataset.cmd); });
   }
 
@@ -348,7 +371,7 @@ export class UI {
       const cmd = it ? (s.startsWith('implant_') ? 'uninstall ' + it.kw : 'remove ' + it.kw) : '';
       return `<div class="dslot ${it ? 'on' : ''} ${big ? 'big' : ''}" ${it ? `data-cmd="${cmd}" title="click to ${s.startsWith('implant_') ? 'have removed at a ripperdoc' : 'take off'}"` : ''}>
         <span class="dl">${label}</span>
-        ${it ? `<canvas width="40" height="40" data-icon="${it.icon}"></canvas><span class="dn">${this._esc(it.name)}</span>`
+        ${it ? `<canvas width="40" height="40" data-icon="${it.icon}" data-seed="${this._esc(it.name)}"></canvas><span class="dn">${this._esc(it.name)}</span>`
              : `<span class="de">—</span>`}</div>`;
     };
     const root = this._modal(`Wear &amp; Gear  <span class="chip">AC ${p.ac}</span>`, `
@@ -363,7 +386,7 @@ export class UI {
       <div class="sect" style="margin-top:14px">Cyberware</div>
       <div class="grid">${IMPL.map(s => slot(s)).join('')}</div>
       <p style="color:var(--dim);font-size:11px;margin-top:10px">Equip from your <b>inventory</b> (I). Click a worn item to take it off; chrome needs a ripperdoc — walk into one and it's handled.</p>`);
-    root.querySelectorAll('canvas[data-icon]').forEach(c => c.getContext('2d').drawImage(iconCanvas(c.dataset.icon, 40), 0, 0));
+    root.querySelectorAll('canvas[data-icon]').forEach(c => c.getContext('2d').drawImage(iconCanvas(c.dataset.icon, 40, c.dataset.seed || ''), 0, 0));
     const dp = root.querySelector('#dollportrait');
     if (dp) dp.getContext('2d').drawImage(actorCanvas(p.archetype, 130), 0, 10);
     root.querySelectorAll('.dslot[data-cmd]').forEach(s => s.onclick = () => this.emit('act', s.dataset.cmd));
@@ -409,5 +432,137 @@ export class UI {
     const root = this._modal('Which way?', '<div style="display:flex;gap:10px;flex-wrap:wrap">' +
       exits.map(e => `<button class="btn pri" data-dir="${e.dir}">${e.dir.toUpperCase()} — ${this._esc(e.name)}</button>`).join('') + '</div>');
     root.querySelectorAll('[data-dir]').forEach(b => b.onclick = () => { this.emit('act', b.dataset.dir); this.closeModal(); });
+  }
+
+  /* ---- loot screen ---- */
+  loot(state) {
+    const items = (state && state.room && state.room.items) || [];
+    const body = items.length
+      ? `<div style="margin-bottom:12px"><button class="btn pri" id="lootall">Take everything</button></div>
+         <div class="lootgrid">${items.map(it => `
+           <div class="lootcard" data-kw="${this._esc(it.kw)}">
+             <canvas width="46" height="46" data-icon="${it.icon}" data-seed="${this._esc(it.name)}"></canvas>
+             <div class="ln">${this._esc(it.name)}</div>
+             <div style="font-size:10px;color:var(--dim)">${it.type} · ¥${(it.value || 0).toLocaleString()}</div>
+             <button class="btn sm" style="margin-top:6px;width:100%">Take</button>
+           </div>`).join('')}</div>`
+      : '<p style="color:var(--dim)">Nothing on the ground here. Drop something, or kill something.</p>';
+    const root = this._modal('Loot', body);
+    root.querySelectorAll('canvas[data-icon]').forEach(c => c.getContext('2d').drawImage(iconCanvas(c.dataset.icon, 46, c.dataset.seed || ''), 0, 0));
+    const all = root.querySelector('#lootall');
+    if (all) all.onclick = () => { this.emit('act', 'get all'); this.closeModal(); };
+    root.querySelectorAll('.lootcard').forEach(card => card.querySelector('button').onclick = () => {
+      this.emit('act', 'get ' + card.dataset.kw);
+      card.style.opacity = 0.35; card.querySelector('button').disabled = true;
+    });
+  }
+
+  /* ---- enemy inspect ---- */
+  enemyCard(mob, lines) {
+    const tags = [];
+    if (mob.boss) tags.push('<span class="chip" style="color:var(--yel);border-color:var(--yel)">boss</span>');
+    if (mob.hostile) tags.push('<span class="chip tag-illegal">hostile</span>');
+    const root = this._modal(this._esc(mob.name), `
+      <div style="display:flex;gap:16px;align-items:flex-start">
+        <canvas id="mobport" width="96" height="96" style="image-rendering:pixelated;background:radial-gradient(circle at 50% 40%,#231018,#0b0c15);border:1px solid var(--line2);border-radius:8px"></canvas>
+        <div style="flex:1;min-width:0">
+          <div style="font-family:var(--mono);color:var(--cyan);font-size:12px">lv ${mob.level} · ${this._esc(mob.faction)}</div>
+          <div style="height:6px;margin:8px 0;border-radius:3px;background:#2a0f16;overflow:hidden"><i style="display:block;height:100%;background:var(--red);width:${Math.round((mob.hpPct ?? 1) * 100)}%"></i></div>
+          <div>${tags.join(' ')}</div>
+          <div style="margin-top:10px;font-family:var(--mono);font-size:12px;line-height:1.5">
+            ${(lines || []).map(l => pipeHtml(l === '' ? ' ' : l)).join('<br>')}
+          </div>
+        </div>
+      </div>
+      <div class="row" style="margin-top:14px">
+        <button class="btn pri" id="mobatk">Attack</button>
+        <button class="btn" id="mobtalk">Talk</button>
+      </div>`);
+    const c = root.querySelector('#mobport');
+    if (c) c.getContext('2d').drawImage(actorCanvas(mob.sprite || 'civ', 96), 0, 0);
+    root.querySelector('#mobatk').onclick = () => { this.emit('act', 'kill ' + mob.kw); this.closeModal(); };
+    root.querySelector('#mobtalk').onclick = () => { this.emit('act', 'talk ' + mob.kw); this.closeModal(); };
+  }
+
+  /* ---- online / SMS ---- */
+  social(state, inbox) {
+    const online = (state && state.online) || [];
+    inbox = inbox || [];
+    const rows = online.map(o => `
+      <div class="online-row">
+        <span class="dot"></span>
+        <div class="oi"><b>${this._esc(o.name)}${o.me ? ' <span style="color:var(--dim)">(you)</span>' : ''}</b>
+          <span>lv ${o.level} · ${this._esc(o.archetype)} · ${this._esc(o.where)}${o.idle > 90 ? ' · idle ' + Math.floor(o.idle / 60) + 'm' : ''}</span></div>
+        ${o.me ? '' : `<button class="btn sm" data-to="${this._esc(o.name)}">Message</button>`}
+      </div>`).join('') || '<p style="color:var(--dim)">Nobody else is jacked in right now.</p>';
+    const thread = inbox.map(m => `
+      <div class="sms-msg ${m.mine ? 'me' : 'them'}">
+        <span class="who">${m.mine ? 'you' : this._esc(m.from)} · ${m.at}</span>${this._esc(m.body)}
+      </div>`).join('') || '<p style="color:var(--dim);font-size:11px">No messages yet.</p>';
+    const root = this._modal('Online &amp; Messages', `
+      <div class="sect">Runners online (${online.length})</div>
+      <div style="max-height:180px;overflow:auto">${rows}</div>
+      <div class="sect" style="margin-top:14px">Messages</div>
+      <div class="sms-list">${thread}</div>
+      <div class="field" style="display:flex;gap:8px;margin-top:8px">
+        <input id="smsto" placeholder="to (handle)" style="width:130px;background:#0b0c15;border:1px solid var(--line2);border-radius:var(--r-s);padding:.5em;color:var(--ink);font-family:var(--mono)">
+        <input id="smsbody" placeholder="message…" maxlength="280" style="flex:1;background:#0b0c15;border:1px solid var(--line2);border-radius:var(--r-s);padding:.5em;color:var(--ink);font-family:var(--mono)">
+        <button class="btn pri" id="smssend">Send</button>
+      </div>`);
+    const to = root.querySelector('#smsto'), body = root.querySelector('#smsbody');
+    root.querySelectorAll('[data-to]').forEach(b => b.onclick = () => { to.value = b.dataset.to; body.focus(); });
+    const send = () => {
+      const t = to.value.trim(), bd = body.value.trim();
+      if (!t || !bd) return;
+      body.value = '';
+      this.emit('sms', { to: t, body: bd });
+    };
+    root.querySelector('#smssend').onclick = send;
+    body.addEventListener('keydown', e => { if (e.key === 'Enter') send(); e.stopPropagation(); });
+    to.addEventListener('keydown', e => e.stopPropagation());
+    const list = root.querySelector('.sms-list'); if (list) list.scrollTop = list.scrollHeight;
+  }
+
+  /* ---- sound + music mixer popover ---- */
+  soundIcon(on) { this.el('btnSnd').textContent = on ? '\u{1F50A}' : '\u{1F507}'; this._sndOn = on; }
+  _closeMixer() { const m = this.el('game').querySelector('.mix'); if (m) m.remove(); }
+  _toggleMixer() {
+    if (this.el('game').querySelector('.mix')) { this._closeMixer(); return; }
+    audio.unlock();
+    const mix = audio.getMix ? audio.getMix() : { music: 0.32, sfx: 1, amb: 0.7, musicOn: true };
+    const on = this._sndOn !== false;
+    const pc = (v) => Math.round((v || 0) * 100);
+    const wrap = document.createElement('div');
+    wrap.className = 'mix';
+    wrap.innerHTML = `
+      <h4>Sound</h4>
+      <div class="seg">
+        <button data-k="master" class="${on ? 'on' : ''}">Sound ${on ? 'ON' : 'OFF'}</button>
+        <button data-k="music" class="${mix.musicOn ? 'on' : ''}">Music ${mix.musicOn ? 'ON' : 'OFF'}</button>
+      </div>
+      <div class="mrow"><label>Music</label><input type="range" min="0" max="100" value="${pc(mix.music)}" data-b="music"></div>
+      <div class="mrow"><label>Effects</label><input type="range" min="0" max="100" value="${pc(mix.sfx)}" data-b="sfx"></div>
+      <div class="mrow"><label>Ambient</label><input type="range" min="0" max="100" value="${pc(mix.amb)}" data-b="amb"></div>
+      <p style="font-size:10px;color:var(--dim);margin:6px 0 0">music sits low so effects stay clear</p>`;
+    this.el('game').appendChild(wrap);
+    wrap.querySelectorAll('input[data-b]').forEach(inp => inp.addEventListener('input', () => {
+      audio.setMix({ [inp.dataset.b]: (+inp.value) / 100 });
+    }));
+    wrap.querySelector('[data-k="master"]').onclick = (e) => {
+      this.emit('sound');
+      const nowOn = this._sndOn !== false;
+      e.target.textContent = 'Sound ' + (nowOn ? 'ON' : 'OFF'); e.target.classList.toggle('on', nowOn);
+    };
+    wrap.querySelector('[data-k="music"]').onclick = (e) => {
+      const v = !(audio.getMix().musicOn);
+      audio.setMix({ musicOn: v });
+      this.emit('music-toggle', v);
+      e.target.textContent = 'Music ' + (v ? 'ON' : 'OFF'); e.target.classList.toggle('on', v);
+    };
+    // close on outside click
+    setTimeout(() => {
+      const off = ev => { if (!wrap.contains(ev.target) && ev.target.id !== 'btnSnd') { this._closeMixer(); removeEventListener('pointerdown', off); } };
+      addEventListener('pointerdown', off);
+    }, 0);
   }
 }

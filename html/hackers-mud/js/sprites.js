@@ -90,6 +90,18 @@ export function drawProp(ctx, px, py, T, themeKey, kind, seed) {
   else if (kind === 'tree' || kind === 'plant' || kind === 'bush') { box(6, 9, 4, 6, '#3a2a18'); ctx.fillStyle = '#2f5a2a'; ctx.beginPath(); ctx.arc(8 * u, 6 * u, 5 * u, 0, 7); ctx.fill(); }
   else if (kind === 'car') { box(1, 5, 14, 8, '#242430'); box(3, 3, 10, 4, '#2c2c3a'); ctx.fillStyle = p.edge + '66'; ctx.fillRect(1 * u, 7 * u, 14 * u, 1); }
   else if (kind === 'pipe') { box(0, 6, 16, 3, '#1a1d22'); }
+  else if (kind === 'stairs' || kind === 'stairsup' || kind === 'stairsdown') {
+    const down = kind === 'stairsdown';
+    box(2, 2, 12, 13, '#0d1017');                    // stairwell shaft
+    for (let s = 0; s < 5; s++) {
+      // down: treads fade bright->dark descending; up: dark->bright rising
+      const lum = down ? 44 - s * 8 : 20 + s * 9;
+      box(3, 2.6 + s * 2.4, 10, 1.9, `rgb(${lum},${lum + 5},${lum + 12})`);
+    }
+    ctx.fillStyle = p.glow + (down ? '40' : '88');   // tread nosings
+    for (let s = 0; s < 5; s++) ctx.fillRect(3 * u, (2.6 + s * 2.4) * u, 10 * u, Math.max(1, u * 0.6));
+    box(2, 2, 1.2, 13, '#05070c'); box(12.8, 2, 1.2, 13, '#05070c'); // rails
+  }
   else { box(4, 6, 8, 9, '#20242c'); box(4, 6, 8, 2, '#333a46'); }
   ctx.restore();
 }
@@ -125,7 +137,76 @@ const ICON_ALIAS = {
   pigeon: 'junk', bodybag: 'bag',
 };
 
-export function drawItemGlyph(ctx, cx, cy, size, icon) {
+/* per-item visual identity: derive a stable variant from a seed string
+   (item name or vnum) so no two catalogue entries render the same. */
+function _iseed(s) {
+  s = String(s == null ? '' : s);
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return h >>> 0;
+}
+function _variant(seed) {
+  if (seed === '' || seed == null) return null;
+  const h = _iseed(seed);
+  const MK = ['#ff2d55', '#ffcf4a', '#3ce88b', '#66e0ff', '#b98cff', '#f2f4ff', '#ff9b45'];
+  return {
+    hue: h % 360,
+    sat: 0.7 + ((h >>> 8) % 70) / 100,
+    bri: 0.86 + ((h >>> 15) % 32) / 100,
+    rot: (((h >>> 20) & 15) - 7.5) * 0.010,
+    mk: (h >>> 12) % 7,
+    mkc: MK[(h >>> 25) % MK.length],
+    plate: h & 1,
+  };
+}
+function _mark(ctx, ox, oy, size, V) {
+  const u = size / 16;
+  ctx.save(); ctx.translate(ox, oy);
+  ctx.fillStyle = V.mkc; ctx.strokeStyle = V.mkc; ctx.globalAlpha = 0.9;
+  switch (V.mk) {
+    case 0: ctx.fillRect(0.6 * u, 0.6 * u, 2.2 * u, 2.2 * u); break;
+    case 1: ctx.lineWidth = 1.4 * u; ctx.beginPath(); ctx.moveTo(0, 4 * u); ctx.lineTo(4 * u, 0); ctx.stroke(); break;
+    case 2: for (let i = 0; i < 3; i++) ctx.fillRect(11.5 * u, (2 + i * 2) * u, 3 * u, 1); break;
+    case 3: ctx.beginPath(); ctx.arc(13 * u, 13 * u, 1.8 * u, 0, 7); ctx.fill(); break;
+    case 4: ctx.globalAlpha = 0.8; ctx.fillRect(0, 13.3 * u, size, 1.4 * u); break;
+    case 5: ctx.fillRect(1.2 * u, 1.2 * u, 1.5 * u, 1.5 * u); ctx.fillRect(13.3 * u, 1.2 * u, 1.5 * u, 1.5 * u); break;
+    default: ctx.globalAlpha = 0.45; ctx.lineWidth = 1; ctx.strokeRect(1 * u, 1 * u, size - 2 * u, size - 2 * u);
+  }
+  ctx.restore();
+}
+
+export function drawItemGlyph(ctx, cx, cy, size, icon, seed = '') {
+  const V = _variant(seed);
+  if (!V) { _glyphShape(ctx, cx, cy, size, icon); return; }
+  const ox = cx - size / 2, oy = cy - size / 2;
+  ctx.save();
+  const g = ctx.createLinearGradient(ox, oy, ox + size, oy + size);
+  g.addColorStop(0, `hsla(${V.hue},48%,${V.plate ? 19 : 26}%,0.32)`);
+  g.addColorStop(1, `hsla(${(V.hue + 55) % 360},52%,11%,0.32)`);
+  ctx.fillStyle = g;
+  if (V.plate) { ctx.beginPath(); ctx.arc(cx, cy, size * 0.46, 0, 7); ctx.fill(); }
+  else ctx.fillRect(ox + 1, oy + 1, size - 2, size - 2);
+  ctx.restore();
+  let done = false;
+  if (typeof document !== 'undefined' && ctx.canvas) {
+    try {
+      const n = Math.max(2, Math.ceil(size));
+      const t = document.createElement('canvas'); t.width = t.height = n;
+      _glyphShape(t.getContext('2d'), n / 2, n / 2, size, icon);
+      ctx.save();
+      ctx.translate(cx, cy); ctx.rotate(V.rot);
+      ctx.filter = `hue-rotate(${V.hue}deg) saturate(${V.sat}) brightness(${V.bri})`;
+      ctx.drawImage(t, -n / 2, -n / 2);
+      ctx.filter = 'none';
+      ctx.restore();
+      done = true;
+    } catch (_) { /* canvas filter unsupported - draw plainly */ }
+  }
+  if (!done) _glyphShape(ctx, cx, cy, size, icon);
+  _mark(ctx, ox, oy, size, V);
+}
+
+function _glyphShape(ctx, cx, cy, size, icon) {
   const u = size / 16;
   ctx.save(); ctx.translate(cx - size / 2, cy - size / 2);
   const b = (x, y, w, h, c) => { ctx.fillStyle = c; ctx.fillRect(x * u, y * u, w * u, h * u); };
@@ -197,7 +278,7 @@ export function drawItemGlyph(ctx, cx, cy, size, icon) {
   ctx.restore();
 }
 
-export function drawGroundItem(ctx, cx, cy, T, icon, tt) {
+export function drawGroundItem(ctx, cx, cy, T, icon, tt, seed = '') {
   const bob = Math.sin(tt / 260) * 2;
   ctx.save();
   ctx.globalAlpha = 0.35;
@@ -205,7 +286,7 @@ export function drawGroundItem(ctx, cx, cy, T, icon, tt) {
   ctx.beginPath(); ctx.ellipse(cx, cy + 8, 9, 3, 0, 0, 7); ctx.fill();
   ctx.globalAlpha = 1;
   ctx.shadowColor = '#66e0ff'; ctx.shadowBlur = 10;
-  drawItemGlyph(ctx, cx, cy + bob, T * 0.62, icon);
+  drawItemGlyph(ctx, cx, cy + bob, T * 0.62, icon, seed);
   ctx.restore();
 }
 
@@ -320,11 +401,18 @@ function drawGhoul(ctx, cx, cy, T, opts) {
   ctx.restore();
 }
 
-/* an offscreen canvas for a UI icon (inventory grid etc.) */
-export function iconCanvas(icon, size = 44) {
+/* an offscreen canvas for a UI icon (inventory grid etc.) - memoised so
+   repeated draws of the same item are cheap and stay pixel-identical */
+const _iconMemo = new Map();
+export function iconCanvas(icon, size = 44, seed = '') {
+  const key = icon + '|' + size + '|' + seed;
+  const hit = _iconMemo.get(key);
+  if (hit) return hit;
   const c = document.createElement('canvas');
   c.width = c.height = size;
-  drawItemGlyph(c.getContext('2d'), size / 2, size / 2, size * 0.9, icon);
+  drawItemGlyph(c.getContext('2d'), size / 2, size / 2, size * 0.9, icon, seed);
+  if (_iconMemo.size > 2400) _iconMemo.clear();
+  _iconMemo.set(key, c);
   return c;
 }
 export function actorCanvas(kind, size = 30) {

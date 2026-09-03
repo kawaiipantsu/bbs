@@ -109,7 +109,45 @@ function startGame(state) {
   ui.on('sound', () => {
     sndOn = !sndOn; try { localStorage.setItem('hm_snd', sndOn ? '1' : '0'); } catch (_) {}
     audio.setOn(sndOn); ui.soundIcon(sndOn);
-    if (sndOn && lastState) audio.ambient(lastState.ambient);
+    if (sndOn && lastState) {
+      audio.ambient(lastState.ambient);
+      audio.music(lastState.player && lastState.player.state === 'fighting' ? 'battle' : 'idle');
+    } else {
+      audio.music(null);
+    }
+  });
+  ui.on('music-toggle', on => { if (on && lastState) audio.music(lastState.player && lastState.player.state === 'fighting' ? 'battle' : 'idle'); else audio.music(null); });
+
+  ui.on('inspect', mob => {
+    api.cmd('consider ' + (mob.kw || mob.name)).then(r => {
+      if (!r || !r.ok) return;
+      ui.log(r.lines || []);
+      if (r.state) applyState(r.state);
+      ui.enemyCard(mob, r.lines || []);
+    });
+  });
+
+  ui.on('sms', async d => {
+    const r = await api.sms(d.to, d.body);
+    if (r && r.ok) audio.ui('ok'); else audio.ui('deny');
+    if (r && r.error) ui.log(['|09' + r.error]);
+    const box = await api.inbox();
+    ui.social(lastState, (box && box.inbox) || []);
+  });
+
+  ui.on('quit', async () => {
+    clearInterval(poll);
+    try { await api.logout(); } catch (_) {}
+    audio.music(null); audio.ambientStop();
+    scene && scene.destroy();
+    root.innerHTML = `
+    <div class="screen"><div class="card">
+      <div class="brand">HACKERS-MUD<small>DISCONNECTED</small></div>
+      <h2>Progress saved</h2>
+      <p class="sub">Your runner — level, stats, gear, and location — is safe in Night City. Same character next time.</p>
+      <div class="row"><button class="btn pri" id="rein">Jack back in</button></div>
+    </div></div>`;
+    root.querySelector('#rein').onclick = () => location.reload();
   });
 
   scene.on('exit', ex => sendCmd(ex.locked && ex.hackable ? 'hack ' + (ex.keyword || 'door') : ex.dir));
@@ -126,6 +164,7 @@ function startGame(state) {
   scene.on('bump-wall', () => audio.sfx('miss'));
 
   applyState(state, true);
+  audio.music(state.player && state.player.state === 'fighting' ? 'battle' : 'idle');
   clearInterval(poll);
   poll = setInterval(refresh, 6000);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
@@ -140,6 +179,11 @@ function applyState(state, first, combat) {
   ui.render(state);
   scene.setRoom(state.room, state.player);
   audio.ambient(state.ambient);
+  if (sndOn) {
+    const fighting = state.player && state.player.state === 'fighting';
+    if (!prev || !prev.player || (prev.player.state === 'fighting') !== fighting)
+      audio.music(fighting ? 'battle' : 'idle');
+  }
   if (prev && prev.player) {
     const dh = state.player.hp - prev.player.hp;
     if (!combat) {   // playBattle shows per-hit numbers itself
@@ -193,6 +237,11 @@ async function sendCmd(cmd) {
   const events = parseCombat(r.lines || []);
   applyState(r.state, false, events.length > 0);
   if (events.length && scene) scene.playBattle(targetId, events);
+  // pop the loot screen when a fight just ended and there's something to grab
+  const killed = events.some(e => e.killed) || /drops|clatters out|spills onto the|hits the ground/i.test((r.lines || []).join(' '));
+  if (killed && /^(k|kill|attack|hit|fight)\b/i.test(cmd) && r.state && r.state.room && (r.state.room.items || []).length) {
+    setTimeout(() => ui.loot(r.state), 420);
+  }
 }
 
 async function refresh() {
@@ -215,13 +264,19 @@ function handleAct(v) {
   sendCmd(v);
 }
 
-function openModal(m) {
+async function openModal(m) {
   audio.ui('open');
   if (m === 'inv') ui.inventory(lastState);
   else if (m === 'gear') ui.gear(lastState);
   else if (m === 'sheet') ui.sheet(lastState);
   else if (m === 'map') ui.mapModal(lastState);
   else if (m === 'help') ui.helpModal();
+  else if (m === 'loot') ui.loot(lastState);
+  else if (m === 'social') {
+    ui.social(lastState, []);
+    const box = await api.inbox();
+    ui.social(lastState, (box && box.inbox) || []);
+  }
 }
 
 async function openShop(kw) {
@@ -254,6 +309,7 @@ async function openShop(kw) {
 
 function relogin(msg) {
   clearInterval(poll);
+  audio.music(null);
   audio.ambientStop();
   scene && scene.destroy();
   screenLogin(msg || 'Please sign in.');
