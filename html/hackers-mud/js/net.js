@@ -38,4 +38,8 @@ export const api = {
   state: () => call('/api/mud/state'),
   cmd: (cmd) => call('/api/mud/cmd', { body: { cmd } }),
   logout: () => call('/api/mud/logout', { body: {} }),
+  players: () => call('/api/mud/players'),
+  inbox: () => call('/api/mud/inbox'),
+  sms: (to, body) => call('/api/mud/sms', { body: { to, body } }),
+  itemdex: () => call('/api/mud/itemdex'),
 };

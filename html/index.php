@@ -99,6 +99,11 @@ $router->post('/api/mud/archetype',  [MudApiController::class, 'archetype']);
 $router->get('/api/mud/whoami',      [MudApiController::class, 'whoami']);
 $router->get('/api/mud/state',       [MudApiController::class, 'state']);
 $router->post('/api/mud/cmd',        [MudApiController::class, 'cmd']);
+$router->get('/api/mud/players',     [MudApiController::class, 'players']);
+$router->get('/api/mud/inbox',       [MudApiController::class, 'inbox']);
+$router->post('/api/mud/sms',        [MudApiController::class, 'sms']);
+$router->get('/api/mud/itemdex',     [MudApiController::class, 'itemdex']);
+$router->get('/hackers-mud/items',   [HackersMudController::class, 'items']);
 
 // --- chat (SSE + post) ---
 $router->get('/api/chat/stream',  [ChatController::class, 'stream']);

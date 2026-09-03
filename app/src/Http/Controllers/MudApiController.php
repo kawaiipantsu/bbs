@@ -126,6 +126,47 @@ final class MudApiController
         return $this->json(['ok' => true]);
     }
 
+    /* ---- social ------------------------------------------------- */
+
+    public function players(Request $req): Response
+    {
+        [$s, $pid, $err] = $this->playerFor($req);
+        if ($err) {
+            return $err;
+        }
+        return $this->json(['ok' => true, 'online' => Api::online($pid)]);
+    }
+
+    public function inbox(Request $req): Response
+    {
+        [$s, $pid, $err] = $this->playerFor($req);
+        if ($err) {
+            return $err;
+        }
+        $box = Api::inbox($pid);
+        Api::markRead($pid);
+        return $this->json(['ok' => true, 'inbox' => $box, 'online' => Api::online($pid)]);
+    }
+
+    public function sms(Request $req): Response
+    {
+        [$s, $pid, $err] = $this->playerFor($req, true);
+        if ($err) {
+            return $err;
+        }
+        $name = (string) Db::val('SELECT name FROM mud_players WHERE id = ?', [$pid]);
+        $res = Api::sendSms($pid, $name, (string) $req->input('to', ''), (string) $req->input('body', ''));
+        $res['inbox'] = Api::inbox($pid);
+        return $this->json($res);
+    }
+
+    /** Public item catalogue for the showcase page - no auth. */
+    public function itemdex(Request $req): Response
+    {
+        return $this->json(['ok' => true, 'items' => Api::itemdex()])
+            ->withHeader('Cache-Control', 'public, max-age=300');
+    }
+
     /* ---- helpers ------------------------------------------------- */
 
     /** @return array{0:Session,1:int,2:?Response} */

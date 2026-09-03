@@ -206,3 +206,54 @@ kbd { font-family:var(--mono); background:#0c0d16; border:1px solid var(--line2)
 .dslot .dn { font-size:9.5px; line-height:1.2; margin-top:3px; color:var(--ink); }
 .dslot .de { color:#2a3050; font-size:18px; }
 @media (max-width:640px){ .doll { grid-template-columns:1fr; } }
+
+/* item database viewer */
+.dexwrap { max-width:1100px; margin:0 auto; padding:16px; }
+.dexhead { display:flex; flex-wrap:wrap; gap:12px; align-items:center; padding:14px 0 16px; border-bottom:1px solid var(--line); position:sticky; top:0; background:var(--bg); z-index:5; }
+.dexhead .brand { font-size:20px; }
+.dexhead .brand small { letter-spacing:.2em; }
+.dexctl { display:flex; gap:8px; flex:1; flex-wrap:wrap; }
+.dexctl input,.dexctl select { background:#0b0c15; border:1px solid var(--line2); border-radius:var(--r-s); padding:.5em .7em; color:var(--ink); font-family:var(--mono); }
+.dexctl input { flex:1; min-width:180px; }
+.dexgrid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:12px; padding:16px 0 40px; }
+.dexcard { display:flex; gap:12px; border:1px solid var(--line); border-radius:var(--r); background:linear-gradient(180deg,var(--panel2),var(--panel)); padding:12px; }
+.dexcard.ill { border-color:#5a2030; }
+.dexcard.leg { border-color:#7a6420; box-shadow:0 0 18px -8px var(--yel); }
+.dexcard canvas { width:56px; height:56px; flex:none; image-rendering:pixelated; background:#0b0c15; border:1px solid var(--line); border-radius:6px; }
+.dexcard .di { min-width:0; }
+.dexcard .di b { font-size:13.5px; }
+.dexcard .dm { font-size:10.5px; color:var(--dim); font-family:var(--mono); margin:2px 0; }
+.dexcard .ds { font-size:11px; color:var(--cyan); font-family:var(--mono); margin-bottom:4px; }
+.dexcard .di p { margin:0 0 6px; font-size:11.5px; color:var(--mut); line-height:1.4; }
+
+/* sound / mixer popover */
+.mix { position:absolute; right:8px; top:56px; z-index:130; width:230px; background:linear-gradient(180deg,var(--panel2),var(--panel));
+  border:1px solid var(--line2); border-radius:var(--r); box-shadow:0 20px 60px -20px #000; padding:12px 14px; }
+.mix h4 { margin:0 0 8px; font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:var(--dim); }
+.mix .mrow { display:flex; align-items:center; gap:8px; margin:8px 0; font-size:11px; }
+.mix .mrow label { width:58px; color:var(--mut); }
+.mix .mrow input[type=range] { flex:1; accent-color:var(--cyan); }
+.mix .mrow .tog { margin-left:auto; }
+.mix .seg { display:flex; gap:6px; margin-top:6px; }
+.mix .seg button { flex:1; font-size:11px; padding:.35em; border:1px solid var(--line2); border-radius:6px; background:#0b0c15; color:var(--mut); }
+.mix .seg button.on { border-color:var(--cyan-d); color:var(--cyan); }
+
+/* SMS / online panel bits */
+.sms-list { max-height:200px; overflow:auto; margin:6px 0; }
+.sms-msg { padding:6px 10px; border-radius:8px; margin:4px 0; font-size:12px; max-width:80%; }
+.sms-msg.them { background:#141a26; }
+.sms-msg.me { background:#1a2438; margin-left:auto; text-align:right; }
+.sms-msg .who { font-size:9px; color:var(--dim); display:block; }
+.online-row { display:flex; align-items:center; gap:8px; padding:7px 8px; border:1px solid transparent; border-radius:var(--r-s); }
+.online-row:hover { border-color:var(--line2); background:#0d0e18; }
+.online-row .dot { width:7px; height:7px; border-radius:50%; background:var(--grn); box-shadow:0 0 6px var(--grn); flex:none; }
+.online-row .oi { flex:1; min-width:0; }
+.online-row .oi b { font-size:12.5px; }
+.online-row .oi span { font-size:10px; color:var(--dim); }
+.badge { position:absolute; top:-4px; right:-4px; min-width:15px; height:15px; padding:0 3px; border-radius:8px; background:var(--red); color:#fff; font-size:9px; font-weight:700; display:grid; place-items:center; }
+
+/* loot modal */
+.lootgrid { display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:10px; }
+.lootcard { border:1px solid var(--line2); border-radius:var(--r-s); background:#0b0c15; padding:10px 8px; text-align:center; }
+.lootcard canvas { width:46px; height:46px; image-rendering:pixelated; }
+.lootcard .ln { font-size:10.5px; margin:4px 0 6px; line-height:1.2; min-height:2.4em; }

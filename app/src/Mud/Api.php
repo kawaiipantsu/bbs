@@ -116,7 +116,125 @@ final class Api
             'log'      => array_values(array_slice($log, -120)),
             'ambient'  => $room ? Mud::ambientFor((int) $room['id']) : 'room',
             'time'     => ['phase' => $phase, 'label' => preg_replace('/\|\d\d/', '', $tlabel)],
+            'online'   => self::online($playerId),
+            'unread'   => (int) Db::val('SELECT COUNT(*) FROM mud_messages WHERE to_id = ? AND read_at IS NULL', [$playerId]),
         ];
+    }
+
+    /* ---- social: who's online + in-game SMS ----------------------- */
+
+    /** @return list<array> players active in the last 15 minutes */
+    public static function online(int $exceptId = 0): array
+    {
+        $out = [];
+        $rows = Db::all(
+            "SELECT p.id, p.name, p.level, p.archetype, p.title, p.last_cmd_at,
+                    z.name AS zone
+             FROM mud_players p
+             LEFT JOIN mud_rooms r ON r.id = p.room_id
+             LEFT JOIN mud_zones z ON z.id = r.zone_id
+             WHERE p.last_cmd_at > NOW() - INTERVAL 15 MINUTE
+             ORDER BY p.last_cmd_at DESC LIMIT 40"
+        );
+        foreach ($rows as $r) {
+            $out[] = [
+                'id'    => (int) $r['id'],
+                'me'    => (int) $r['id'] === $exceptId,
+                'name'  => $r['name'],
+                'level' => (int) $r['level'],
+                'archetype' => $r['archetype'],
+                'title' => $r['title'] ?: null,
+                'where' => $r['zone'] ?: 'the grid',
+                'idle'  => max(0, time() - strtotime((string) $r['last_cmd_at'])),
+            ];
+        }
+        return $out;
+    }
+
+    /** @return list<array> recent DM thread for this player */
+    public static function inbox(int $playerId, int $limit = 40): array
+    {
+        $rows = Db::all(
+            'SELECT id, from_id, from_name, to_id, body, created_at, read_at
+             FROM mud_messages WHERE from_id = ? OR to_id = ?
+             ORDER BY id DESC LIMIT ?',
+            [$playerId, $playerId, $limit]
+        );
+        $out = [];
+        foreach (array_reverse($rows) as $m) {
+            $out[] = [
+                'id'    => (int) $m['id'],
+                'mine'  => (int) $m['from_id'] === $playerId,
+                'from'  => $m['from_name'],
+                'to_id' => (int) $m['to_id'],
+                'body'  => $m['body'],
+                'at'    => date('H:i', strtotime((string) $m['created_at'])),
+                'unread' => (int) $m['to_id'] === $playerId && $m['read_at'] === null,
+            ];
+        }
+        return $out;
+    }
+
+    /** @return array{ok:bool,error?:string} */
+    public static function sendSms(int $fromId, string $fromName, string $toName, string $body): array
+    {
+        $body = trim(mb_substr($body, 0, 280));
+        if ($body === '') {
+            return ['ok' => false, 'error' => 'Empty message.'];
+        }
+        $to = Db::one('SELECT id, name FROM mud_players WHERE LOWER(name) = LOWER(?)', [trim($toName)]);
+        if (!$to) {
+            return ['ok' => false, 'error' => 'No runner by that name.'];
+        }
+        if ((int) $to['id'] === $fromId) {
+            return ['ok' => false, 'error' => "Texting yourself? It's been that kind of night."];
+        }
+        // light rate limit: 8 sends / minute
+        $recent = (int) Db::val('SELECT COUNT(*) FROM mud_messages WHERE from_id = ? AND created_at > NOW() - INTERVAL 60 SECOND', [$fromId]);
+        if ($recent >= 8) {
+            return ['ok' => false, 'error' => 'Slow down - the network is throttling you.'];
+        }
+        Db::insert('mud_messages', [
+            'from_id' => $fromId, 'from_name' => $fromName, 'to_id' => (int) $to['id'],
+            'body' => $body, 'created_at' => date('Y-m-d H:i:s'),
+        ]);
+        // let the recipient see it on their next tick
+        Tick::queue((int) $to['id'], ['|13[SMS] ' . $fromName . ': |07' . $body]);
+        // keep the table trimmed
+        Db::q('DELETE FROM mud_messages WHERE created_at < NOW() - INTERVAL 3 DAY');
+        return ['ok' => true, 'to' => $to['name']];
+    }
+
+    public static function markRead(int $playerId): void
+    {
+        Db::q('UPDATE mud_messages SET read_at = NOW() WHERE to_id = ? AND read_at IS NULL', [$playerId]);
+    }
+
+    /** Public item catalogue for the /hackers-mud/items showcase. */
+    public static function itemdex(): array
+    {
+        $out = [];
+        foreach (Db::all('SELECT * FROM mud_item_templates ORDER BY vnum') as $t) {
+            $mods = $t['stat_mods'] ? json_decode($t['stat_mods'], true) : null;
+            $eff = $t['effect'] ? json_decode($t['effect'], true) : null;
+            $out[] = [
+                'vnum'   => (int) $t['vnum'],
+                'name'   => $t['name'],
+                'icon'   => $t['icon'] ?: self::itemIcon($t),
+                'type'   => $t['type'],
+                'slot'   => $t['slot'] ?: null,
+                'weight' => (float) $t['weight'],
+                'value'  => (int) $t['value'],
+                'dmg'    => $t['damage_dice'] ?: null,
+                'armor'  => (int) $t['armor'],
+                'lvl'    => (int) $t['level_req'],
+                'flags'  => $t['flags'],
+                'mods'   => $mods ?: null,
+                'eff'    => $eff ? array_keys($eff) : null,
+                'desc'   => $t['long_desc'],
+            ];
+        }
+        return $out;
     }
 
     /* ---- room ------------------------------------------------------- */
@@ -312,15 +430,16 @@ final class Api
 
     public static function itemIcon(array $tpl): string
     {
-        $t = $tpl['type'];
-        $map = [
-            'weapon' => str_contains($tpl['flags'], 'ranged') ? 'gun' : 'blade',
-            'armor'  => str_starts_with((string) $tpl['slot'], 'implant_') ? 'chip' : 'armor',
-            'implant' => 'chip', 'computer' => 'deck', 'food' => 'food', 'drink' => 'drink',
-            'drug' => 'stim', 'gadget' => 'gadget', 'light' => 'light', 'container' => 'bag',
-            'currency' => 'eddies', 'lore' => 'shard', 'material' => 'scrap', 'junk' => 'junk',
-        ];
-        return $map[$t] ?? 'junk';
+        if (!empty($tpl['icon'])) {
+            return $tpl['icon'];
+        }
+        return Icons::forItem(
+            (string) ($tpl['name'] ?? ''),
+            (string) ($tpl['keywords'] ?? ''),
+            (string) ($tpl['type'] ?? 'junk'),
+            (string) ($tpl['slot'] ?? ''),
+            (string) ($tpl['flags'] ?? '')
+        );
     }
 
     public static function mobSprite(array $t): string

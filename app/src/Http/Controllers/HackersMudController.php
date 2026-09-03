@@ -97,6 +97,48 @@ HTML;
             ->withHeader('Vary', 'Cookie');
     }
 
+    /** The item catalogue / showcase at /hackers-mud/items */
+    public function items(Request $req): Response
+    {
+        $v      = $this->assetV();
+        $origin = rtrim((string) Config::get('canonical', 'https://bbs.thugs.red'), '/');
+        $e      = static fn (string $s): string => htmlspecialchars($s, ENT_QUOTES);
+        $og     = $origin . '/hackers-mud/og.png';
+        $html = <<<HTML
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HACKERS-MUD :: Item Database</title>
+<meta name="description" content="Every item in Hackers-MUD - weapons, cyberware, gear, gadgets, food, loot - with icons and stats.">
+<link rel="canonical" href="{$e($origin)}/hackers-mud/items">
+<meta name="theme-color" content="#0a0a12">
+<meta property="og:title" content="HACKERS-MUD - Item Database">
+<meta property="og:description" content="Every item in the game, with icons and stats.">
+<meta property="og:image" content="{$e($og)}">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/hackers-mud/assets/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="stylesheet" href="/hackers-mud/css/game.css?v={$v}">
+</head>
+<body>
+<div id="dex" data-v="{$v}"><div class="loading">loading the catalogue…</div></div>
+<script type="module" src="/hackers-mud/js/items.js?v={$v}"></script>
+</body>
+</html>
+HTML;
+        $csp = implode('; ', [
+            "default-src 'self'", "base-uri 'self'", "img-src 'self' data: blob:",
+            "style-src 'self' 'unsafe-inline'", "script-src 'self'", "connect-src 'self'",
+            "frame-ancestors 'none'",
+        ]);
+        return Response::html($html)
+            ->withHeader('Cache-Control', 'public, max-age=300')
+            ->withHeader('Content-Security-Policy', $csp)
+            ->withHeader('X-Content-Type-Options', 'nosniff')
+            ->withHeader('Referrer-Policy', 'no-referrer');
+    }
+
     /* ---- procedurally drawn share graphics ----------------------- */
 
     public function og(Request $req): Response
