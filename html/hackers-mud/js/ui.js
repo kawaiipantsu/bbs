@@ -290,8 +290,8 @@ export class UI {
 
   /* ---- modals ---- */
   closeModal() { this.el('modalRoot').innerHTML = ''; }
-  _modal(title, bodyHtml) {
-    this.el('modalRoot').innerHTML = `<div class="modal"><div class="box">
+  _modal(title, bodyHtml, cls = '') {
+    this.el('modalRoot').innerHTML = `<div class="modal"><div class="box ${cls}">
       <h3>${title}<button class="x">&times;</button></h3><div class="body">${bodyHtml}</div></div></div>`;
     const root = this.el('modalRoot');
     root.querySelector('.x').onclick = () => this.closeModal();
@@ -299,27 +299,129 @@ export class UI {
     return root;
   }
 
+  /* crafting-style slot grid: equipment sockets + a fixed backpack grid,
+     click a slot to select, act from the detail panel */
   inventory(state) {
-    const inv = state.inventory, eq = state.equipment;
-    const cell = (it, equipped) => `<div class="slot ${equipped ? 'eq' : ''}" data-cmd="${it._cmd}">
-      <canvas width="44" height="44" data-icon="${it.icon}" data-seed="${this._esc(it.name)}"></canvas>
-      <div class="nm">${this._esc(it.name)}${it.illegal ? ' <span style="color:var(--red)">⚠</span>' : ''}</div>
-      ${it.qty > 1 ? `<div class="qn">x${it.qty}</div>` : ''}</div>`;
-    const eqList = Object.entries(eq).map(([slot, it]) => {
-      it._cmd = 'uninstall ' + it.kw; it._cmd = slot.startsWith('implant_') ? 'uninstall ' + it.kw : 'remove ' + it.kw;
-      return `<div class="slot eq" data-cmd="${it._cmd}"><canvas width="44" height="44" data-icon="${it.icon}" data-seed="${this._esc(it.name)}"></canvas>
-        <div class="nm">&lt;${slot.replace('implant_', '')}&gt;<br>${this._esc(it.name)}</div></div>`;
-    }).join('') || '<p style="color:var(--dim)">Nothing equipped.</p>';
-    const invList = inv.map(it => {
-      it._cmd = ({ weapon: 'wield ', armor: 'wear ', implant: 'implant ', computer: 'hold ',
-        food: 'eat ', drink: 'drink ', drug: 'inject ' }[it.type] || 'use ') + it.kw;
-      return cell(it, false);
-    }).join('') || '<p style="color:var(--dim)">Your pack is empty.</p>';
-    const root = this._modal(`Inventory  <span class="chip">${state.player.carry} / ${state.player.maxCarry} kg</span>`,
-      `<div class="sect">Worn / wired</div><div class="grid">${eqList}</div>
-       <div class="sect" style="margin-top:16px">Carrying</div><div class="grid">${invList}</div>`);
-    root.querySelectorAll('canvas[data-icon]').forEach(c => c.getContext('2d').drawImage(iconCanvas(c.dataset.icon, 44, c.dataset.seed || ''), 0, 0));
-    root.querySelectorAll('.slot[data-cmd]').forEach(s => s.onclick = () => { this.emit('act', s.dataset.cmd); });
+    const p = state.player;
+    const inv = state.inventory || [];
+    const eq = state.equipment || {};
+    const WEAR = ['head', 'eyes', 'face', 'neck', 'torso', 'back', 'arms', 'hands', 'waist', 'legs', 'feet'];
+    const HOLD = ['wield', 'held'];
+    const IMPL = ['implant_neural', 'implant_ocular', 'implant_arm', 'implant_skeleton', 'implant_dermal'];
+    const SLOTICON = {
+      head: 'helmet', eyes: 'goggles', face: 'shades', neck: 'chain', torso: 'jacket', back: 'bag',
+      arms: 'harness', hands: 'gloves', waist: 'harness', legs: 'pants', feet: 'boots',
+      wield: 'pistol', held: 'phone',
+      implant_neural: 'chip', implant_ocular: 'optic', implant_arm: 'servo', implant_skeleton: 'servo', implant_dermal: 'weave',
+    };
+    const PRIMARY = {
+      weapon: ['wield', 'Wield'], armor: ['wear', 'Wear'], implant: ['implant', 'Install'],
+      computer: ['hold', 'Jack in'], light: ['hold', 'Hold'], food: ['eat', 'Eat'],
+      drink: ['drink', 'Drink'], drug: ['inject', 'Inject'], gadget: ['use', 'Use'], container: ['use', 'Use'],
+    };
+
+    // registry of every selectable cell
+    const reg = {};
+    const eqCell = s => {
+      const it = eq[s];
+      const key = 'e:' + s;
+      if (it) reg[key] = { ...it, _eq: s };
+      const lbl = s.replace('implant_', '');
+      return `<button class="ivslot sock${it ? ' has' : ''}" data-key="${it ? key : ''}" title="${lbl}">
+        ${it ? `<canvas width="40" height="40" data-icon="${it.icon}" data-seed="${this._esc(it.name)}"></canvas>`
+             : `<canvas class="ghost" width="40" height="40" data-icon="${SLOTICON[s] || 'scrap'}" data-seed=""></canvas>`}
+        <span class="sl">${lbl}</span></button>`;
+    };
+
+    const CELLS = 42; // 6-wide fixed backpack; grows in rows of 6 if over-stuffed
+    const total = Math.max(CELLS, Math.ceil(inv.length / 6) * 6);
+    let bag = '';
+    for (let i = 0; i < total; i++) {
+      const it = inv[i];
+      if (it) {
+        const key = 'i:' + it.id;
+        reg[key] = { ...it };
+        bag += `<button class="ivslot has" data-key="${key}">
+          <canvas width="44" height="44" data-icon="${it.icon}" data-seed="${this._esc(it.name)}"></canvas>
+          ${it.qty > 1 ? `<span class="q">${it.qty}</span>` : ''}
+          ${it.illegal ? '<span class="ill">!</span>' : ''}</button>`;
+      } else {
+        bag += '<button class="ivslot" data-key=""></button>';
+      }
+    }
+
+    const pct = Math.min(100, Math.round(((p.carry || 0) / (p.maxCarry || 1)) * 100)) || 0;
+    const body = `<div class="invx">
+      <div class="ivleft">
+        <div class="sect">Worn</div>
+        <div class="ivsocks">${WEAR.map(eqCell).join('')}</div>
+        <div class="sect">Held</div>
+        <div class="ivsocks hold">${HOLD.map(eqCell).join('')}</div>
+        <div class="sect">Cyberware</div>
+        <div class="ivsocks">${IMPL.map(eqCell).join('')}</div>
+        <div class="sect ivbagh">Backpack <span class="ivwt">${p.carry} / ${p.maxCarry} kg</span></div>
+        <div class="ivwbar"><i style="width:${pct}%"></i></div>
+        <div class="ivbag">${bag}</div>
+      </div>
+      <div class="ivdet" id="ivdet"><p class="ivhint">Pick a slot to inspect it.</p></div>
+    </div>`;
+
+    const root = this._modal('Inventory', body, 'wide');
+    const paint = host => host.querySelectorAll('canvas[data-icon]').forEach(c =>
+      c.getContext('2d').drawImage(iconCanvas(c.dataset.icon, c.width, c.dataset.seed || ''), 0, 0));
+    paint(root);
+
+    const det = root.querySelector('#ivdet');
+    const select = key => {
+      root.querySelectorAll('.ivslot').forEach(s => s.classList.toggle('sel', s.dataset.key === key && key));
+      const r = reg[key];
+      if (!r) { det.innerHTML = '<p class="ivhint">Empty slot.</p>'; return; }
+      const meta = [r.type, r.slot ? '&lt;' + this._esc(r.slot.replace('implant_', '')) + '&gt;' : '',
+        '¥' + (r.value || 0).toLocaleString(), (r.weight || 0) + 'kg'].filter(Boolean).join('  ·  ');
+      const stats = [];
+      if (r.dmg) stats.push('⚔ ' + r.dmg);
+      if (r.armor) stats.push('\u{1F6E1} ' + r.armor);
+      if (r.mods) stats.push(Object.entries(r.mods).map(([k, v]) => `${k} ${v > 0 ? '+' : ''}${v}`).join('  '));
+      if (r.eff && r.eff.length) stats.push(r.eff.join(', '));
+      if (r.lvl > 1) stats.push('req lv ' + r.lvl);
+      const acts = [];
+      if (r._eq) {
+        if (r._eq.startsWith('implant_')) acts.push(['uninstall ' + r.kw, 'Uninstall', '', 'at a ripperdoc']);
+        else acts.push(['remove ' + r.kw, 'Take off', 'pri']);
+      } else {
+        const pr = PRIMARY[r.type] || ['use', 'Use'];
+        acts.push([pr[0] + ' ' + r.kw, pr[1], 'pri']);
+        acts.push(['drop ' + r.kw, 'Drop', '']);
+      }
+      acts.push(['examine ' + r.kw, 'Examine', '']);
+      det.innerHTML = `
+        <div class="ivdh">
+          <canvas class="ivbig" width="96" height="96" data-icon="${r.icon}" data-seed="${this._esc(r.name)}"></canvas>
+          <div class="ivdi">
+            <b>${this._esc(r.name)}</b>
+            <div class="ivmeta">${meta}</div>
+            <div class="ivchips">
+              ${r._eq ? `<span class="chip" style="color:var(--grn);border-color:var(--grn)">equipped · ${this._esc(r._eq.replace('implant_', ''))}</span>` : ''}
+              ${r.qty > 1 ? `<span class="chip">x${r.qty} carried</span>` : ''}
+              ${/illegal/.test(r.flags || '') ? '<span class="chip tag-illegal">illegal</span>' : ''}
+              ${/legendary/.test(r.flags || '') ? '<span class="chip" style="color:var(--yel);border-color:var(--yel)">legendary</span>' : ''}
+            </div>
+          </div>
+        </div>
+        ${stats.length ? `<div class="ivstats">${stats.map(s => this._esc(s)).join('&nbsp;&nbsp; ')}</div>` : ''}
+        <p class="ivdesc">${this._esc(r.desc || 'No further detail.')}</p>
+        <div class="ivacts">${acts.map(([cmd, label, cls, note]) =>
+          `<button class="btn ${cls || ''}" data-cmd="${this._esc(cmd)}">${label}</button>${note ? `<span class="ivnote">${note}</span>` : ''}`).join('')}</div>`;
+      paint(det);
+      det.querySelectorAll('[data-cmd]').forEach(b => b.onclick = () => { this.emit('act', b.dataset.cmd); this.closeModal(); });
+    };
+
+    root.querySelectorAll('.ivslot').forEach(s => {
+      s.onclick = () => { if (s.dataset.key) select(s.dataset.key); };
+      s.ondblclick = () => { const b = det.querySelector('.ivacts .pri'); if (b) b.click(); };
+    });
+    const first = root.querySelector('.ivslot.has');
+    if (first) select(first.dataset.key);
   }
 
   sheet(state) {

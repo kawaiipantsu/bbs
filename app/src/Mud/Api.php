@@ -210,29 +210,36 @@ final class Api
         Db::q('UPDATE mud_messages SET read_at = NOW() WHERE to_id = ? AND read_at IS NULL', [$playerId]);
     }
 
+    /** Rich display card for an item template - shared by the itemdex
+     *  showcase and the in-game inventory / gear panels so every item the
+     *  player can touch carries its full stats, mods and description. */
+    private static function tplCard(array $t): array
+    {
+        $mods = !empty($t['stat_mods']) ? json_decode((string) $t['stat_mods'], true) : null;
+        $eff  = !empty($t['effect']) ? json_decode((string) $t['effect'], true) : null;
+        return [
+            'name'   => $t['name'],
+            'icon'   => self::itemIcon($t),
+            'type'   => $t['type'],
+            'slot'   => ($t['slot'] ?? '') ?: null,
+            'weight' => (float) ($t['weight'] ?? 0),
+            'value'  => (int) ($t['value'] ?? 0),
+            'dmg'    => ($t['damage_dice'] ?? '') ?: null,
+            'armor'  => (int) ($t['armor'] ?? 0),
+            'lvl'    => (int) ($t['level_req'] ?? 0),
+            'flags'  => (string) ($t['flags'] ?? ''),
+            'mods'   => $mods ?: null,
+            'eff'    => $eff ? array_keys($eff) : null,
+            'desc'   => (string) ($t['long_desc'] ?? ''),
+        ];
+    }
+
     /** Public item catalogue for the /hackers-mud/items showcase. */
     public static function itemdex(): array
     {
         $out = [];
         foreach (Db::all('SELECT * FROM mud_item_templates ORDER BY vnum') as $t) {
-            $mods = $t['stat_mods'] ? json_decode($t['stat_mods'], true) : null;
-            $eff = $t['effect'] ? json_decode($t['effect'], true) : null;
-            $out[] = [
-                'vnum'   => (int) $t['vnum'],
-                'name'   => $t['name'],
-                'icon'   => $t['icon'] ?: self::itemIcon($t),
-                'type'   => $t['type'],
-                'slot'   => $t['slot'] ?: null,
-                'weight' => (float) $t['weight'],
-                'value'  => (int) $t['value'],
-                'dmg'    => $t['damage_dice'] ?: null,
-                'armor'  => (int) $t['armor'],
-                'lvl'    => (int) $t['level_req'],
-                'flags'  => $t['flags'],
-                'mods'   => $mods ?: null,
-                'eff'    => $eff ? array_keys($eff) : null,
-                'desc'   => $t['long_desc'],
-            ];
+            $out[] = ['vnum' => (int) $t['vnum']] + self::tplCard($t);
         }
         return $out;
     }
@@ -341,16 +348,12 @@ final class Api
             $key = $i['tpl']['vnum'];
             if (!isset($grouped[$key])) {
                 $grouped[$key] = [
-                    'id'   => (int) $i['id'],
-                    'name' => $i['tpl']['name'],
-                    'icon' => self::itemIcon($i['tpl']),
-                    'type' => $i['tpl']['type'],
-                    'slot' => $i['tpl']['slot'] ?: null,
-                    'kw'   => explode(' ', $i['tpl']['keywords'])[0],
-                    'qty'  => 0,
-                    'value' => (int) $i['tpl']['value'],
+                    'id'      => (int) $i['id'],
+                    'vnum'    => (int) $i['tpl']['vnum'],
+                    'kw'      => explode(' ', $i['tpl']['keywords'])[0],
+                    'qty'     => 0,
                     'illegal' => str_contains((string) $i['tpl']['flags'], 'illegal'),
-                ];
+                ] + self::tplCard($i['tpl']);
             }
             $grouped[$key]['qty']++;
         }
@@ -363,10 +366,9 @@ final class Api
         foreach (Player::equipment($playerId) as $eq) {
             $out[$eq['slot']] = [
                 'id'   => (int) $eq['id'],
-                'name' => $eq['tpl']['name'],
-                'icon' => self::itemIcon($eq['tpl']),
+                'vnum' => (int) $eq['tpl']['vnum'],
                 'kw'   => explode(' ', $eq['tpl']['keywords'])[0],
-            ];
+            ] + self::tplCard($eq['tpl']);
         }
         return $out;
     }
