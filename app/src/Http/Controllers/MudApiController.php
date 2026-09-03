@@ -92,6 +92,16 @@ final class MudApiController
         return $this->json(['ok' => true, 'state' => Api::snapshot($pid, $this->getLog($s))]);
     }
 
+    /** Whole-world fog-of-war atlas for the graphical client's full map. */
+    public function worldmap(Request $req): Response
+    {
+        [$s, $pid, $err] = $this->playerFor($req);
+        if ($err) {
+            return $err;
+        }
+        return $this->json(['ok' => true, 'map' => Api::worldMap($pid)]);
+    }
+
     public function cmd(Request $req): Response
     {
         [$s, $pid, $err] = $this->playerFor($req, true);

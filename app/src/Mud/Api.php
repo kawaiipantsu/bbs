@@ -444,6 +444,129 @@ final class Api
         return ['cx' => $cx, 'cy' => $cy, 'z' => $z, 'zone' => $room['name'], 'cells' => $cells];
     }
 
+    /**
+     * Whole-world atlas for the graphical client's full-screen map.
+     *
+     * Returns EVERY room in the game so the client can draw the complete city
+     * layout, with fog-of-war: rooms the player has never visited come back as
+     * blank nodes (name null, no exits, no markers) while visited rooms carry
+     * full detail. A room that sits one non-hidden step past the explored
+     * frontier is tagged `ghost` so the client can hint "there's something that
+     * way"; every room still carries x/y/z + zone so it can be positioned.
+     *
+     * @return array{here:int,visited:list<int>,zones:list<array{id:int,name:string}>,rooms:list<array>}
+     */
+    public static function worldMap(int $playerId): array
+    {
+        $p = Player::byId($playerId);
+        if (!$p) {
+            return ['here' => 0, 'visited' => [], 'zones' => [], 'rooms' => []];
+        }
+
+        $room     = World::room((int) $p['room_id']);
+        $hereId   = $room ? (int) $room['id'] : 0;
+        $hereVnum = $room ? (int) $room['vnum'] : 0;
+
+        $data       = json_decode($p['data'] ?? '{}', true) ?: [];
+        $visitedIds = [];
+        foreach ($data['visited'] ?? [] as $vid) {
+            $visitedIds[(int) $vid] = true;
+        }
+        if ($hereId) {
+            $visitedIds[$hereId] = true;
+        }
+
+        // every room, indexed by id (id -> row) for exit target lookups
+        $rows = Db::all('SELECT id, vnum, zone_id, name, x, y, z, flags FROM mud_rooms');
+        $byId = [];
+        foreach ($rows as $r) {
+            $byId[(int) $r['id']] = $r;
+        }
+
+        // every exit, grouped by origin room id
+        $exitsByFrom = [];
+        foreach (Db::all('SELECT from_room, to_room, dir, hidden, locked FROM mud_exits') as $x) {
+            $exitsByFrom[(int) $x['from_room']][] = $x;
+        }
+
+        // rooms that carry a shop (a shop row, or the "shop" flag)
+        $shopRoom = [];
+        foreach (Db::all('SELECT room_id FROM mud_shops') as $sr) {
+            $shopRoom[(int) $sr['room_id']] = true;
+        }
+
+        // ghost frontier: any room a visited room has a non-hidden exit into
+        $ghost = [];
+        foreach (array_keys($visitedIds) as $rid) {
+            foreach ($exitsByFrom[$rid] ?? [] as $x) {
+                if (!(int) $x['hidden']) {
+                    $ghost[(int) $x['to_room']] = true;
+                }
+            }
+        }
+
+        $zones     = [];
+        $zoneNames = [];
+        foreach (Db::all('SELECT id, name FROM mud_zones ORDER BY id') as $z) {
+            $zid       = (int) $z['id'];
+            $zones[]   = ['id' => $zid, 'name' => $z['name']];
+            $zoneNames[$zid] = (string) $z['name'];
+        }
+
+        $visitedVnums = [];
+        $out          = [];
+        foreach ($rows as $r) {
+            $rid   = (int) $r['id'];
+            $zid   = (int) $r['zone_id'];
+            $known = isset($visitedIds[$rid]);
+            if ($known) {
+                $visitedVnums[] = (int) $r['vnum'];
+            }
+
+            $node = [
+                'vnum'     => (int) $r['vnum'],
+                'x'        => (int) $r['x'],
+                'y'        => (int) $r['y'],
+                'z'        => (int) $r['z'],
+                'zone'     => $zid,
+                'zoneName' => $zoneNames[$zid] ?? '',
+                'name'     => $known ? $r['name'] : null,
+                'exits'    => [],
+            ];
+
+            if ($known) {
+                $flags = (string) $r['flags'];
+                foreach ($exitsByFrom[$rid] ?? [] as $x) {
+                    if ((int) $x['hidden']) {
+                        continue; // server only ever ships discovered, non-hidden exits
+                    }
+                    $to = $byId[(int) $x['to_room']] ?? null;
+                    $node['exits'][] = [
+                        'dir'    => $x['dir'],
+                        'to'     => $to ? (int) $to['vnum'] : 0,
+                        'hidden' => false,
+                        'locked' => (bool) (int) $x['locked'],
+                    ];
+                }
+                $node['shop']  = isset($shopRoom[$rid]) || str_contains($flags, 'shop');
+                $node['safe']  = str_contains($flags, 'safe');
+                $node['board'] = str_contains($flags, 'board');
+                $node['bank']  = str_contains($flags, 'bank');
+            } elseif (isset($ghost[$rid])) {
+                $node['ghost'] = true;
+            }
+
+            $out[] = $node;
+        }
+
+        return [
+            'here'    => $hereVnum,
+            'visited' => array_values(array_unique($visitedVnums)),
+            'zones'   => $zones,
+            'rooms'   => $out,
+        ];
+    }
+
     /* ---- sprite / icon keys -------------------------------------- */
 
     public static function itemIcon(array $tpl): string

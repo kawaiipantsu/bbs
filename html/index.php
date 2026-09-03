@@ -103,6 +103,7 @@ $router->post('/api/mud/logout',     [MudApiController::class, 'logout']);
 $router->post('/api/mud/archetype',  [MudApiController::class, 'archetype']);
 $router->get('/api/mud/whoami',      [MudApiController::class, 'whoami']);
 $router->get('/api/mud/state',       [MudApiController::class, 'state']);
+$router->get('/api/mud/worldmap',    [MudApiController::class, 'worldmap']);
 $router->post('/api/mud/cmd',        [MudApiController::class, 'cmd']);
 $router->get('/api/mud/players',     [MudApiController::class, 'players']);
 $router->get('/api/mud/inbox',       [MudApiController::class, 'inbox']);

@@ -1,6 +1,7 @@
 /* ui.js - DOM chrome: top bar, side panels, log, modals. Renders from state. */
 import { iconCanvas, actorCanvas } from './sprites.js';
 import { audio } from './audio.js';
+import { openWorldMap } from './worldmap.js';
 
 const PIPE = ['#0c0c0c', '#a01f2d', '#2f8f4f', '#b98a1e', '#2b5fa8', '#7a3f9a', '#3aa6a6', '#b8bcc8',
   '#5b6086', '#ff2d55', '#3ce88b', '#ffcf4a', '#66aaff', '#b98cff', '#66e0ff', '#f2f4ff'];
@@ -289,7 +290,10 @@ export class UI {
   }
 
   /* ---- modals ---- */
-  closeModal() { this.el('modalRoot').innerHTML = ''; }
+  closeModal() {
+    if (this._wmCleanup) { try { this._wmCleanup(); } catch (e) {} this._wmCleanup = null; }
+    this.el('modalRoot').innerHTML = '';
+  }
   _modal(title, bodyHtml, cls = '') {
     this.el('modalRoot').innerHTML = `<div class="modal"><div class="box ${cls}">
       <h3>${title}<button class="x">&times;</button></h3><div class="body">${bodyHtml}</div></div></div>`;
@@ -495,26 +499,17 @@ export class UI {
   }
 
   mapModal(state) {
-    const m = state.map;
-    const root = this._modal('Local Map  <span class="chip">' + this._esc(m.zone || '') + ' — level ' + m.z + '</span>', '<canvas id="bigmap" width="520" height="440" style="width:100%;image-rendering:pixelated;background:#05060c;border-radius:8px"></canvas><p style="color:var(--dim);font-size:11px;margin-top:8px">Red = you. Filled = explored. Use exits or arrow keys to move.</p>');
-    const c = root.querySelector('#bigmap'), ctx = c.getContext('2d');
-    const cell = 34, ox = c.width / 2, oy = c.height / 2;
-    for (const k of m.cells) {
-      const gx = ox + (k.x - m.cx) * cell, gy = oy - (k.y - m.cy) * cell;
-      ctx.fillStyle = k.here ? '#ff2d55' : k.visited ? '#1b2440' : '#0e1220';
-      ctx.fillRect(gx - 12, gy - 12, 24, 24);
-      ctx.strokeStyle = k.here ? '#ff6a88' : '#2b3352'; ctx.strokeRect(gx - 12, gy - 12, 24, 24);
-      ctx.strokeStyle = '#2b3352'; ctx.lineWidth = 2;
-      for (const d of k.exits) {
-        ctx.beginPath();
-        if (d === 'n') { ctx.moveTo(gx, gy - 12); ctx.lineTo(gx, gy - 17); }
-        else if (d === 's') { ctx.moveTo(gx, gy + 12); ctx.lineTo(gx, gy + 17); }
-        else if (d === 'e') { ctx.moveTo(gx + 12, gy); ctx.lineTo(gx + 17, gy); }
-        else if (d === 'w') { ctx.moveTo(gx - 12, gy); ctx.lineTo(gx - 17, gy); } else continue;
-        ctx.stroke();
-      }
-      if (k.visited && !k.here) { ctx.fillStyle = '#7a86b8'; ctx.font = '7px ui-monospace'; ctx.fillText((k.name || '').slice(0, 10), gx - 11, gy + 20); }
-    }
+    const here = (state && state.room) || {};
+    const z = here.z != null ? here.z : ((state && state.map && state.map.z) || 0);
+    const root = this._modal(
+      'City Atlas  <span class="chip">fog of war</span>',
+      '<div class="wm-wrap"></div>', 'mapbox');
+    const wrap = root.querySelector('.wm-wrap');
+    this._wmCleanup = openWorldMap(wrap, {
+      hereVnum: here.vnum || 0,
+      hereZ: z,
+      zoneSlug: here.zone || '',
+    });
   }
 
   helpModal() {
