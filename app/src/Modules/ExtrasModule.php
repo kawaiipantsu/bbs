@@ -142,54 +142,119 @@ final class ExtrasModule extends Module
     }
 
     // ---------------------------------------------------------------
+    /** @var list<string> */
+    private const FORTUNES = [
+        'NO CARRIER is just the modem saying goodnight.',
+        'There are 10 kinds of people: those who get binary and those who dial in at 2400 baud.',
+        'The best ANSI art loads one scanline at a time and you like it.',
+        'A SysOp never sleeps. A SysOp reboots.',
+        'Real hackers RTFM. Then they FTFM.',
+        '"It works on my machine" is a valid deployment strategy if your machine is the server.',
+        'The S in IoT stands for security.',
+        'Backups are like flossing: everyone lies about it until the appointment.',
+        'Every packet is a little letter that mostly arrives.',
+        'The cloud is just someone else\'s BBS.',
+        'If you can read this, the carrier held.',
+        'grep your feelings.',
+        'A password on a sticky note is still two-factor if the note is hidden well.',
+        'The network is down. Long live the network.',
+        'Optimism is a build that passes on the first try.',
+        'You are in a maze of twisty little subnets, all alike.',
+        'The modem screams so you do not have to.',
+        'Legacy code is just code that shipped.',
+        'Do not anthropomorphise the load balancer. It hates that.',
+        'One does not simply telnet into Mordor. Mordor runs SSH now.',
+        'The fastest way to a working regex is to post a broken one online.',
+        '"Turn it off and on again" is a peer-reviewed methodology.',
+        'ANSI art: because someone had to make the terminal beautiful.',
+        'Your uptime is showing.',
+        'The best time to plant a mirror was 20 years ago. The second best time is rsync.',
+        'You will meet a tall, dark stranger. They are running an exit node.',
+        'A bird in the hand is a `SIGSEGV` waiting to happen.',
+        'Today is a good day to close 40 browser tabs and pretend it was intentional.',
+        'The rubber duck has heard worse. Keep talking.',
+        'Somewhere, a cron job is thinking of you at 03:00 exactly.',
+        'You are due for a great success, pending code review.',
+        'Your lucky number is undefined. It was undefined the whole time.',
+        'Fortune favours the bold, and the ones who read the changelog.',
+        'The Wi-Fi you seek is two rooms away and named after a router model.',
+        'A wise runner once said "chmod 777" and we do not speak of them now.',
+        'You will soon receive an email you should have sent as a Slack message.',
+        'The bug is not in the compiler. It has never once been in the compiler.',
+        'Do not trust a system that boots faster than you can worry about it.',
+        'Great things never came from `rm -rf` without a full stop.',
+        'Your code will work on the demo. This is the deal you have made.',
+        'The last person to touch this file left no comments and no forwarding address.',
+        'You will be reincarnated as a semicolon someone keeps forgetting.',
+        'A watched download never finishes. An unwatched one fails at 98%.',
+        'The meeting could have been a `MOTD`.',
+        'Fear the SysOp who is quiet. Fear more the SysOp who is typing.',
+        'You will find what you are looking for in the second-to-last place you look, as tradition demands.',
+        'The Danes have a word for it: it is probably "hygge" and it does not apply here.',
+        'Somewhere in Jutland a windmill is out-performing your uptime.',
+        'You will pay 25 kroner for a coffee and call it "supporting the scene".',
+        'Cyclists have the right of way. So does the packet with the lower TTL.',
+        'The strandvejen of life has a headwind both directions.',
+        'Your horoscope was written in COBOL and still runs the bank.',
+        'Be the `pull request` you wish to see in the world.',
+        'A `404` is the universe telling you to make your own page.',
+        'The dice are loaded, the deck is stacked, and the RNG is seeded with the current second.',
+        'You will soon undertake a journey. It is to the other room, for the charger.',
+        'Trust the process. Distrust the process that has been running for 400 days.',
+        'The moon is in retrograde and so is your git history.',
+        'Speak softly and carry a big `--force`. Then never use it.',
+        'You are the SysOp\'s favourite caller. They tell everyone this.',
+    ];
+
     private function fortune(Engine $e, string $key, array &$st): Frame
     {
-        $fortunes = [
-            'NO CARRIER is just the modem saying goodnight.',
-            'There are 10 kinds of people: those who get binary and those who dial in at 2400 baud.',
-            'The best ANSI art loads one scanline at a time and you like it.',
-            'A SysOp never sleeps. A SysOp reboots.',
-            'Real hackers RTFM. Then they FTFM.',
-            'It works on my machine is a valid deployment strategy if your machine is the server.',
-            'The S in IoT stands for security.',
-            'Backups are like flossing: everyone lies about it until the appointment.',
-            'Every packet is a little letter that mostly arrives.',
-            'The cloud is just someone else\'s BBS.',
-            'If you can read this, the carrier held.',
-            'grep your feelings.',
-            'A password on a sticky note is still two-factor if the note is hidden well.',
-            'The network is down. Long live the network.',
-            'Optimism is a build that passes on the first try.',
-            'You are in a maze of twisty little subnets, all alike.',
-            'The modem screams so you do not have to.',
-            'Legacy code is just code that shipped.',
-            'Do not anthropomorphise the load balancer. It hates that.',
-            'One does not simply telnet into Mordor. Mordor runs SSH now.',
-            'The fastest way to a working regex is to post a broken one online.',
-            'Turn it off and on again is a peer-reviewed methodology.',
-            'ANSI art: because someone had to make the terminal beautiful.',
-            'Your uptime is showing.',
-            'The best time to plant a mirror was 20 years ago. The second best time is rsync.',
-        ];
+        $F = self::FORTUNES;
         $st['seen'] ??= -1;
         if ($key === "\x1B" || $key === 'Q') {
             return $e->exitModule();
         }
-        // ENTER / any key -> new fortune
-        $i = random_int(0, count($fortunes) - 1);
+        // ENTER / any key -> a fresh fortune (not the same one twice)
+        $i = random_int(0, count($F) - 1);
         if ($i === $st['seen']) {
-            $i = ($i + 1) % count($fortunes);
+            $i = ($i + 1) % count($F);
         }
         $st['seen'] = $i;
 
-        return Frame::make('screen')->view('game')->title('Fortune')->mode('game')
-            ->header('Fortune Cookie')->blank()->blank()
-            ->pipe('|11   ,--------------------------------------------------------------.')
-            ->pipe('|11   |')
-            ->block('|15   ' . wordwrap($fortunes[$i], 58, "\n   ", true))
-            ->pipe('|11   |')
-            ->pipe('|11   `--------------------------------------------------------------\'')
-            ->blank()->blank()
-            ->footer('ENTER for another · Q back');
+        $inner = 60;                                 // text columns between the bars
+        $IND   = '          ';                        // 10-space left indent
+        $V = "\u{2551}"; $H = "\u{2550}";             // ═ ║  (CP437 double line)
+        $DOT = "  \u{00b7}  ";
+        // $l must be PLAIN text (no |NN codes) so the fixed width stays true
+        $bar = static fn (string $l = '', string $c = '|15'): string =>
+            '|08' . $IND . '|11' . $V . '|00 ' . $c
+            . mb_substr($l . str_repeat(' ', $inner), 0, $inner) . ' |11' . $V;
+        $rule = static fn (string $lft, string $rgt): string =>
+            '|08' . $IND . '|11' . $lft . str_repeat($H, $inner + 2) . $rgt;
+
+        $wrapped = explode("\n", wordwrap($F[$i], $inner - 4, "\n", true));
+        while (count($wrapped) < 3) {           // keep the box from jumping around
+            $wrapped[] = '';
+        }
+
+        // a stable pseudo-random "lucky numbers" line per fortune
+        mt_srand($i * 7919 + 13);
+        $lucky = implode($DOT, array_map(static fn () => mt_rand(2, 63), range(1, 4)));
+        mt_srand();
+
+        $f = Frame::make('screen')->view('game')->title('Fortune')->mode('game')
+            ->header('Fortune Cookie')->blank()
+            ->pipe('|03            .-~~~-.')
+            ->pipe('|03           ( |14o|03   |14o|03 )   |08a fortune cracks open...')
+            ->pipe('|03            `-._.-\'')
+            ->pipe($rule("\u{2554}", "\u{2557}"))
+            ->pipe($bar());
+        foreach ($wrapped as $ln) {
+            $f->pipe($bar('  ' . $ln, '|15'));
+        }
+        return $f->pipe($bar())
+            ->pipe($bar('  lucky numbers   ' . $lucky, '|08'))
+            ->pipe($rule("\u{255a}", "\u{255d}"))
+            ->blank()
+            ->footer("ENTER for another  \u{00b7}  Q back");
     }
 }
