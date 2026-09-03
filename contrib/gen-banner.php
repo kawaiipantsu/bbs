@@ -99,7 +99,7 @@ $rows[] = [52,  '     ▘      ▝          ▘           ▘▝          ▘   
 $tag = 'A   D A N I S H   ·   H A C K I N G   ·   C O M M U N I T Y';
 $tl  = intdiv($INNER - mb_strlen($tag) - 4, 2);
 $rows[] = [240, str_repeat('─', $tl) . '  ' . "\x1b[38;5;214m$tag" . "\x1b[38;5;240m" . '  ' . str_repeat('─', $INNER - $tl - 4 - mb_strlen($tag))];
-$rows[] = [52,  '            ░░▒▒▓▓████████▓▓▒▒░░       ░▒▓██▓▒░       ░░▒▒▓▓████████▓▓▒▒░░'];
+$rows[] = [52,  '              ░░▒▒▓▓████████▓▓▒▒░░       ░▒▓██▓▒░       ░░▒▒▓▓████████▓▓▒▒░░'];
 
 $L = str_repeat(' ', $MARGIN);
 $out = '';

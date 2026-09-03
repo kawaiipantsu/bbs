@@ -345,6 +345,7 @@ SELECT m.id, x.sort, x.hotkey, x.label, x.descr, x.action, x.target, x.perm, x.r
   SELECT 'files' mslug,50 sort,'Y' hotkey,'Library' label,'Text-files & reference library' descr,'module' action,'file.library' target,NULL perm,0 rank UNION ALL
   SELECT 'files' mslug,90 sort,'X' hotkey,'Back' label,'Return to main menu' descr,'menu' action,'main' target,NULL perm,0 rank UNION ALL
   SELECT 'games' mslug,5 sort,'M' hotkey,'Hackers-MUD' label,'Jack into Night City - a live multiplayer MUD' descr,'module' action,'mud.play' target,NULL perm,0 rank UNION ALL
+  SELECT 'games' mslug,6 sort,'C' hotkey,'Hackers-MUD (2D client)' label,'Open the graphical browser client in a new tab' descr,'url' action,'/hackers-mud/' target,NULL perm,0 rank UNION ALL
   SELECT 'games' mslug,10 sort,'D' hotkey,'Door Games' label,'Pick a game to play' descr,'module' action,'game.list' target,NULL perm,0 rank UNION ALL
   SELECT 'games' mslug,20 sort,'H' hotkey,'High Scores' label,'Hall of fame' descr,'module' action,'game.scores' target,NULL perm,0 rank UNION ALL
   SELECT 'games' mslug,90 sort,'X' hotkey,'Back' label,'Return to main menu' descr,'menu' action,'main' target,NULL perm,0 rank UNION ALL
@@ -357,6 +358,8 @@ SELECT m.id, x.sort, x.hotkey, x.label, x.descr, x.action, x.target, x.perm, x.r
   SELECT 'main' mslug,60 sort,'G' hotkey,'Game Room' label,'16 door games and high scores' descr,'menu' action,'games' target,NULL perm,0 rank UNION ALL
   SELECT 'main' mslug,70 sort,'V' hotkey,'Voting Booth' label,'Cast your vote' descr,'module' action,'poll' target,NULL perm,0 rank UNION ALL
   SELECT 'main' mslug,80 sort,'B' hotkey,'Bulletins' label,'Notices from the SysOp' descr,'module' action,'bulletins' target,NULL perm,0 rank UNION ALL
+  SELECT 'main' mslug,82 sort,'R' hotkey,'Chiptune Radio' label,'Tracker music on rotation - .xm / .s3m / .mod' descr,'module' action,'chiptune' target,NULL perm,0 rank UNION ALL
+  SELECT 'main' mslug,84 sort,'Y' hotkey,'Weather' label,'Current conditions from the weather satellite' descr,'module' action,'weather' target,NULL perm,0 rank UNION ALL
   SELECT 'main' mslug,100 sort,'I' hotkey,'System Information' label,'About this board' descr,'screen' action,'sys.info' target,NULL perm,0 rank UNION ALL
   SELECT 'main' mslug,110 sort,'S' hotkey,'Statistics' label,'Board and caller stats' descr,'module' action,'stats' target,NULL perm,0 rank UNION ALL
   SELECT 'main' mslug,120 sort,'U' hotkey,'What\'s New' label,'New messages, files and headlines' descr,'module' action,'whatsnew' target,NULL perm,0 rank UNION ALL
@@ -364,6 +367,8 @@ SELECT m.id, x.sort, x.hotkey, x.label, x.descr, x.action, x.target, x.perm, x.r
   SELECT 'main' mslug,140 sort,'T' hotkey,'SysOp Ticket' label,'Page the SysOp / support' descr,'module' action,'ticket' target,NULL perm,0 rank UNION ALL
   SELECT 'main' mslug,150 sort,'W' hotkey,'Who / SysOps' label,'Staff roster and who is online' descr,'module' action,'sysops' target,NULL perm,0 rank UNION ALL
   SELECT 'main' mslug,160 sort,'A' hotkey,'Account' label,'Your profile and settings' descr,'module' action,'account' target,NULL perm,0 rank UNION ALL
+  SELECT 'main' mslug,162 sort,'D' hotkey,'Users Directory' label,'The yellow pages - every active member' descr,'module' action,'userdir' target,NULL perm,0 rank UNION ALL
+  SELECT 'main' mslug,164 sort,'H' hotkey,'Achievements' label,'Your trophy case - badges and points' descr,'module' action,'achievements' target,NULL perm,0 rank UNION ALL
   SELECT 'main' mslug,170 sort,'#' hotkey,'SysOp Area' label,'Board administration' descr,'menu' action,'sysop' target,'admin.access' perm,80 rank UNION ALL
   SELECT 'main' mslug,179 sort,'' hotkey,'-' label,'' descr,'divider' action,'' target,NULL perm,0 rank UNION ALL
   SELECT 'main' mslug,190 sort,'?' hotkey,'Help' label,'How to drive this thing' descr,'screen' action,'help.main' target,NULL perm,0 rank UNION ALL

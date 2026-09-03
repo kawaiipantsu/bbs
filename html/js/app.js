@@ -1,11 +1,12 @@
 /* app.js - wires the CRT, terminal, audio, boot sequence and HUD together. */
 
-import { Terminal } from './terminal.js?v=4';
-import { runBoot, skipBoot } from './boot.js?v=4';
-import { sound } from './audio.js?v=4';
-import { action, ticker, state } from './net.js?v=4';
-import { installChat } from './chat.js?v=4';
-import { installControls } from './controls.js?v=4';
+import { Terminal } from './terminal.js?v=5';
+import { runBoot, skipBoot } from './boot.js?v=5';
+import { sound } from './audio.js?v=5';
+import { action, ticker, state } from './net.js?v=5';
+import { installChat } from './chat.js?v=5';
+import { installControls } from './controls.js?v=5';
+import { chiptune } from './chiptune.js?v=5';
 
 const $ = sel => document.querySelector(sel);
 const LS = {
@@ -126,6 +127,7 @@ function send(payload) {
     if (frame.whoami) state.whoami = frame.whoami;
     sound.stopErrorLoop?.();
     term.renderFrame(frame);
+    handleChiptune(frame);
     // maintenance: keep the busy tone while busy frames come back; stop once
     // a real screen renders (a SysOp logged through).
     if (frame.meta && frame.meta.busy) {
@@ -179,8 +181,28 @@ function syncMusicBtn() {
 // Start / stop the background music according to the sound + music toggles
 // and whether we're actually connected to the board (no music over dial-up).
 function syncMusic() {
+  if (chiptune.isPlaying && chiptune.isPlaying()) return;   // chiptune radio owns the audio
   if (sound.enabled && musicWanted() && started && !maintenance && term && term.frame) sound.music('bbs');
   else sound.stopMusic?.();
+}
+
+// Chiptune Radio: the module emits frame.meta.chiptune commands; the player
+// runs client-side and takes over from the generative bed while it plays.
+function handleChiptune(frame) {
+  const meta = frame && frame.meta;
+  if (!meta) return;
+  if (Array.isArray(meta.chiptuneCatalog)) chiptune.setCatalog(meta.chiptuneCatalog);
+  const c = meta.chiptune;
+  if (!c) return;
+  if (c.action === 'play') {
+    sound.stopMusic?.(0.6);
+    chiptune.play(c.index | 0, { onEnd: () => syncMusic() });
+  } else if (c.action === 'stop') {
+    chiptune.stop();
+    syncMusic();
+  } else if (c.action === 'next') {
+    chiptune.next();
+  }
 }
 
 function hud() {

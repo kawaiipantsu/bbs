@@ -45,7 +45,7 @@ if (!headers_sent()) {
         "media-src 'self' blob: data:",
         "font-src 'self' data:",
         "style-src 'self' 'unsafe-inline'",
-        "script-src 'self' 'nonce-{$cspNonce}'",
+        "script-src 'self' 'wasm-unsafe-eval' 'nonce-{$cspNonce}'",
         "connect-src 'self'",
         "worker-src 'self' blob:",
     ]);

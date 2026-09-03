@@ -12,8 +12,10 @@ use Bbs\Core\Config;
 use Bbs\Core\Db;
 use Bbs\Core\Request;
 use Bbs\Modules\AccountModule;
+use Bbs\Modules\AchievementsModule;
 use Bbs\Modules\AdminModule;
 use Bbs\Modules\ChatModule;
+use Bbs\Modules\ChiptuneModule;
 use Bbs\Modules\ExtrasModule;
 use Bbs\Modules\CommunityModule;
 use Bbs\Modules\FilesModule;
@@ -25,6 +27,8 @@ use Bbs\Modules\NewsModule;
 use Bbs\Modules\PollModule;
 use Bbs\Modules\StatsModule;
 use Bbs\Modules\TicketModule;
+use Bbs\Modules\UserDirModule;
+use Bbs\Modules\WeatherModule;
 
 /**
  * The BBS state machine. Holds a navigation stack in the session and turns
@@ -54,6 +58,10 @@ final class Engine
         AdminModule::class,
         LinksModule::class,
         ExtrasModule::class,
+        AchievementsModule::class,
+        ChiptuneModule::class,
+        UserDirModule::class,
+        WeatherModule::class,
     ];
 
     /** @var array<string,Module> resolved lazily: slug => instance */
@@ -156,7 +164,27 @@ final class Engine
 
         $this->save();
         $this->bumpCall('action');
+        $this->syncAchievements();
         return $frame instanceof Frame ? $this->finish($frame) : $frame;
+    }
+
+    /** Re-evaluate the caller's badges, throttled to once a minute per session. */
+    private function syncAchievements(): void
+    {
+        $uid = (int) ($this->session->userId ?? 0);
+        if ($uid <= 0) {
+            return;
+        }
+        $last = (int) ($this->state['_ach'] ?? 0);
+        if (time() - $last < 60) {
+            return;
+        }
+        $this->state['_ach'] = time();
+        try {
+            Achievements::sync($uid);
+        } catch (\Throwable) {
+        }
+        $this->save();
     }
 
     /** Re-render current state (used on reconnect / redraw). */
@@ -396,7 +424,7 @@ final class Engine
             'screen' => $this->pushRender(['t' => 'screen', 'ref' => $item['target']]),
             'module' => $this->enterModule($item['target']),
             'logoff' => $this->beginLogoff(),
-            'url'    => Frame::make('redirect')->mode('redirect')->meta(['url' => $item['target']]),
+            'url'    => Frame::make('redirect')->mode('redirect')->meta(['url' => $item['target'], 'newtab' => true]),
             default  => $this->toMenuFrame($slug),
         };
     }

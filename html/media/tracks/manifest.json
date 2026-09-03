@@ -1,0 +1,19 @@
+{
+  "station": "CHIPTUNE RADIO",
+  "note": "13 tracker modules on rotation. Sourced from The Mod Archive (modarchive.org). Each module remains the property of its author; provided here for non-commercial listening.",
+  "tracks": [
+    { "file": "gateway.s3m",               "title": "Gateway",                "artist": "Necros",   "format": "S3M" },
+    { "file": "numbers-on-the-modem.xm",    "title": "Numbers on the Modem",   "artist": "lug00ber", "format": "XM"  },
+    { "file": "isotoxin.s3m",               "title": "Isotoxin",               "artist": "Necros",   "format": "S3M" },
+    { "file": "plastic.xm",                 "title": "00:02:52 (Plastic)",     "artist": "",         "format": "XM"  },
+    { "file": "subchaos-psychedelic.xm",    "title": "subchaos-psychedelic",   "artist": "",         "format": "XM"  },
+    { "file": "memory.s3m",                 "title": "Memory",                 "artist": "",         "format": "S3M" },
+    { "file": "industrial.xm",              "title": "Industrial",             "artist": "DRAX",     "format": "XM"  },
+    { "file": "paralyze-distort-mix.s3m",   "title": "Paralyze (distort mix)", "artist": "",         "format": "S3M" },
+    { "file": "pepelats.xm",                "title": "Pepelats",               "artist": "Manwe",    "format": "XM"  },
+    { "file": "satellite-one.s3m",          "title": "Satellite One",          "artist": "",         "format": "S3M" },
+    { "file": "industrial-park.xm",         "title": "INDUSTRiAL PARK",        "artist": "",         "format": "XM"  },
+    { "file": "calm-mod.xm",                "title": "Calm Mod!",              "artist": "",         "format": "XM"  },
+    { "file": "revenge-of-unilogix.mod",    "title": "Revenge of Unilogix",    "artist": "",         "format": "MOD" }
+  ]
+}

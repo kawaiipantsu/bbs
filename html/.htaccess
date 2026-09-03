@@ -67,8 +67,11 @@ AddDefaultCharset utf-8
     Require all denied
 </FilesMatch>
 
-# allow the two JSON files the site actually serves as static
+# allow the JSON files the site actually serves as static
 <Files "manifest.webmanifest">
+    Require all granted
+</Files>
+<Files "manifest.json">
     Require all granted
 </Files>
 

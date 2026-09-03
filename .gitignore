@@ -34,3 +34,7 @@ Thumbs.db
 /assets/dist/
 /docs/img/*.orig
 /assets/bugs/
+
+# user-uploaded tracker source pack (served copies live in html/media/tracks/)
+assets/bbs_dark_tracker_pack/
+assets/show_thugsred.*
