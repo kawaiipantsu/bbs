@@ -85,7 +85,7 @@ for ($r = 0; $r < 7; $r++) {
 }
 
 /* ---- rows: [colour, text] --------------------------------------- */
-$SH = str_repeat(' ', 5);                          // flame crown: shift right ~5
+$SH = str_repeat(' ', 9);                          // flame crown: centred over the top box line
 $rows = [];
 $rows[] = [166, $SH . '   ▄▄     ▄      ▄▄▄      ▄      ▄▄     ▄      ▄▄▄      ▄      ▄▄     ▄     ▄▄▄'];
 $rows[] = [202, $SH . ' ▟█▙▄▖ ▗▟█▙▖  ▖▗▟█▙▖   ▗▟█▙▄▖ ▗▟█▙▖  ▖ ▟█▙▄▖ ▗▟█▙▖  ▖▗▟█▙▖   ▗▟█▙▖ ▗▟█▙▄▖'];
@@ -99,7 +99,7 @@ $rows[] = [52,  '     ▘      ▝          ▘           ▘▝          ▘   
 $tag = 'A   D A N I S H   ·   H A C K I N G   ·   C O M M U N I T Y';
 $tl  = intdiv($INNER - mb_strlen($tag) - 4, 2);
 $rows[] = [240, str_repeat('─', $tl) . '  ' . "\x1b[38;5;214m$tag" . "\x1b[38;5;240m" . '  ' . str_repeat('─', $INNER - $tl - 4 - mb_strlen($tag))];
-$rows[] = [52,  '        ░░▒▒▓▓████████▓▓▒▒░░       ░▒▓██▓▒░       ░░▒▒▓▓████████▓▓▒▒░░'];
+$rows[] = [52,  '            ░░▒▒▓▓████████▓▓▒▒░░       ░▒▓██▓▒░       ░░▒▒▓▓████████▓▓▒▒░░'];
 
 $L = str_repeat(' ', $MARGIN);
 $out = '';

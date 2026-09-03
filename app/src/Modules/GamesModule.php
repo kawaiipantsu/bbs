@@ -69,6 +69,7 @@ final class GamesModule extends Module
                 'mines'     => $this->mines($e, $in, $g),
                 'g2048'     => $this->g2048($e, $in, $g),
                 'lightsout' => $this->lightsout($e, $in, $g),
+                'trivia'    => $this->trivia($e, $in, $g),
                 default     => $this->listGames($e),
             };
             $st['g'] = $g;
@@ -1278,5 +1279,140 @@ final class GamesModule extends Module
                 $grid[$nr * $N + $nc] = !$grid[$nr * $N + $nc];
             }
         }
+    }
+
+    // ===============================================================
+    //  TRIVIA BOT - multiple choice across several categories
+    // ===============================================================
+    private const TRIVIA_CATS = [
+        'mixed'        => 'Mixed Bag',
+        'dk-geo'       => 'Danish Geography',
+        'dk-pol'       => 'Danish Politics',
+        'dk-ppl'       => 'Danish Famous People',
+        'basic'        => 'Basic Questions',
+        'fun'          => 'Fun Questions',
+        'movie-quote'  => 'Movie Quotes',
+        'movie-trivia' => 'Movie Trivia',
+    ];
+    private const TRIVIA_ROUND = 10;
+
+    private function trivia(Engine $e, array $in, array &$g): Frame
+    {
+        $g['_module'] = 'trivia';
+        $keys = array_keys(self::TRIVIA_CATS);
+        $key  = strtoupper((string) ($in['key'] ?? ''));
+        $screen = $g['screen'] ?? 'cat';
+
+        // ---- category picker ----------------------------------------
+        if ($screen === 'cat') {
+            $idx = self::keyToIndex($key);
+            if ($idx !== null && isset($keys[$idx])) {
+                $cat = $keys[$idx];
+                $lim = self::TRIVIA_ROUND;
+                $rows = $cat === 'mixed'
+                    ? Db::all("SELECT * FROM trivia_questions ORDER BY RAND() LIMIT $lim")
+                    : Db::all("SELECT * FROM trivia_questions WHERE category = ? ORDER BY RAND() LIMIT $lim", [$cat]);
+                if (!$rows) {
+                    $rows = Db::all("SELECT * FROM trivia_questions ORDER BY RAND() LIMIT $lim");
+                }
+                $g = ['_module' => 'trivia', 'screen' => 'q', 'cat' => $cat,
+                      'queue' => $rows, 'i' => 0, 'score' => 0, 'answered' => null];
+                return $this->trivia($e, [], $g);
+            }
+            $f = Frame::make('screen')->view('game')->title('Trivia Bot')->mode('menu')
+                ->header('Trivia Bot', count($keys) . ' categories')->blank()
+                ->pipe('|07   Pick a category - ' . self::TRIVIA_ROUND . ' multiple-choice questions a round.')->blank();
+            foreach ($keys as $n => $k) {
+                $f->pipe(sprintf('|08   [|15%s|08]  |14%s', self::indexLabel($n), self::TRIVIA_CATS[$k]));
+            }
+            return $f->footer('number to start  ' . "\u{00b7}" . '  ESC leave');
+        }
+
+        // ---- round finished ---------------------------------------
+        if ($screen === 'done') {
+            if ($key === 'ENTER') {
+                $g = ['_module' => 'trivia', 'screen' => 'cat'];
+                return $this->trivia($e, [], $g);
+            }
+            $total = max(1, count($g['queue'] ?? []));
+            $score = (int) ($g['score'] ?? 0);
+            $pct = (int) round(100 * $score / $total);
+            $verdict = $pct >= 90 ? 'ELITE. The SysOp is taking notes.'
+                : ($pct >= 70 ? 'Solid run.' : ($pct >= 40 ? 'Not bad - dial in again.' : 'Ouch. Back to the manuals.'));
+            return Frame::make('screen')->view('game')->title('Trivia Bot')->mode('game')
+                ->header('Round Over', self::TRIVIA_CATS[$g['cat'] ?? 'mixed'])->blank()->blank()
+                ->pipe(sprintf('|15   You scored  |14%d|15 / %d    (|11%d%%|15)', $score, $total, $pct))
+                ->pipe('|10   ' . $verdict)->blank()->blank()
+                ->pipe('|07   ENTER for a new round   ' . "\u{00b7}" . '   ESC to leave')
+                ->footer('ESC leave');
+        }
+
+        // ---- a question ------------------------------------------
+        $queue = $g['queue'] ?? [];
+        $i = (int) ($g['i'] ?? 0);
+        $q = $queue[$i] ?? null;
+        if (!$q) {
+            $g['screen'] = 'done';
+            $this->saveScore($e, $g, (int) ($g['score'] ?? 0), (string) ($g['cat'] ?? ''));
+            return $this->trivia($e, [], $g);
+        }
+        $opts = [$q['opt_a'], $q['opt_b'], $q['opt_c'], $q['opt_d']];
+        $ans  = (int) $q['answer'];
+        $answered = $g['answered'] ?? null;
+
+        if ($answered === null) {
+            $pick = null;
+            if (in_array($key, ['A', 'B', 'C', 'D'], true)) {
+                $pick = ord($key) - 65;
+            } elseif (in_array($key, ['1', '2', '3', '4'], true)) {
+                $pick = (int) $key - 1;
+            }
+            if ($pick !== null) {
+                $g['answered'] = $pick;
+                if ($pick === $ans) {
+                    $g['score'] = (int) ($g['score'] ?? 0) + 1;
+                }
+                return $this->trivia($e, [], $g);
+            }
+        } elseif ($key === 'ENTER' || $key === ' ' || $key === 'SPACE') {
+            $g['i'] = $i + 1;
+            $g['answered'] = null;
+            if ($g['i'] >= count($queue)) {
+                $g['screen'] = 'done';
+                $this->saveScore($e, $g, (int) ($g['score'] ?? 0), (string) ($g['cat'] ?? ''));
+            }
+            return $this->trivia($e, [], $g);
+        }
+
+        $qn = $i + 1;
+        $total = count($queue);
+        $f = Frame::make('screen')->view('game')->title('Trivia Bot')->mode('game')
+            ->header('Trivia Bot', sprintf('%s  ' . "\u{00b7}" . '  Q%d/%d  ' . "\u{00b7}" . '  score %d',
+                self::TRIVIA_CATS[$g['cat'] ?? 'mixed'], $qn, $total, (int) ($g['score'] ?? 0)))
+            ->blank()
+            ->block('|15   ' . wordwrap((string) $q['question'], 92, "\n   ", true))
+            ->blank();
+        foreach ($opts as $oi => $ot) {
+            $letter = chr(65 + $oi);
+            if ($answered === null) {
+                $f->pipe(sprintf('|08    [|15%s|08]  |07%s', $letter, $ot));
+            } else {
+                $lead = $oi === $ans ? '|10  > ' : ($oi === $answered ? '|09  x ' : '|08    ');
+                $col  = $oi === $ans ? '|10' : ($oi === $answered ? '|09' : '|08');
+                $f->pipe(sprintf('%s[%s]  %s%s', $lead, $letter, $col, $ot));
+            }
+        }
+        $f->blank();
+        if ($answered === null) {
+            $f->pipe('|07   Press |15A|07-|15D|07  (or |15 1|07-|15 4|07)');
+        } else {
+            $ok = $answered === $ans;
+            $f->pipe($ok ? '|10   Correct!' : '|09   Wrong - the answer was ' . chr(65 + $ans) . '.');
+            if (trim((string) $q['note']) !== '') {
+                $f->block('|08   ' . wordwrap((string) $q['note'], 92, "\n   ", true));
+            }
+            $f->pipe('|07   ENTER for the next question');
+        }
+        return $f->footer('ESC leave');
     }
 }
