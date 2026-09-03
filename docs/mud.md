@@ -31,6 +31,8 @@ The schema ships as a migration; the world content is a separate seed script.
 php mysql/migrate.php                # creates the mud_* tables (2026_09_03_02_mud.sql)
 php mysql/mud_world.php              # builds / rebuilds the world (idempotent)
 php mysql/mud_world.php --stats      # just print row counts
+php contrib/mud-exit-audit.php       # verify connectivity (0 unreachable / 0 asymmetric = clean)
+php contrib/gen-mud-atlas.php        # redraw the offline City Atlas (see below)
 ```
 
 `mud_world.php` wipes and re-seeds the world/template tables. It **keeps**
@@ -149,6 +151,18 @@ damage buff). Botching a secure hack can spawn a patrol.
 Zones connect: Kabuki ⇄ Watson ⇄ (checkpoint) Corpo ⇄ Combat Zone, and the
 Undercity threads under all of them via drains; the Fringe is reached from a
 comms conduit off the nomad camp.
+
+### Offline map — the City Atlas
+
+[`assets/hackers-mud-atlas.svg`](../assets/hackers-mud-atlas.svg) /
+[`assets/hackers-mud-atlas.png`](../assets/hackers-mud-atlas.png) is a full
+reference map of the whole world: every district, every room (with vnum), all
+exits (solid = normal, amber-dash = locked, grey-dot = hidden, ▲▼ = up/down,
+faint cyan = cross-district portal) and markers for shops, safe rooms, banks,
+boards, boss rooms and the start. Unlike the in-game `map`/client view it
+deliberately shows hidden passages — it's a dev/reference artifact. Regenerate
+with `php contrib/gen-mud-atlas.php` after any world rebuild (needs
+`rsvg-convert` for the PNG; the SVG is always written).
 
 ### Jobs
 
