@@ -345,7 +345,14 @@ final class Api
             'items'   => $items,
             'mobs'    => $mobs,
             'players' => $players,
-            'shop'    => $shop ? ['name' => $shop['name'], 'greeting' => $shop['greeting']] : null,
+            'shop'    => $shop ? [
+                'name'     => $shop['name'],
+                'greeting' => $shop['greeting'],
+                'buys'     => trim((string) $shop['buy_types']) === '*'
+                    ? ['*']
+                    : array_values(array_filter(array_map('trim', explode(',', (string) $shop['buy_types'])))),
+                'markdown' => (float) $shop['buy_markdown'],
+            ] : null,
             'extras'  => array_map(static fn ($e) => explode('|', $e['keywords'])[0], World::roomExtras((int) $room['id'])),
         ];
     }

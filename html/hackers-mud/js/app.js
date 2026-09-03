@@ -293,17 +293,46 @@ async function openShop(kw) {
     else if (/^[A-Z]/.test(plain.trim()) && !name.startsWith('The') && items.length === 0 && plain.trim().length < 40 && !plain.includes('ITEM')) name = plain.trim();
   }
   const bare = s => s.replace(/^(a|an|the)\s+/i, '');
-  const html = `<p style="color:var(--mut);margin-top:0">Walk up, click to buy. Sell from your <b>inventory</b>.</p>` +
-    (items.length ? items.map(it => `<div class="shoprow">
+  const esc = s => String(s).replace(/[<>&]/g, '');
+
+  // what this keeper will take off your hands
+  const shop = (lastState && lastState.room && lastState.room.shop) || {};
+  const buys = shop.buys || [];
+  const markdown = shop.markdown || 0.4;
+  const takesAll = buys.includes('*');
+  const noTrade = it => /quest|notrade|nodrop/.test(it.flags || '');
+  const sellable = ((lastState && lastState.inventory) || []).filter(it =>
+    (takesAll || buys.includes(it.type)) && !noTrade(it));
+
+  const buyHtml = items.length ? items.map(it => `<div class="shoprow">
       <span style="color:var(--cyan)">▸</span>
-      <span class="nm">${it.name.replace(/[<>&]/g, '')}<br><span style="font-size:10px;color:var(--dim)">${it.type}${it.qty ? ' · x' + it.qty : ''}</span></span>
+      <span class="nm">${esc(it.name)}<br><span style="font-size:10px;color:var(--dim)">${it.type}${it.qty ? ' · x' + it.qty : ''}</span></span>
       <span class="pr">¥${it.price}</span>
       <button class="btn sm pri" data-buy="${bare(it.name).replace(/"/g, '')}">Buy</button></div>`).join('')
-      : '<p style="color:var(--dim)">Nothing in stock.</p>');
+    : '<p style="color:var(--dim)">Nothing in stock.</p>';
+
+  const sellHtml = sellable.length ? sellable.map(it => {
+    const price = Math.max(1, Math.floor((it.value || 0) * markdown));
+    return `<div class="shoprow">
+      <span style="color:var(--grn)">▾</span>
+      <span class="nm">${esc(it.name)}${it.qty > 1 ? ' <span style="color:var(--dim)">x' + it.qty + '</span>' : ''}<br><span style="font-size:10px;color:var(--dim)">${it.type}</span></span>
+      <span class="pr">~¥${price.toLocaleString()}</span>
+      <button class="btn sm" data-sell="${esc(it.kw)}">Sell</button></div>`;
+  }).join('')
+    : `<p style="color:var(--dim)">Nothing in your pack this keeper wants${takesAll ? '.' : ' (they take: ' + (buys.join(', ') || '—') + ').'}</p>`;
+
+  const html = `<p style="color:var(--mut);margin-top:0">Buy from stock, or sell what they deal in. Prices shift with your gear's condition.</p>
+    <div class="sect">In stock</div>${buyHtml}
+    <div class="sect" style="margin-top:14px">They'll buy from you</div>${sellHtml}`;
+
   const rootEl = ui._modal(name, html);
   rootEl.querySelectorAll('[data-buy]').forEach(b => b.onclick = async () => {
     await sendCmd('buy ' + b.dataset.buy);
-    openShop(kw); // refresh prices/stock
+    openShop(kw);
+  });
+  rootEl.querySelectorAll('[data-sell]').forEach(b => b.onclick = async () => {
+    await sendCmd('sell ' + b.dataset.sell);
+    openShop(kw);
   });
 }
 
