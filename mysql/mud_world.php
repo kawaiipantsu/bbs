@@ -566,33 +566,31 @@ $EX = [
     [1000, 'd', 1001], [1001, 'd', 1002], [1002, 'n', 1003], [1003, 'e', 1004],
     [1003, 'n', 1005], [1005, 'w', 1006], [1005, 'e', 1007], [1005, 'n', 1008],
     [1008, 'w', 1009], [1002, 'e', 1010], [1010, 'e', 1011], [1011, 'e', 1012, ['keyword' => 'door', 'descr' => 'The Afterlife\'s door. The bouncer sizes you up and, eventually, steps aside.']],
-    [1002, 'w', 1013], [1013, 'n', 1014], [1014, 'w', 1015], [1008, 's', 1016], [1016, 's', 1017],
+    [1002, 'w', 1013], [1013, 'n', 1014], [1014, 'w', 1015], [1008, 'n', 1016], [1016, 'n', 1017],
     [1017, 'd', 1400, ['descr' => 'The drain throat drops into the dark of the Undercity.']],
-    [1001, 'u', 1018], [1010, 's', 1019], [1005, 'se', 1020], [1003, 'w', 1021],
-    [1018, 'n', 1018],
+    [1010, 'ne', 1019], [1005, 'se', 1020], [1003, 'w', 1021],
     // Kabuki -> Watson
-    [1003, 'w', 1021],
-    [1016, 'w', 1100, ['oneway' => false, 'descr' => 'A walkway leads west toward the canal and the docks.']],
+    [1016, 'w', 1100, ['descr' => 'A walkway leads west toward the canal and the docks.']],
     // Watson internal
-    [1100, 'w', 1101], [1101, 'n', 1102], [1102, 'w', 1103], [1102, 'e', 1104], [1102, 'n', 1105],
+    [1100, 'n', 1101], [1101, 'n', 1102], [1102, 'w', 1103], [1102, 'e', 1104], [1102, 'n', 1105],
     [1101, 'e', 1106], [1106, 'e', 1107], [1105, 'n', 1108], [1108, 'u', 1109], [1109, 'n', 1110],
-    [1102, 'w', 1103], [1103, 's', 1111], [1111, 'w', 1112], [1111, 's', 1113], [1104, 'e', 1114],
+    [1103, 's', 1111], [1111, 'w', 1112], [1111, 's', 1113], [1104, 'e', 1114],
     [1114, 's', 1115], [1115, 's', 1116], [1116, 'd', 1401, ['descr' => 'The middle drain slopes down into the Undercity.']],
-    [1100, 'n', 1117], [1117, 'n', 1200, ['keyword' => 'checkpoint', 'hack_dc' => 6, 'descr' => 'The security turnstile. Past it, the plaza gleams.']],
+    [1100, 'w', 1117], [1117, 'n', 1201, ['keyword' => 'checkpoint', 'hack_dc' => 6, 'descr' => 'The security turnstile. Past it, the maglev platform and the plaza gleam.']],
     // Corpo internal
     [1200, 's', 1201], [1200, 'n', 1202], [1202, 'u', 1203], [1203, 'u', 1204, ['keyword' => 'door', 'locked' => 1, 'hack_dc' => 12, 'descr' => 'A glass security door to the server floor. Badge or breach.']],
     [1200, 'w', 1205], [1200, 'e', 1206], [1206, 'n', 1207], [1200, 'nw', 1208],
-    [1200, 'u', 1209], [1209, 'e', 1210], [1210, 'd', 1211], [1211, 'n', 1212], [1212, 'w', 1200],
+    [1200, 'u', 1209], [1209, 'e', 1210], [1210, 'd', 1211], [1211, 'n', 1212], [1212, 'nw', 1200],
     [1210, 'n', 1204, ['keyword' => 'hatch', 'hidden' => 1, 'descr' => 'An unlocked maintenance hatch opens onto the server floor from behind.']],
-    // Combat Zone - reached from Corpo loading dock / undercity
-    [1212, 's', 1300, ['descr' => 'A service road runs south out of the plaza toward the dead arcade.']],
+    // Combat Zone - reached from the plaza loading dock / undercity
+    [1300, 's', 1212, ['descr' => 'A cracked service road climbs south out of the mall lot toward the plaza loading dock.']],
     [1300, 'n', 1301], [1301, 'n', 1302], [1302, 'u', 1303], [1303, 'w', 1304], [1303, 'e', 1305],
     [1303, 'u', 1306], [1306, 'w', 1307], [1306, 'u', 1308], [1301, 'e', 1309], [1309, 's', 1310],
-    [1309, 'w', 1311], [1311, 'd', 1404, ['descr' => 'The fire stair only goes down, into cold tunnel air.']],
-    [1300, 'w', 1312], [1312, 'n', 1309],
+    [1311, 'd', 1404, ['descr' => 'The fire stair only goes down, into cold tunnel air.']],
+    [1300, 'w', 1312], [1312, 'n', 1311],
     // Undercity internal
     [1400, 'n', 1401], [1400, 'w', 1402], [1400, 'e', 1403], [1401, 'n', 1404], [1404, 'n', 1405],
-    [1400, 's', 1406], [1401, 'e', 1407], [1404, 'n', 1408], [1408, 'n', 1409, ['keyword' => 'door', 'locked' => 1, 'hack_dc' => 14, 'descr' => 'The blast door. The keypad hangs open, wires bared.']],
+    [1400, 's', 1406], [1401, 'e', 1407], [1404, 'e', 1408], [1408, 'n', 1409, ['keyword' => 'door', 'locked' => 1, 'hack_dc' => 14, 'descr' => 'The blast door. The keypad hangs open, wires bared.']],
     [1405, 'w', 1410], [1405, 'n', 1411], [1411, 'n', 1500, ['descr' => 'The comms conduit crawls north toward the Fringe datacentres.']],
     // Blackwall internal
     [1500, 'n', 1501], [1500, 'w', 1502], [1501, 'n', 1503], [1501, 'e', 1504], [1503, 'n', 1505],
@@ -684,9 +682,36 @@ try {
     }
     echo '  rooms: ' . count($roomId) . "\n";
 
-    // exits (+ auto reverse)
+    // exits: TWO PASSES.
+    //   pass 1  inserts every EXPLICIT [from,dir,to] from $EX. An explicit exit
+    //           always wins its own from:dir slot; a genuinely doubled explicit
+    //           entry is de-duped (and warned about) so it is harmless.
+    //   pass 2  adds the auto-reverse for each non-oneway explicit exit, but
+    //           ONLY where "$to:$rev" is still empty - an explicit exit is never
+    //           clobbered by, and never silently loses to, an auto-reverse.
+    // The reverse inherits keyword/locked/hidden/hack_dc (a door is a door from
+    // both sides) but gets a plain description.
     $exCount = 0;
     $seen = [];
+    $REV = ['n' => 's', 's' => 'n', 'e' => 'w', 'w' => 'e', 'u' => 'd', 'd' => 'u',
+            'ne' => 'sw', 'nw' => 'se', 'se' => 'nw', 'sw' => 'ne', 'in' => 'out', 'out' => 'in'];
+    $mkExit = function ($f, $d, $t, array $o) use (&$roomId, &$exCount, &$seen): bool {
+        $key = "$f:$d";
+        if (isset($seen[$key])) {
+            return false;
+        }
+        $seen[$key] = true;
+        Db::insert('mud_exits', [
+            'from_room' => $roomId[$f], 'dir' => $d, 'to_room' => $roomId[$t],
+            'keyword' => $o['keyword'] ?? '', 'locked' => $o['locked'] ?? 0,
+            'key_vnum' => $o['key_vnum'] ?? null,
+            'hidden' => $o['hidden'] ?? 0, 'hack_dc' => $o['hack_dc'] ?? 0,
+            'descr' => $o['descr'] ?? '',
+        ]);
+        $exCount++;
+        return true;
+    };
+    $explicit = [];
     foreach ($EX as $e) {
         [$from, $dir, $to] = $e;
         $opt = $e[3] ?? [];
@@ -694,30 +719,23 @@ try {
             fwrite(STDERR, "  ! exit skips missing room $from->$to\n");
             continue;
         }
-        $mk = function ($f, $d, $t, $o) use (&$roomId, &$exCount, &$seen) {
-            $key = "$f:$d";
-            if (isset($seen[$key])) {
-                return;
-            }
-            $seen[$key] = true;
-            Db::insert('mud_exits', [
-                'from_room' => $roomId[$f], 'dir' => $d, 'to_room' => $roomId[$t],
-                'keyword' => $o['keyword'] ?? '', 'locked' => $o['locked'] ?? 0,
-                'hidden' => $o['hidden'] ?? 0, 'hack_dc' => $o['hack_dc'] ?? 0,
-                'descr' => $o['descr'] ?? '',
-            ]);
-            $exCount++;
-        };
-        $mk($from, $dir, $to, $opt);
-        if (empty($opt['oneway'])) {
-            $rev = ['n' => 's', 's' => 'n', 'e' => 'w', 'w' => 'e', 'u' => 'd', 'd' => 'u',
-                    'ne' => 'sw', 'nw' => 'se', 'se' => 'nw', 'sw' => 'ne', 'in' => 'out', 'out' => 'in'][$dir] ?? null;
-            if ($rev) {
-                $ro = $opt;
-                unset($ro['descr']); // reverse gets a plain description
-                $mk($to, $rev, $from, $ro + ['descr' => '']);
-            }
+        if ($mkExit($from, $dir, $to, $opt)) {
+            $explicit[] = [$from, $dir, $to, $opt];
+        } else {
+            fwrite(STDERR, "  ! duplicate explicit exit $from:$dir dropped\n");
         }
+    }
+    foreach ($explicit as [$from, $dir, $to, $opt]) {
+        if (!empty($opt['oneway'])) {
+            continue;
+        }
+        $rev = $REV[$dir] ?? null;
+        if ($rev === null || isset($seen["$to:$rev"])) {
+            continue;
+        }
+        $ro = $opt;
+        unset($ro['descr'], $ro['oneway']); // reverse gets a plain description
+        $mkExit($to, $rev, $from, $ro + ['descr' => '']);
     }
     echo "  exits: $exCount\n";
 

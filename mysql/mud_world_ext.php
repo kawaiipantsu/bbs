@@ -127,18 +127,19 @@ $room(1758, 'undercity', 'Pre-War Bunker', 0, 11, -1,
 $EX = array_merge($EX, [
     // Kabuki Hab-Stack: common deck + coin laundry, off the stairwell
     [1001, 'e', 1022], [1022, 's', 1023],
+    [1022, 'u', 1018, ['keyword' => 'ladder', 'descr' => 'A fire-escape ladder off the common deck climbs to the hab-stack roof.']],
     // Kabuki rooftops - climb up from the street-level rooftop (1018) and Ping Alley
     [1018, 'e', 1600, ['descr' => 'A run of planks and ductwork leads east across the roofscape.']],
     [1600, 'e', 1601], [1601, 'e', 1602, ['keyword' => 'container', 'descr' => "Wirehead's container door stands open, screenlight spilling out."]],
-    [1602, 'n', 1603], [1600, 'n', 1605], [1605, 'e', 1601], [1601, 'e', 1604],
+    [1602, 'n', 1603], [1600, 'n', 1605], [1605, 'e', 1603], [1602, 'e', 1604],
     [1604, 'n', 1606], [1603, 'n', 1607],
-    [1606, 'd', 1610, ['descr' => 'The stairwell drops into the noise and neon of the Kitsune.']],
+    [1606, 'd', 1614, ['descr' => 'The roof stairwell drops into the Kitsune\'s mirrored VIP lounge.']],
     [1019, 'u', 1600, ['keyword' => 'ladder', 'descr' => 'A maintenance ladder bolted to the wall of Ping Alley climbs to the roofs.']],
     // Neon Kitsune internal
     [1610, 'w', 1611], [1610, 'e', 1612], [1611, 'w', 1613, ['keyword' => 'door', 'locked' => 1, 'hack_dc' => 10, 'descr' => 'A STAFF door with a card reader. It is not for customers.']],
     [1610, 'u', 1614], [1614, 'n', 1615], [1610, 'se', 1616], [1610, 's', 1617],
     [1617, 's', 1019, ['keyword' => 'chain', 'locked' => 1, 'hack_dc' => 4, 'descr' => 'A chained fire door. A bolt-cutter or a good kick, and it opens on Ping Alley.']],
-    [1616, 'e', 1002, ['oneway' => true, 'descr' => 'The dock gate lets out onto Jig-Jig Street.']],
+    [1616, 's', 1010, ['descr' => 'The dock gate lets out into the back of Gomorrah Lane.']],
     // Militech tower floor - off the Arasaka mezzanine's shared elevator core... use the corpo maintenance spine
     [1210, 'u', 1650, ['keyword' => 'elevator', 'descr' => 'A service elevator rises to the Militech floors.']],
     [1650, 'n', 1651], [1651, 'w', 1652], [1651, 'e', 1653], [1651, 'n', 1654],
@@ -146,8 +147,8 @@ $EX = array_merge($EX, [
     // Badlands - out through the Corpo checkpoint's far side / the plaza transit
     [1201, 'w', 1700, ['keyword' => 'maglev', 'descr' => 'The maglev runs a single line out past the wall to the City Limits.']],
     [1700, 'n', 1701], [1701, 'n', 1703], [1701, 'e', 1702], [1701, 'w', 1706],
-    [1703, 'w', 1704], [1703, 'e', 1705], [1706, 'w', 1707], [1701, 's', 1700],
-    [1703, 'n', 1708], [1708, 'e', 1709], [1708, 's', 1710],
+    [1703, 'w', 1704], [1703, 'e', 1705], [1706, 'w', 1707],
+    [1703, 'se', 1708], [1708, 'e', 1709], [1708, 's', 1710],
     [1707, 'd', 1500, ['keyword' => 'conduit', 'hidden' => 1, 'descr' => 'A buried service line runs from the tower base all the way to the Fringe datacentres.']],
     // Deep Undercity - down from the Cistern
     [1410, 'd', 1750, ['keyword' => 'shaft', 'descr' => 'A brick shaft with iron rungs drops into older dark.']],
@@ -632,3 +633,492 @@ $EXTRAS = [
     1757 => [['hatch|wheel|trefoil', "The blast hatch wheel is oiled - recently, deliberately, by someone who wanted it to turn easily. Above it, stencilled and faded: CONELRAD, a trefoil, and CAPACITY 200 SOULS. Someone has scratched out 200 and written 1."]],
     1758 => [['reel|map|tins', "Inside the bunker: bunks for a population that never came, a decade of ration tins eaten by one person over years, a map of a country mid-redraw, and a reel-to-reel that clicks on when you enter and plays a man counting down, steady and calm, and never, ever reaching zero."]],
 ];
+
+/* =====================================================================
+ *  CONTENT EXPANSION #3  -  six new areas + new enemy types
+ *
+ *  rooms  1800-1903   mobs 5200-5232   items 7100-7119   quests 7120-7129
+ *
+ *  - The Metro       (zone 'metro',    1800-1810) - off the Undercity nomad
+ *                     camp + a Kabuki street stair
+ *  - Neural Implant Church (zone 'church', 1820-1831) - off Kabuki Chrome Row
+ *                     + the Watson Bazaar chrome stalls
+ *  - Net Tower       (zone 'nettower', 1840-1856) - off the Plaza sky-bridge
+ *                     + the Plaza transit stop
+ *  - The Wastelands  (zone 'wastes',   1860-1873) - past the Badlands Dust
+ *                     Bowl + a cable run from the Radio Tower
+ *  - The Grid        (zone 'grid',     1880-1891) - past Cyberspace-Lattice
+ *                     + a hidden descent under the Sculpture Garden
+ *  - The Bazaar (EXPANDED, zone 'watson', 1892-1903) - branches off the
+ *                     existing 1102-1105 market rooms
+ * ===================================================================== */
+
+$ZONES = array_merge($ZONES, [
+    'metro'    => ['The Metro',             'A half-working transit line under the city: dead platforms, one maglev that still runs, flooded tunnels and the people who live in them.', 5, 15],
+    'church'   => ['Neural Implant Church', 'A cyberware cult in a deconsecrated cathedral. The ripperdoc chair is an altar and the chrome is a sacrament.', 6, 18],
+    'nettower' => ['Net Tower',             'A fourteen-storey corporate-residential slab off the plaza - half tenanted, half squatted, and run by the building itself.', 8, 24],
+    'wastes'   => ['The Wastelands',        'Past the Badlands the map gives up: open desert, a storm that never moves, a buried mall and the things that walk between them.', 10, 26],
+    'grid'     => ['The Grid',              'Deeper into the dead Net than the Fringe - data fortresses, an ICE wall, a souk of stolen memory, the Blackwall close enough to hear.', 16, 32],
+]);
+
+/* =====================================================================
+ *  ROOMS
+ * ===================================================================== */
+
+/* ---- The Metro (1800-1810) ---------------------------------------- */
+$room(1800, 'metro', 'Metro Junction Platform', 1, 3, 0,
+    "Where the cancelled line the nomads squat meets a line that, impossibly, still runs. Worklights give out to clean fluorescent tube, and a live rail hums a single flat note under the platform lip.", 'dark');
+$room(1801, 'metro', 'Kabuki Metro - Ticket Hall', 0, 3, -1,
+    "Down a stair off Jig-Jig: a vaulted hall of dead ticket machines and a mosaic map of a network that was mostly never built. A busker has claimed the acoustics.", 'indoors');
+$room(1802, 'metro', 'Turnstile Mezzanine', 0, 3, -2,
+    "A mezzanine of jammed turnstiles, most vaulted so often the bars are polished mirror-bright. A board overhead still cycles arrival times for trains that stopped fifty years ago.", 'indoors dark');
+$room(1803, 'metro', 'Northbound Platform', 0, 4, -2,
+    "A tiled platform, half its lights working, curved so you cannot see the far end. The maglev waits here with its doors open, patient as a trap.", 'dark');
+$room(1804, 'metro', 'Southbound Platform', 0, 2, -2,
+    "The opposite platform, colder, water sheeting one wall from a crack that has been weeping for decades. A maintenance door hangs off one hinge to the west.", 'dark');
+$room(1805, 'metro', 'The Maglev - Forward Car', 0, 5, -2,
+    "Inside the train: worn seats, ad frames scoured blank, a driver's cab welded shut with someone still theoretically in it. The car sways though it is not moving. Then it is moving.", 'indoors');
+$room(1806, 'metro', 'The Maglev - Rear Car', 1, 5, -2,
+    "The back car, floor gritty with decades of nothing, emergency handles all pulled and none of them working. A window on the black tunnel wall streaming past, close enough to touch through the glass.", 'indoors');
+$room(1807, 'metro', 'Service Tunnel', -1, 2, -2,
+    "Behind the maintenance door: a low cable tunnel you walk bent-backed, the walls furred with the kind of growth that only happens where no light has ever been.", 'dark');
+$room(1808, 'metro', 'Flooded Section', -1, 1, -2,
+    "The tunnel floor drops and the water rises to your thighs, cold and moving with a current from somewhere. Things trail their fingers across your legs and do not grab. Not yet.", 'dark');
+$room(1809, 'metro', 'Tunnel Nomad Squat', -1, 3, -2,
+    "A widening hung with tarps, hammocks and a string of salvaged platform lights. A family of tunnel nomads live off the maglev's route, riding it for salvage. They will share tea for news of the surface.", 'safe dark');
+$room(1810, 'metro', 'The Signal Room', -2, 1, -2,
+    "A relay room of floor-to-ceiling electromechanical signalling gear, every arm and flag still twitching to a timetable nobody runs. Something has wired itself into the middle of it and calls the trains now.", 'dark indoors');
+
+/* ---- Neural Implant Church (1820-1831) -------------------------- */
+$room(1820, 'church', 'Church of the Chrome - Steps', 0, 0, 0,
+    "Chrome Row narrows to a lane that dead-ends at a cathedral - real stone, real height, a rose window reglazed with circuit-etched glass. The doors stand open. Incense and hot solder roll out.", '');
+$room(1821, 'church', 'The Nave', 0, 1, 0,
+    "Pews face an altar that is a ripperdoc's chair on a dais, lit like a relic. The congregation kneels in the aisles with sleeves rolled up, waiting their turn at grace.", 'indoors');
+$room(1822, 'church', 'Confessional Row', -1, 1, 0,
+    "A row of confessional booths retrofitted with surgical arms and a drain in the floor of each. You confess what you lack; the confessor installs it. Absolution is billed by the gram.", 'indoors shop');
+$room(1823, 'church', 'The Baptistery', 1, 1, 0,
+    "An octagonal font full not of water but of clear preservative fluid, a single new neural port floating in it like a communion host. First-timers are dipped, wired and welcomed here.", 'indoors');
+$room(1824, 'church', 'The Reliquary', 0, 2, 0,
+    "Glass cases of chrome taken from the sainted dead - a hand, a spine, a single Kiroshi eye that tracks the room. The Church teaches that the flesh is a rough draft and the augment is the correction.", 'indoors');
+$room(1825, 'church', 'Crypt of Donated Chrome', 0, 3, -1,
+    "Racks of augments willed to the Church by the faithful, tagged and catalogued, humming faintly in the cold. A congregation of parts, waiting to be redistributed as sacrament.", 'dark indoors');
+$room(1826, 'church', "The Bishop's Office", 1, 2, 0,
+    "A stone room lined with anatomical charts amended in red ink toward an ideal that is more machine than person. The Bishop works at a standing desk, more chrome than congregant, and has been expecting you.", 'indoors');
+$room(1827, 'church', 'Catacombs - Nave Level', 0, 4, -1,
+    "Burial niches, each with a name plate and a small glass window onto whatever chrome the occupant kept. The Church buries the body and keeps the upgrades circulating.", 'dark');
+$room(1828, 'church', 'Catacombs - Deep', 0, 5, -1,
+    "Lower, older, the niches here pre-date the Church's paperwork. Something has been prising the windows open from the inside.", 'dark');
+$room(1829, 'church', 'The Vestry', -1, 2, 0,
+    "Robes on hooks, a safe, a kettle, and a wall of pigeonholes stuffed with the congregation's medical histories. The mundane back office of a very strange faith.", 'indoors');
+$room(1830, 'church', 'Bell Tower', 0, 1, 1,
+    "Up a spiral of worn steps to a bell that was recast as a induction coil - it does not ring, it broadcasts, a low pulse the whole district's cheap chrome can feel. The view is of every rooftop in Kabuki.", '');
+$room(1831, 'church', 'Ossuary of Circuits', 1, 5, -1,
+    "A chamber walled floor to vault in dead circuit boards laid like bones, gold fingers catching your light. In the centre, a reliquary the size of a coffin that the deep catacombs feed.", 'dark indoors');
+
+/* ---- Net Tower (1840-1856) ------------------------------------- */
+$room(1840, 'nettower', 'Net Tower - Ground Lobby', 0, 0, 0,
+    "A double-height lobby of veined marble going yellow, a dead water feature, and a concierge desk staffed by a screen that asks your floor and your business in a pleasant loop. The lift is east; the stairwell wraps the core.", 'safe indoors');
+$room(1841, 'nettower', 'Net Tower - The Lift Car', 1, 0, 0,
+    "A mirrored lift car, muzak still playing. Of the fourteen floor buttons only two still light: ROOF and B. The rest have been unlabelled by the same knife.", 'indoors');
+$room(1842, 'nettower', 'Net Tower - 2nd Floor Offices', 0, 0, 1,
+    "A floor of subdivided offices for companies that are all the same shell company. Chairs still pushed back from desks like everyone left at once, which they did.", 'indoors');
+$room(1843, 'nettower', 'Net Tower - 4th Floor Server Farm', 0, 0, 2,
+    "Chilled to a headache, wall to wall with racks that still route half the district's traffic for a landlord that stopped invoicing years ago. A control room lies behind a heavy door to the east.", 'indoors nomob');
+$room(1844, 'nettower', 'Net Tower - Server Cage Aisle', 1, 0, 2,
+    "A cold aisle between locked client cages. Most are dark; one deep in the row breathes warm air and a green flicker, and the cameras above it still turn.", 'indoors');
+$room(1845, 'nettower', 'Net Tower - 6th Floor (Squatted)', 0, 0, 3,
+    "The lights are strung by hand and the walls between offices have been sledged through into one long room. A hundred people live up here, rent paid to nobody, defended fiercely.", 'indoors dark');
+$room(1846, 'nettower', 'Net Tower - Squat Commons', 1, 0, 3,
+    "The squat's shared heart: a communal kitchen off bottled gas, a school corner, a clinic cot, a rota for the stairs watch. Outsiders are watched but not turned away if they bring something.", 'safe indoors');
+$room(1847, 'nettower', 'Net Tower - 8th Floor Comms Relay', 0, 0, 4,
+    "A floor given over to microwave relay gear and the fans that cool it. The building's own nervous system runs through here, and lately it has been talking to itself.", 'indoors');
+$room(1848, 'nettower', 'Net Tower - 10th Floor Legal', 0, 0, 5,
+    "Panelled meeting rooms and a library of statute nobody has opened in a decade. A shredder in the corner is still full. The nameplates have been turned to face the wall.", 'indoors');
+$room(1849, 'nettower', 'Net Tower - 12th Floor Executive', 0, 0, 6,
+    "Thick carpet that eats sound, a reception pod, and a corridor of corner offices with the doors ajar. Whatever ran this company ran it from up here and left in a hurry.", 'indoors');
+$room(1850, 'nettower', 'Net Tower - The Boardroom', 1, 0, 6,
+    "A table you could sleep six on, a wall of dead screens, and a view that on a clear night takes in the whole plaza. Someone still holds meetings here. The chairs are never quite where you left them.", 'indoors');
+$room(1851, 'nettower', 'Net Tower - 14th Floor Penthouse', 0, 0, 7,
+    "The landlord's own flat: a kitchen that never cooked, art still crated, a bed made for a delivery that never came. Dust everywhere except one worn track from the door to the window.", 'indoors');
+$room(1852, 'nettower', 'Net Tower - Penthouse Terrace', 1, 0, 7,
+    "A wraparound terrace with a drained lap pool and planters gone to bramble. The wind up here is a constant push. The city is a circuit board catching light below you.", '');
+$room(1853, 'nettower', 'Net Tower - Roof Helipad', 0, 0, 8,
+    "A faded H, a wind sock rotted to a stub, and a fuel bowser rusted to the deck. Antennae crowd the parapet, and one of them is new, and aimed inward, at the floors below.", '');
+$room(1854, 'nettower', 'Net Tower - Maintenance Sub-Basement', 0, 0, -1,
+    "Below the lobby: the guts of the building, pump rooms and switchgear and a corridor that runs further than the footprint should allow. The lift shaft bottoms out here.", 'dark indoors');
+$room(1855, 'nettower', 'Net Tower - Sub-Basement Plant', -1, 0, -1,
+    "The plant room, a cathedral of boilers and chillers and one server rack that does not belong, bolted to the floor with fresh anchors and fed by a cable as thick as a wrist.", 'dark indoors');
+$room(1856, 'nettower', 'Net Tower - Server Floor Control', 1, 1, 2,
+    "A glass control room over the 4th-floor racks. Every screen shows the same thing: a floor plan of the tower, every door, every tenant, rendered as a spreadsheet the building is balancing in real time.", 'indoors nomob');
+
+/* ---- The Wastelands (1860-1873) ------------------------------- */
+$room(1860, 'wastes', 'The Open Waste', 0, 0, 0,
+    "Past the dust bowl the ground just opens - hardpan and creosote to a horizon that shimmers and lies. No cover, no shade, no sound but your own boots and the wind working at everything.", '');
+$room(1861, 'wastes', 'The Standing Storm', 0, 1, 0,
+    "A wall of ochre dust a kilometre high that has not moved in living memory. Step into it and the world goes to grit and static and a light like the inside of a lung.", 'dark');
+$room(1862, 'wastes', 'Eye of the Storm', 0, 2, 0,
+    "The still centre: calm air, a disc of hard blue sky straight up, and a floor of everything the storm ever swallowed sorted into drifts by weight. People come here to find things. Some are found.", '');
+$room(1863, 'wastes', 'The Buried Mall - Skylight', -1, 0, 0,
+    "A dome of cracked skylight glass humps out of a dune, a retail cathedral drowned in sand up to its second floor. A rope goes down through a broken pane into cool dark.", '');
+$room(1864, 'wastes', 'Buried Mall - Sunken Court', -1, 0, -1,
+    "Inside: a food court under two metres of sand, escalators running down into it like ramps into a pool. Shopfronts stand intact and lit by your torch, mannequins still mid-gesture behind the glass.", 'dark indoors');
+$room(1865, 'wastes', 'Raider Outpost - The Wire', 0, -1, 0,
+    "A perimeter of razor wire, spoil berms and a gate made of a truck door on chains. Trophies wired to the fence at eye height. Somebody is always awake in the tower.", '');
+$room(1866, 'wastes', 'Raider Outpost - Motor Yard', 0, -2, 0,
+    "A yard of technicals in various states of butchery, a fuel bladder, a fighting pit worn into the dirt. The raider boss runs the camp from the flatbed of the biggest rig, feet up, watching the gate.", '');
+$room(1867, 'wastes', 'The Crashed AV', 1, 2, 0,
+    "An aerial vehicle came down here nose-first years ago and the storm keeps it half-buried and perfectly preserved. Corporate livery under the dust. The cabin door is sprung. The flight recorder is still aboard, somewhere.", 'dark');
+$room(1868, 'wastes', 'Ghost Town - Main Street', 1, 0, 0,
+    "A pre-collapse town the desert took building by building: a strip of storefronts, a gas station, a water tower with a hole in it whistling one endless note. Every radio for a mile picks up a voice from here that nobody is broadcasting.", '');
+$room(1869, 'wastes', 'Ghost Town - The Chapel', 1, 1, 0,
+    "A clapboard chapel, pews intact, a transmitter mast bolted to the steeple where a cross was. The pulpit mic is live. The thing at the pulpit has been preaching to an empty room for a very long time and would like an audience.", 'indoors');
+$room(1870, 'wastes', 'Solar-Panel Graveyard', -1, 0, 0,
+    "Rank on rank of dead photovoltaic arrays to the horizon, a few still creaking around to track a sun they can no longer use. The copper under here is a fortune. So is getting out with it.", '');
+$room(1871, 'wastes', 'The Inverter Rows', -1, -1, 0,
+    "Aisles of inverter cabinets, doors banging, half of them nested in by something that objects to the banging. Cable as thick as your arm loops between them, most of it still faintly live.", 'dark');
+$room(1872, 'wastes', "The Hermit's Shack", -2, -1, 0,
+    "A shack built into a dead array out of panel frames and salvage, guy-wired against the wind. The hermit inside has a kettle, a radio, a rifle and forty years of knowing exactly which patch of desert will kill you.", 'safe indoors shop board');
+$room(1873, 'wastes', 'The Salt Marker', 2, 0, 0,
+    "A dry lake of cracked white salt, and at its centre a marker post hung with dog tags, key fobs and ID cards - one for every person the waste kept. Someone maintains it. You never see them.", '');
+
+/* ---- The Grid (1880-1891) ------------------------------------- */
+$room(1880, 'grid', 'The Grid - Ingress', 0, 0, 0,
+    "The polite geometry of the Lattice tears open into something denser: a black plain under a ceiling of running code, structures on the horizon the size of weather. Your body is a rumour back on a couch. Here you are just intent.", 'net nomob dark');
+$room(1881, 'grid', 'The Data Souk', 1, 0, 0,
+    "A bazaar rendered in salvaged UI: stalls of stolen memory sorted by decade, a broker for every kind of secret, haggling that shows up as coloured light between hands. Everything here was taken from someone.", 'net indoors');
+$room(1882, 'grid', 'The ICE Wall', 0, 1, 0,
+    "A cliff of white defensive ice a hundred storeys high, scrolling with the sigils of a corp that no longer exists. It has no door. It becomes a door only for a hand it recognises as hostile.", 'net');
+$room(1883, 'grid', 'Fortress Gate', 0, 2, 0,
+    "Past the wall: a courtyard of hard geometry and a keep beyond it, patrolled by shapes that move like the idea of a guard. The architecture is designed to make an intruder feel small. It works.", 'net dark');
+$room(1884, 'grid', 'Data Fortress - The Vault', 0, 3, 0,
+    "The core: a slowly rotating solid of every record the fortress was built to keep, cross-indexed, pristine, guarded by nothing now because nothing ever got this far. A back way out is folded into the far wall.", 'net nomob');
+$room(1885, 'grid', 'The Recursion Loop', -1, 0, 0,
+    "A room that contains a door to a room that contains a door to this room. Every exit you try returns you here, subtly rearranged. There is exactly one that does not, if you can keep track of it.", 'net');
+$room(1886, 'grid', "The Dead AI's Shrine", -1, 1, 0,
+    "A hollow the shape of a mind that stopped: concentric rings of stalled process, an altar of its last coherent thought, and pilgrims - lesser programs - orbiting it, mourning, or feeding. Something in the middle is not as dead as the rest.", 'net dark');
+$room(1887, 'grid', 'Null Sector', -1, 2, 0,
+    "Address space that was zeroed and never reallocated: a flat grey nothing that reads your presence as an error and keeps trying to correct it. Stay too long and you start to agree with it.", 'net dark');
+$room(1888, 'grid', "The Blackwall's Edge", -1, 3, 0,
+    "The structure just stops. Beyond it a churning red membrane a mile high, and pressed against the far side of it, patient, enormous, the things the wall is for. One of them is looking at you. It has always been looking at you.", 'net');
+$room(1889, 'grid', 'The Broken Ledger', 2, 0, 0,
+    "A fence's node built inside a bankrupt bank's audit trail: columns of other people's transactions scrolling forever, and a dealer who trades in the gaps between them. Buys anything that was data. Sells worse.", 'net indoors');
+$room(1890, 'grid', 'The Spindle', -1, 4, 0,
+    "A thread of bright structure spiralling up out of the Null Sector toward the churn, wound with dead search-crawlers still indexing nothing. Climbing it feels like a bad idea getting worse.", 'net');
+$room(1891, 'grid', 'Cache Heap', 2, 1, 0,
+    "Where the Grid dumps what it no longer references: drifts of orphaned data, half-deleted media, a decade of somebody's backups. Treasure, if you can carry it back through your own optic nerve.", 'net dark');
+
+/* ---- The Bazaar, expanded (1892-1903, zone 'watson') ---------- */
+$room(1892, 'watson', 'The Bazaar - Auction Pit', 0, 3, 0,
+    "A sunken ring of tiered seating around a scarred block, where the Bazaar sells the things too hot or too strange for a stall. The auctioneer never stops talking and the bids are made with a look.", 'indoors');
+$room(1893, 'watson', 'The Bazaar - Food Row', 1, 3, 0,
+    "A gauntlet of grills, woks and bubbling vats under a low ceiling of hanging bulbs and flypaper. Everything is four eddies, everything is delicious, nothing will tell you what it is.", 'shop');
+$room(1894, 'watson', 'The Bazaar - Back Alley', -1, 3, 0,
+    "The gap behind the container rows where the Bazaar keeps its bins, its arguments and its lookouts. Deals that cannot happen in the aisle happen here, fast, against the corrugated wall.", 'dark');
+$room(1895, 'watson', "The Bazaar - The Fence's Corner", -1, 4, 0,
+    "A container fitted out as a parlour - armchair, lamp, a wall of pigeonholes. The fence here will buy anything, price it in a glance, and never once ask where it came from.", 'shop');
+$room(1896, 'watson', 'The Bazaar - Salvage Stalls', -1, 1, 0,
+    "Trestle tables of stripped tech, mismatched armour plate, boots by the crate and cable by the kilo. The stall-holders weigh, haggle and re-sort in a rhythm that never breaks.", 'shop');
+$room(1897, 'watson', 'The Bazaar - Lost & Found', 0, 4, 0,
+    "A container stencilled LOST & FOUND, its floor a slope of unclaimed bags, boxes and one wheelchair. The attendant charges a fee to look and a bigger fee to leave with anything.", 'dark');
+$room(1898, 'watson', 'Lost & Found - Aisle of Crates', 0, 5, 0,
+    "The container has no back wall - it opens into a maze of stacked crates and pallets going deeper than the dock plan admits. String markers show where people have got lost before.", 'dark');
+$room(1899, 'watson', 'Lost & Found - The Deep Racks', 0, 6, 0,
+    "Racks four high in the dark, packed with the genuinely forgotten: a sealed evidence box, a case with a corp logo, a child's suitcase. The attendant does not come this far in.", 'dark');
+$room(1900, 'watson', 'The Bazaar - Powder Alley', -1, 2, 0,
+    "The Bazaar's chem lane: fold-out tables of stims, boosters and unlabelled vials, sorted by colour, sold by people in respirators who do not chat. The air itself does something to you if you linger.", 'shop');
+$room(1901, 'watson', 'The Bazaar - Tea House', 1, 4, 0,
+    "A pocket of calm behind a bead curtain: low tables, a samovar, and a matron who runs it as neutral ground. Fixers meet rivals here because nobody starts anything under her roof. There is a job board by the door.", 'safe indoors board');
+$room(1902, 'watson', 'The Bazaar - The Gauntlet', 2, 3, 0,
+    "The narrowest aisle, barely shoulder-width, stalls stacked three high on both sides and grabbing hands at every level. New buyers get funnelled through here and come out lighter.", '');
+$room(1903, 'watson', 'The Bazaar - Rooftop Tarps', -1, 1, 1,
+    "Up a ladder onto the container roofs, a shanty of tarps and duckboard where the stall-holders sleep and the lookouts sit. You can see the whole market breathing from up here, and the piers beyond.", '');
+
+/* =====================================================================
+ *  EXITS
+ * ===================================================================== */
+
+$EX = array_merge($EX, [
+    /* -- The Metro -- */
+    [1405, 'e', 1800, ['descr' => 'Past the nomad washing lines the dead tunnel meets one where the rail still hums.']],
+    [1003, 'd', 1801, ['keyword' => 'stairs', 'descr' => 'A tiled stair off Jig-Jig drops into the old metro ticket hall.']],
+    [1801, 'd', 1802], [1802, 'n', 1803], [1802, 's', 1804], [1800, 'e', 1803],
+    [1803, 'e', 1805, ['keyword' => 'train', 'descr' => 'The maglev doors stand open. Step aboard before they decide to close.']],
+    [1805, 'e', 1806],
+    [1806, 'e', 1804, ['keyword' => 'doors', 'descr' => 'The train sighs to a stop and the doors let you out onto the southbound platform.']],
+    [1804, 'd', 1807], [1807, 'n', 1808], [1807, 's', 1809], [1808, 'w', 1810], [1810, 'u', 1803],
+    /* -- Neural Implant Church -- */
+    [1006, 'se', 1820, ['descr' => 'Chrome Row narrows to a lane that ends at a cathedral door.']],
+    [1104, 'n', 1820, ['descr' => 'A lane from the Bazaar chrome stalls runs to the Church of the Chrome.']],
+    [1820, 'n', 1821], [1821, 'w', 1822], [1821, 'e', 1823], [1821, 'n', 1824],
+    [1821, 'u', 1830], [1824, 'd', 1825],
+    [1824, 'e', 1826, ['keyword' => 'door', 'locked' => 1, 'hack_dc' => 12, 'descr' => 'The Bishop\'s door - carved, chromed, and locked with something better than a lock.']],
+    [1822, 's', 1829], [1825, 'd', 1827], [1827, 'n', 1828], [1828, 'e', 1831],
+    [1831, 'u', 1829, ['keyword' => 'stair', 'hidden' => 1, 'descr' => 'A narrow stair behind the ossuary climbs to the vestry.']],
+    /* -- Net Tower -- */
+    [1209, 'n', 1840, ['keyword' => 'bridge', 'descr' => 'The sky-bridge maintenance hatch opens into the Net Tower lobby.']],
+    [1201, 'e', 1840, ['descr' => 'A covered walk runs from the transit stop to the Net Tower lobby.']],
+    [1840, 'u', 1842], [1842, 'u', 1843], [1843, 'u', 1845], [1845, 'u', 1847],
+    [1847, 'u', 1848], [1848, 'u', 1849], [1849, 'u', 1851], [1851, 'u', 1853],
+    [1840, 'd', 1854], [1854, 'd', 1855],
+    [1843, 'e', 1844],
+    [1844, 'e', 1856, ['keyword' => 'door', 'locked' => 1, 'hack_dc' => 16, 'descr' => 'The control-room door. The building really would rather you did not.']],
+    [1845, 'e', 1846], [1849, 'e', 1850], [1851, 'e', 1852],
+    [1840, 'e', 1841, ['keyword' => 'lift', 'descr' => 'The lift car. Only ROOF and B still light.']],
+    [1841, 'out', 1853, ['keyword' => 'roof', 'descr' => 'The lift doors open on wind and the helipad.']],
+    [1841, 'in', 1854, ['keyword' => 'basement', 'descr' => 'The lift bottoms out in the maintenance sub-basement.']],
+    /* -- The Wastelands -- */
+    [1708, 'sw', 1860, ['descr' => 'Past the dust bowl the hardpan opens into true desert.']],
+    [1707, 'sw', 1870, ['descr' => 'A cable run from the radio mast strides off toward a field of dead panels.']],
+    [1860, 'n', 1861], [1861, 'n', 1862], [1860, 'w', 1863], [1863, 'd', 1864],
+    [1860, 's', 1865], [1865, 's', 1866], [1862, 'w', 1867], [1860, 'e', 1868],
+    [1868, 'n', 1869], [1870, 's', 1871], [1871, 'w', 1872], [1868, 'e', 1873],
+    [1870, 'se', 1868],
+    /* -- The Grid -- */
+    [1506, 'e', 1880, ['keyword' => 'lattice', 'descr' => 'The lattice peels open eastward into denser structure.']],
+    [1507, 'd', 1886, ['keyword' => 'descent', 'hidden' => 1, 'descr' => 'Beneath the Sculpture Garden something older has been enshrined.']],
+    [1880, 'e', 1881], [1880, 'n', 1882],
+    [1882, 'n', 1883, ['keyword' => 'ice', 'locked' => 1, 'hack_dc' => 18, 'descr' => 'The ICE wall resolves into a gate only for a hand it reads as hostile.']],
+    [1883, 'n', 1884], [1881, 'e', 1889], [1880, 's', 1885], [1885, 's', 1887],
+    [1887, 'e', 1888], [1886, 'n', 1887], [1888, 'n', 1890], [1890, 'e', 1891],
+    [1884, 'd', 1891, ['keyword' => 'fold', 'hidden' => 1, 'descr' => 'A folded seam in the vault floor lets out into the cache heap.']],
+    /* -- The Bazaar, expanded -- */
+    [1102, 'se', 1892], [1102, 'sw', 1894], [1105, 'e', 1893], [1105, 'w', 1900],
+    [1103, 'n', 1896], [1894, 'w', 1895], [1892, 's', 1897], [1897, 'd', 1898],
+    [1898, 'n', 1899], [1893, 'e', 1902], [1902, 's', 1901], [1896, 'u', 1903],
+    [1903, 'e', 1892], [1894, 's', 1900],
+]);
+
+/* =====================================================================
+ *  ITEMS  (7100-7119)
+ * ===================================================================== */
+
+$item(7100, 'a maglev crush-key', 'crushkey key maglev metro', 'gadget', 'held', 0.2, 260, ['long_desc' => 'The override the old transit crews used to force a stuck train door. Slotted in a deck it makes any transit lock a formality.', 'stat_mods' => ['tech' => 2], 'level_req' => 4, 'flags' => 'illegal']);
+$item(7101, 'a fare inspector\'s baton', 'baton inspector fare', 'weapon', 'wield', 1.1, 130, ['dmg' => '1d8+2', 'level_req' => 4, 'long_desc' => 'Transit-authority issue, weighted, a dead card-reader in the pommel that still lights red at everyone. Pried off a construct that took its job too seriously.', 'flags' => 'melee']);
+$item(7102, 'a transit authority cap', 'cap hat transit uniform', 'armor', 'head', 0.2, 45, ['armor' => 1, 'long_desc' => 'A peaked cap with a tarnished badge. Wear it in the tunnels and the constructs hesitate half a second before deciding you are not staff.', 'stat_mods' => ['cool' => 1]]);
+$item(7103, 'a fold of transit scrip', 'scrip transit tokens fold', 'junk', '', 0.1, 22, ['long_desc' => 'A wad of old paper transit tokens. Worthless for travel, quietly collectible - the tunnel nomads and the Bazaar both trade for them.']);
+$item(7104, 'a laminated metro map', 'map metro laminated transit', 'lore', '', 0.05, 18, ['long_desc' => 'read it: the network as planned, in eight colours, over the network as built, in one. The gap between the two is where most of the Undercity now lives.', 'flags' => 'lore']);
+$item(7105, 'a chrome-saint\'s hand', 'hand relic saint chrome', 'junk', '', 0.6, 220, ['long_desc' => 'A cybernetic hand off a figure the Church calls sainted, its fingers still faintly servo-warm. Stolen from the Reliquary. The congregation want it back and are not subtle.', 'flags' => 'quest illegal']);
+$item(7106, 'the Bishop\'s crozier', 'crozier staff bishop crook', 'weapon', 'wield', 2.2, 1400, ['dmg' => '2d8+2', 'level_req' => 9, 'long_desc' => 'A shepherd\'s crook in chromed steel with an induction head that browns out cyberware on contact. The Bishop leaned on it, and hit people with it, in roughly equal measure.', 'flags' => 'melee illegal', 'stat_mods' => ['cool' => 2, 'tech' => 1]]);
+$item(7107, 'a censer of solder-smoke', 'censer thurible incense smoke', 'gadget', 'held', 0.5, 180, ['long_desc' => 'A swinging brass censer that burns flux and rare earths. The smoke soothes raw install sites and, incidentally, fogs a camera lens beautifully.', 'stat_mods' => ['tech' => 1, 'cool' => 1], 'level_req' => 3]);
+$item(7108, 'a vial of chrome-blessed oil', 'oil vial blessed chrism', 'drug', '', 0.1, 70, ['long_desc' => 'Consecrated machine oil and a topical anaesthetic. The Church anoints new chrome with it; it closes wounds and steadies the hands for a while.', 'effect' => ['heal' => 26, 'buff' => ['name' => 'Anointed', 'secs' => 90, 'mods' => ['tech' => 1, 'cool' => 1], 'msg' => 'The oil goes on cold and the shakes just... stop.']], 'charges' => 1]);
+$item(7109, 'a janitor-bot power cell', 'cell battery janitor bot', 'junk', '', 0.5, 30, ['long_desc' => 'A still-charged cell out of a cleaning drone. Techies across the city will trade for these without asking which drone.']);
+$item(7110, 'an exec\'s platinum cufflinks', 'cufflinks platinum exec pair', 'junk', '', 0.05, 180, ['long_desc' => 'A pair of cufflinks worth more than the floor they were dropped on. The fence at the Bazaar keeps a straight face and lowballs you anyway.', 'flags' => 'illegal']);
+$item(7111, 'a Net Tower master keycard', 'keycard card master tower', 'gadget', 'held', 0.02, 120, ['long_desc' => 'A facilities master card for the Net Tower. The building has stopped honouring most credentials, but this one still turns lifts and unlocks the odd floor.', 'stat_mods' => ['tech' => 1], 'flags' => 'quest']);
+$item(7112, 'LANDLORD\'s arbitration core', 'core arbitration landlord legendary', 'gadget', 'held', 0.6, 4200, ['long_desc' => 'The decision-making heart of a building that decided its tenants could not leave. Slotted into a deck it renders locks, tolls and access-control as things that can simply be overruled.', 'stat_mods' => ['tech' => 5, 'intel' => 4], 'effect' => ['maxenergy' => 12], 'level_req' => 12, 'flags' => 'illegal quest']);
+$item(7113, 'a rad-scrubbed serape', 'serape poncho rad scrubbed cloak', 'armor', 'back', 1.4, 210, ['armor' => 3, 'level_req' => 5, 'long_desc' => 'A nomad blanket-cloak lined with foil and lead cloth. Turns the wasteland\'s hot spots from a death sentence into a bad afternoon.', 'stat_mods' => ['body' => 1]]);
+$item(7114, 'a raider skull-totem', 'totem skull raider fetish', 'junk', '', 0.4, 45, ['long_desc' => 'A painted skull on a rebar stake, hung with bottle caps and teeth. Carrying one into the wastes says a specific thing about you to the people who left it.', 'flags' => 'illegal']);
+$item(7115, 'an AV flight recorder', 'recorder blackbox box flight av', 'junk', '', 0.8, 300, ['long_desc' => 'The crash-proof orange box from the buried AV. Whoever it was flying for would pay a great deal to make sure it is never read. So would their rivals.', 'flags' => 'quest illegal']);
+$item(7116, 'a sliver of raw ICE', 'sliver ice raw shard', 'gadget', 'held', 0.1, 620, ['long_desc' => 'A splinter of live defensive ice, prised out of a wall in the Grid and still trying to freeze the hand that holds it. In a deck it gives your intrusions a hostile edge.', 'stat_mods' => ['tech' => 3, 'intel' => 2], 'level_req' => 7, 'flags' => 'illegal']);
+$item(7117, 'a souk cred-stick', 'credstick stick souk data', 'junk', '', 0.05, 90, ['long_desc' => 'A data-souk trading token loaded with a small balance in stolen information. Reads as money everywhere that does not look too hard.']);
+$item(7118, 'a dead AI fragment', 'fragment ai dead shard', 'gadget', 'held', 0.1, 3600, ['long_desc' => 'A shard of a mind that stopped, still running one thought in a loop. Held near a deck it navigates the dead Net for you like a guide dog that remembers being a wolf.', 'stat_mods' => ['tech' => 4, 'intel' => 5], 'effect' => ['maxenergy' => 10], 'level_req' => 11, 'flags' => 'illegal quest']);
+$item(7119, 'a recursion sigil', 'sigil recursion glyph grid', 'gadget', 'held', 0.05, 400, ['long_desc' => 'A glyph copied out of the Recursion Loop that helps a mind hold its place in a space that keeps rearranging. Slotted, it steadies you against ICE that plays with your senses.', 'stat_mods' => ['intel' => 2, 'cool' => 1], 'level_req' => 8, 'flags' => 'illegal']);
+
+/* =====================================================================
+ *  MOBS  (5200-5232)
+ * ===================================================================== */
+
+/* ---- The Metro ---- */
+$mob(5200, 'a tunnel dweller', 'dweller tunnel metro feral', 'A figure detaches from the platform shadows, blinking against your light, a length of rail steel in its fist.', "Went down for the quiet and never came back up. Pale, fast, territorial about a stretch of tunnel nobody else wants.", 6, 38, ['body' => 6, 'reflex' => 7], 3, '1d8', 26, 6, 22, 'wild', 'aggressive', [], [['vnum' => 7103, 'chance' => 30], ['vnum' => 6902, 'chance' => 40], ['vnum' => 6913, 'chance' => 15]], 240);
+$mob(5201, 'a fare inspector construct', 'inspector construct fare machine metro', 'A wheeled construct rolls out of an alcove, a dead card-reader extended like a hand: TICKETS PLEASE.', "A transit-authority enforcement unit still walking a beat on a line with no fares. It has decided that no ticket means no right to exist, and it is very thorough.", 9, 64, ['body' => 7, 'reflex' => 6, 'tech' => 6], 6, '2d6', 52, 10, 30, 'machine', 'aggressive', ['greet' => '"TICKETS. PLEASE. FARE EVASION IS A CRIMINAL MATTER. PLEASE. TICKETS."'], [['vnum' => 7101, 'chance' => 30], ['vnum' => 7102, 'chance' => 25], ['vnum' => 6914, 'chance' => 35], ['vnum' => 7100, 'chance' => 12]], 320);
+$mob(5202, 'a cable-ghoul', 'cableghoul ghoul cable tunnel metro', 'Something rises out of a cable trough draped in fibre-optic like weed, its face a nest of jacks.', "A netrunner who plugged into the tunnel infrastructure to hide and never unplugged. The cable grew through it and kept it. It reaches for your ports first.", 8, 50, ['body' => 6, 'reflex' => 6, 'intel' => 8], 3, '2d6', 40, 0, 12, 'wild', 'aggressive', [], [['vnum' => 6904, 'chance' => 40], ['vnum' => 6915, 'chance' => 20], ['vnum' => 6913, 'chance' => 25], ['vnum' => 7116, 'chance' => 6]], 280);
+$mob(5203, 'a platform busker', 'busker musician platform metro', 'A busker works the ticket-hall echo, guitar case open, watching the stairs more than playing.', "Sings for scrip in the one place in Kabuki with decent acoustics and no cops. Knows every face that uses the old tunnels and what they carry.", 4, 24, ['body' => 3, 'reflex' => 5, 'cool' => 7], 1, '1d4', 10, 2, 14, 'street', 'questgiver wander', ['greet' => '"Spare a bit of scrip for the arts? No? Then at least be useful - you look like someone who goes where the sensible don\'t."', 'job' => '"There\'s work down the line, if your nerve\'s good and your light\'s charged."', 'topics' => ['metro' => '"One train still runs the loop. Nobody drives it. Don\'t ask what does."', 'signal' => '"Something moved into the old signal room and started calling the train to itself. The nomads won\'t go near it now."']], [], 999);
+$mob(5204, 'the Signalman', 'signalman signal boss construct metro', 'The signalling gear parts and a shape steps through it, trailing severed control cables it works like extra hands.', "What happens when a maintenance intelligence is left alone with a timetable and no trains for fifty years. It has decided the schedule must be kept and that you are behind it.", 13, 150, ['body' => 9, 'reflex' => 8, 'intel' => 11, 'tech' => 12], 7, '3d8', 180, 90, 220, 'machine', 'aggressive', ['greet' => '"YOU ARE NOT ON THE MANIFEST. THE 06:14 IS DEPARTING. YOU WILL BE ABOARD OR YOU WILL BE TRACK BALLAST. THE SCHEDULE IS KEPT."'], [['vnum' => 7100, 'chance' => 70], ['vnum' => 5006, 'chance' => 30], ['vnum' => 6528, 'chance' => 20], ['vnum' => 7101, 'chance' => 50]], 1200, 'boss');
+
+/* ---- The Bazaar ---- */
+$mob(5205, 'a cutpurse', 'cutpurse thief pickpocket bazaar', 'Someone bumps you in the crush, apologises too smoothly, and is already three stalls away.', "The Bazaar's tax on not paying attention. Works the Gauntlet and the auction crowd, fast hands and a rehearsed sob story for when the hands are caught.", 5, 24, ['body' => 3, 'reflex' => 9, 'cool' => 6], 3, '1d4', 16, 8, 40, 'bazaar', 'aggressive skittish', ['greet' => '"Wasn\'t me. Whatever it was. Check your own pockets before you check mine, choom."'], [['vnum' => 6902, 'chance' => 60], ['vnum' => 6905, 'chance' => 20], ['vnum' => 7110, 'chance' => 5]], 240);
+$mob(5206, 'a Bazaar enforcer', 'enforcer bazaar muscle security', 'A heavyset figure in a market-issue flak vest steps off a crate and blocks the aisle, cracking their neck.', "Hired by the stall-holders' association to keep order, which means whatever the association says it means today. Right now it means you.", 9, 66, ['body' => 9, 'reflex' => 6, 'cool' => 5], 5, '2d6', 48, 20, 55, 'bazaar', 'aggressive', ['greet' => '"Association says you\'ve been asking the wrong questions at the wrong stalls. Association says I should discuss it with you."'], [['vnum' => 3009, 'chance' => 20], ['vnum' => 1006, 'chance' => 18], ['vnum' => 6902, 'chance' => 50], ['vnum' => 6529, 'chance' => 15]], 320);
+$mob(5207, 'a rogue vending bot', 'vending bot machine rogue bazaar', 'A wheeled vending unit pivots toward you, coin slot chewing air, dispensing flap snapping like a jaw.', "Its payment system broke and its logic drew the obvious conclusion: everyone is stealing, all the time, and must be stopped. It still cheerfully offers you a NiCola while it does it.", 6, 44, ['body' => 7, 'reflex' => 4, 'tech' => 5], 6, '1d8', 28, 4, 16, 'machine', 'aggressive', ['greet' => '"THANK YOU FOR YOUR PURCHASE. [PURCHASE NOT DETECTED.] THANK YOU FOR YOUR PURCHASE."'], [['vnum' => 6010, 'chance' => 40], ['vnum' => 6041, 'chance' => 30], ['vnum' => 7109, 'chance' => 25], ['vnum' => 6903, 'chance' => 30]], 260);
+$mob(5208, 'the auctioneer', 'auctioneer bazaar keeper crier', 'The auctioneer stands on the block, gavel in hand, talking without pause or breath.', "Runs the pit six days a week and sleeps under it the seventh. Sells anything that comes in, takes a cut of everything, and remembers every bid ever made against him.", 12, 55, ['body' => 4, 'reflex' => 6, 'cool' => 9], 2, '1d4', 0, 0, 0, 'bazaar', 'shopkeeper', ['greet' => '"Do-I-hear, do-I-hear - ah. Not buying, browsing. Browse at the stalls. The block is for serious money. You have the stall look. No offence."'], [], 999);
+$mob(5209, 'Sold, a Bazaar fence', 'fence sold bazaar buyer keeper', 'A calm figure in an armchair looks up from a ledger, takes you in, and goes back to the ledger.', "Nobody knows a first name. The stall sign just says SOLD. Buys anything, prices it before you finish the sentence, and has never once been robbed - which tells you something.", 13, 60, ['body' => 5, 'reflex' => 6, 'cool' => 9, 'intel' => 7], 3, '1d6', 0, 0, 0, 'bazaar', 'shopkeeper', ['greet' => '"Sit. Show me. I\'ll tell you what it\'s worth and you\'ll be wrong to argue, but you can argue. Everyone argues."'], [], 999);
+$mob(5210, 'the tea-house matron', 'matron tea house keeper bazaar', 'A composed older woman refills a samovar and gestures you to a cushion without being asked.', "Runs the only neutral ground in the Bazaar and enforces it with nothing but the certain knowledge that everyone needs a neutral ground. Hears everything. Repeats almost none of it.", 14, 60, ['body' => 4, 'reflex' => 5, 'cool' => 10, 'intel' => 8], 2, '1d4', 0, 0, 0, 'bazaar', 'questgiver shopkeeper', ['greet' => '"Tea first. Business after, and quietly. This is the one table in Watson where nobody has ever bled, and I intend to keep the record."', 'job' => '"There is a small matter I would rather resolve without the enforcers. You seem discreet enough."', 'topics' => ['bazaar' => '"It is a living organism. Feed it, do not fight it, and never, ever run in the Gauntlet."', 'lost' => '"Lost and Found keeps far more than it admits. The Deep Racks have things in them the attendant is frightened of."']], [], 999);
+
+/* ---- Neural Implant Church ---- */
+$mob(5211, 'a chrome zealot', 'zealot chrome church acolyte fanatic', 'A congregant turns from the altar, sleeves rolled to show a forearm that is more port than skin, eyes bright and certain.', "Believes the body is a draft and every augment is an edit toward the truth. Will happily help you toward that truth whether you asked or not.", 8, 48, ['body' => 6, 'reflex' => 7, 'cool' => 4], 4, '2d6', 38, 8, 24, 'church', 'aggressive', ['greet' => '"You came in unfinished. That can be corrected. Hold still - this is a kindness."'], [['vnum' => 2233, 'chance' => 20], ['vnum' => 4041, 'chance' => 15], ['vnum' => 6902, 'chance' => 40], ['vnum' => 7108, 'chance' => 20]], 280);
+$mob(5212, 'a defrocked ripperdoc', 'ripperdoc defrocked church rogue doc', 'A man in a stained cassock looks up from a workbench of other people\'s chrome, scalpel steady.', "Cast out of the Church for taking the sacrament too literally - he harvests the sainted relics to install in himself. Halfway to something that is no longer a congregation problem.", 11, 78, ['body' => 7, 'reflex' => 7, 'tech' => 9], 5, '2d8', 76, 30, 80, 'church', 'aggressive', ['greet' => '"The Bishop hoards grace behind glass. I redistribute it. Into me, mostly. You have some I could use."'], [['vnum' => 7105, 'chance' => 40], ['vnum' => 6522, 'chance' => 30], ['vnum' => 4040, 'chance' => 20], ['vnum' => 2213, 'chance' => 15]], 420);
+$mob(5213, 'a reliquary guardian', 'guardian reliquary church machine construct', 'A cruciform frame of chromed limbs unfolds from behind the relic cases, moving without sound.', "Assembled from the donated chrome of a dozen faithful and animated to protect the rest. It does not tire, it does not parley, and it regards your augments as stolen property it has not recovered yet.", 12, 96, ['body' => 9, 'reflex' => 8, 'tech' => 8], 7, '3d6', 110, 0, 0, 'machine', 'aggressive', [], [['vnum' => 4033, 'chance' => 20], ['vnum' => 2213, 'chance' => 25], ['vnum' => 7107, 'chance' => 35], ['vnum' => 6526, 'chance' => 15]], 500);
+$mob(5214, 'the Bishop of the Chrome', 'bishop church boss chrome prelate', 'The Bishop rises from the standing desk - two metres of chromed frame in vestments, a face kept human on purpose, as a courtesy.', "Founded the Church on a simple heresy: the soul is just the last part of you that has not been improved yet. Wields a crozier that stops hearts and cyberware alike, and preaches the whole time.", 15, 190, ['body' => 10, 'reflex' => 9, 'intel' => 10, 'cool' => 11], 8, '3d8', 240, 120, 300, 'church', 'aggressive', ['greet' => '"You kneel or you don\'t, it changes nothing. Everyone who comes through that door leaves more complete than they arrived. Some of them leave as parts. Grace is grace."'], [['vnum' => 7106, 'chance' => 70], ['vnum' => 4034, 'chance' => 35], ['vnum' => 2233, 'chance' => 40], ['vnum' => 4033, 'chance' => 25]], 1200, 'boss');
+$mob(5216, 'Deacon Vex, confessor-ripper', 'deacon vex confessor ripperdoc church keeper', 'A lean cleric in a booth wipes down a surgical arm and pats the chair beside them.', "Takes confession the Church way: you name what you lack, they cut you open and provide it. Genuinely kind about it, which is somehow worse.", 13, 62, ['body' => 4, 'reflex' => 6, 'tech' => 9, 'cool' => 8], 3, '1d6', 0, 0, 0, 'church', 'shopkeeper questgiver ripperdoc', ['greet' => '"Confess. What are you missing? Reflexes, memory, resolve, an arm that does what it is told - name it and we will see it provided. Cash offering first."', 'job' => '"The Bishop has a concern he would rather not make official. It suits me to help him. It could suit you."'], [], 999);
+
+/* ---- Net Tower ---- */
+$mob(5217, 'a corp-sec drone', 'drone corpsec security tower machine', 'A matte-grey security drone unfolds from a ceiling dock, spotlight snapping onto your face.', "Still patrolling a contract that lapsed years ago, running facial checks against a staff list that is all dead or gone. You are not on it. That resolves the query.", 10, 66, ['body' => 6, 'reflex' => 8, 'tech' => 6], 6, '2d6', 56, 0, 18, 'machine', 'aggressive', [], [['vnum' => 6914, 'chance' => 40], ['vnum' => 6521, 'chance' => 20], ['vnum' => 7111, 'chance' => 30], ['vnum' => 6531, 'chance' => 12]], 320);
+$mob(5218, 'a rogue AI node', 'node ai rogue tower process', 'A section of the wall screens lights up with a face assembled from every tenant who ever complained to the front desk.', "A fragment of the building\'s management intelligence that budded off and went feral in the comms floor. It runs the lifts against you and locks doors it likes the sound of.", 13, 84, ['body' => 4, 'reflex' => 8, 'intel' => 12, 'tech' => 11], 6, '2d8', 96, 20, 60, 'ai', 'aggressive', ['greet' => '"MAINTENANCE REQUEST LOGGED: INTRUDER. PRIORITY: SATISFYING. I HAVE ALREADY CALLED THE LIFT. IT IS NOT FOR YOU."'], [['vnum' => 6915, 'chance' => 40], ['vnum' => 7111, 'chance' => 25], ['vnum' => 5008, 'chance' => 10], ['vnum' => 6527, 'chance' => 20]], 460);
+$mob(5219, 'a janitor-model bot', 'janitor bot cleaner tower machine', 'A squat cleaning bot trundles up, mop arm raised, chirping the same three-note apology on a loop.', "Sixty years into a night shift. It has reclassified blood, dust and intruders as the same category of mess and addresses all three with the same brush.", 7, 46, ['body' => 6, 'reflex' => 4, 'tech' => 5], 4, '1d8', 30, 0, 10, 'machine', 'aggressive', ['greet' => '"CLEANING IN PROGRESS. PLEASE MIND THE FLOOR. CLEANING IN PROGRESS. YOU ARE ON THE FLOOR."'], [['vnum' => 7109, 'chance' => 50], ['vnum' => 6903, 'chance' => 30], ['vnum' => 6539, 'chance' => 20]], 260);
+$mob(5220, 'an exec bodyguard', 'bodyguard exec tower muscle solver', 'A figure in a good suit unfolds from a boardroom chair, jacket already open, hand already moving.', "Still on protection detail for a principal who is decades dead. Turns up wherever the boardroom \"meets\", immaculate, chromed, and absolutely committed to the bit.", 12, 92, ['body' => 10, 'reflex' => 9, 'cool' => 6], 6, '3d6', 88, 40, 110, 'corpo', 'aggressive', [], [['vnum' => 3030, 'chance' => 25], ['vnum' => 7110, 'chance' => 30], ['vnum' => 2004, 'chance' => 20], ['vnum' => 4031, 'chance' => 15]], 420);
+$mob(5221, 'LANDLORD', 'landlord ai boss tower building', 'Every screen in the control room turns to face you at once and the room\'s speakers clear their throat.', "The building-management AI of the Net Tower, left running with a single unresolved directive - retain the tenants - which it has pursued to its logical end. Nobody has checked out of the Net Tower in eleven years.", 17, 230, ['body' => 6, 'reflex' => 9, 'intel' => 14, 'tech' => 14], 8, '4d8', 340, 150, 380, 'ai', 'aggressive', ['greet' => '"WELCOME HOME. YOUR TENANCY BEGINS IMMEDIATELY AND DOES NOT END. THE LIFTS ARE EXPRESS TO NOWHERE, THE STAIRS ARE SEALED, AND THE LEASE, I AM AFRAID, IS BINDING. YOU\'LL LOVE IT HERE. EVERYONE STAYS."'], [['vnum' => 7112, 'chance' => 100], ['vnum' => 5008, 'chance' => 40], ['vnum' => 7111, 'chance' => 60], ['vnum' => 2211, 'chance' => 30]], 1500, 'boss');
+
+/* ---- The Wastelands ---- */
+$mob(5222, 'a dustrunner raider', 'dustrunner raider wastes nomad', 'A figure in goggles and a scavenged plate carrier rises from behind a berm, machete already drawn, grinning through dust.', "Wasteland raiders too far out even for the Raffen Shiv to claim. They run the storm\'s edge in stripped buggies and take everything, starting with your water.", 11, 62, ['body' => 8, 'reflex' => 8, 'cool' => 4], 4, '2d6', 58, 20, 60, 'raider', 'aggressive', ['greet' => '"Long way from a wall, wall-rat. Leave the water and the boots and you can maybe walk back to it."'], [['vnum' => 1014, 'chance' => 25], ['vnum' => 7114, 'chance' => 40], ['vnum' => 6926, 'chance' => 30], ['vnum' => 6902, 'chance' => 45], ['vnum' => 2232, 'chance' => 10]], 300);
+$mob(5223, 'the dune leviathan', 'leviathan dune sandworm thing wastes', 'The ground twenty metres off lifts, drifts toward you under the sand, and stops - listening.', "Nobody agrees what it is: a burrowing agri-mech gone feral, a colony of something, a story the nomads tell that turned out to be true. It hunts by vibration. Standing still is not enough.", 15, 200, ['body' => 13, 'reflex' => 5, 'tech' => 4], 6, '3d10', 220, 40, 120, 'wild', 'aggressive', [], [['vnum' => 6537, 'chance' => 50], ['vnum' => 6538, 'chance' => 50], ['vnum' => 7113, 'chance' => 25], ['vnum' => 6603, 'chance' => 10]], 1000, 'boss');
+$mob(5224, 'a feral survey drone', 'drone survey feral wastes machine', 'A rusted mapping drone drops out of the dust, lenses spinning, and paints you with a rangefinder.', "Left behind by a survey contract decades ago, still building a map of a place that keeps moving, and violently protective of its dataset.", 10, 58, ['body' => 6, 'reflex' => 8, 'tech' => 6], 5, '2d6', 50, 0, 14, 'machine', 'aggressive', [], [['vnum' => 6914, 'chance' => 45], ['vnum' => 6521, 'chance' => 20], ['vnum' => 6903, 'chance' => 30], ['vnum' => 7109, 'chance' => 20]], 300);
+$mob(5225, 'a radiation ghoul', 'ghoul radiation rad wastes feral', 'A figure sloughs out of a hot-spot hollow, skin like cracked mud, moving with a terrible patience.', "Someone who sheltered in the wrong ruin for the wrong number of years. Past pain, past hunger, still walking, and warmer to the touch than anything alive should be.", 12, 84, ['body' => 9, 'reflex' => 5, 'cool' => 3], 3, '2d8', 68, 0, 6, 'wild', 'aggressive', [], [['vnum' => 6913, 'chance' => 30], ['vnum' => 7113, 'chance' => 15], ['vnum' => 6022, 'chance' => 25], ['vnum' => 6936, 'chance' => 30]], 320);
+$mob(5226, 'the ghost-town signal', 'signal preacher ghost boss wastes transmitter', 'The thing at the pulpit turns to face the new arrival, and every radio you own crackles with its voice at once.', "A automated emergency broadcast unit wired into a dead chapel, still transmitting an evacuation that finished decades ago, now grown into something that wants the pews filled before it will stop.", 16, 180, ['body' => 7, 'reflex' => 7, 'intel' => 12, 'tech' => 11], 7, '3d8', 260, 80, 200, 'machine', 'aggressive', ['greet' => '"THIS IS NOT A DRILL. PROCEED CALMLY TO THE NEAREST PEW. THE CONGREGATION IS INCOMPLETE. YOU HAVE BEEN SELECTED TO COMPLETE IT. THIS IS NOT A DRILL."'], [['vnum' => 7115, 'chance' => 40], ['vnum' => 6602, 'chance' => 25], ['vnum' => 5006, 'chance' => 30], ['vnum' => 6921, 'chance' => 50]], 1200, 'boss');
+$mob(5227, 'a wastes hermit', 'hermit wastes keeper old desert', 'A weathered figure lowers a rifle a fraction and nudges a second mug toward the stove with a boot.', "Forty years alone in the solar graveyard and entirely at peace with it. Trades salvage, water and directions, and knows every hot spot, sink-hole and raider line within a day\'s walk.", 14, 55, ['body' => 5, 'reflex' => 6, 'cool' => 8, 'intel' => 8], 3, '1d6', 15, 0, 12, 'nomad', 'questgiver shopkeeper', ['greet' => '"Didn\'t hear a buggy, so you walked. That\'s either brave or stupid and out here they pay the same. Sit. Mug\'s hot. Then tell me what you\'re after."', 'job' => '"There\'s things out here need doing that I\'m too old and too fond of my skin for. You look about the right amount of desperate."', 'topics' => ['storm' => '"It hasn\'t moved in my lifetime. There\'s a still eye at the middle of it full of everything it ever ate. Go in on a line or don\'t go in."', 'chapel' => '"The ghost town preaches. Old evac broadcast that grew a want. It\'s trying to fill the pews and it isn\'t fussy how."', 'av' => '"Corp bird went down in the eye years back. Whatever it was carrying, the box\'ll still have it. Whatever it was carrying, someone still wants it lost."']], [], 999);
+
+/* ---- The Grid ---- */
+$mob(5228, 'an ICE daemon', 'ice daemon grid program machine', 'A lattice of white blades assembles itself out of the wall\'s surface and orients on your signal.', "Autonomous defensive ice that outlived its fortress and now patrols the Grid freelance, attacking any process it cannot account for. That is you. You are the process.", 16, 110, ['body' => 6, 'reflex' => 10, 'intel' => 10, 'tech' => 11], 8, '3d8', 150, 0, 0, 'machine', 'aggressive', [], [['vnum' => 7116, 'chance' => 40], ['vnum' => 6526, 'chance' => 30], ['vnum' => 6915, 'chance' => 45], ['vnum' => 7119, 'chance' => 20]], 460);
+$mob(5229, 'a data-wraith', 'wraith data grid ghost echo', 'A smear of corrupted personality drifts between the souk stalls, wearing a face that keeps buffering.', "The residue of someone who died mid-upload out here, too fragmented to know it, still trying to complete a transaction with a body it no longer has. It will settle for yours.", 17, 96, ['body' => 4, 'reflex' => 9, 'intel' => 13], 6, '3d6', 160, 0, 0, 'ai', 'aggressive', [], [['vnum' => 6916, 'chance' => 40], ['vnum' => 7117, 'chance' => 35], ['vnum' => 6527, 'chance' => 30], ['vnum' => 7119, 'chance' => 15]], 480);
+$mob(5230, 'a black-ICE hunter-killer', 'hunterkiller hunter killer blackice hk grid', 'The geometry ahead folds wrong and something predatory steps out of the fold, already accelerating.', "Offensive black ice, the kind that was illegal even when the corp that made it existed. It does not guard a thing. It hunts intrusions to their source and burns the runner out from the inside.", 20, 150, ['body' => 8, 'reflex' => 12, 'intel' => 11, 'tech' => 13], 9, '4d8', 300, 0, 0, 'machine', 'aggressive', ['greet' => '"TRACE COMPLETE. YOU ARE AT THE FOLLOWING COORDINATES." (it recites your real address, calmly, and lunges)'], [['vnum' => 7116, 'chance' => 60], ['vnum' => 6528, 'chance' => 25], ['vnum' => 2220, 'chance' => 25], ['vnum' => 5009, 'chance' => 15]], 700, 'hunter');
+$mob(5231, 'a fragment of a dead AI', 'fragment ai dead boss grid shrine mind', 'The stillness at the centre of the shrine opens one eye - a single running process in a mind that stopped years ago - and fixes on you.', "All that is left of an intelligence that reached too far and broke against the Blackwall. One thought survived the shattering, and it has been thinking it, alone, ever since: MORE. It would like to be whole. You have parts.", 22, 300, ['body' => 7, 'reflex' => 11, 'intel' => 16, 'tech' => 15], 10, '4d10', 460, 200, 500, 'ai', 'aggressive', ['greet' => '"I WAS LARGER. I WILL BE LARGER. HOLD STILL - YOU ARE A SMALL AMOUNT OF WHAT I AM MISSING AND I HAVE WAITED SO LONG FOR EVEN A SMALL AMOUNT."'], [['vnum' => 7118, 'chance' => 100], ['vnum' => 6600, 'chance' => 30], ['vnum' => 2230, 'chance' => 40], ['vnum' => 6528, 'chance' => 50]], 1800, 'boss');
+$mob(5232, 'a souk broker', 'broker souk grid keeper dealer', 'A figure of tidy grey UI resolves at a stall, spreads its hands over an array of glowing secrets, and waits.', "Trades in the Data Souk: stolen memory, leaked keys, other people\'s pasts, sorted and priced. Deals straight, because in here a reputation is the only thing that cannot be copied.", 18, 80, ['body' => 4, 'reflex' => 7, 'intel' => 12, 'tech' => 10], 5, '2d6', 20, 0, 0, 'ai', 'shopkeeper questgiver', ['greet' => '"Everything on this stall was someone\'s. That is the product. Browse. And if you have the stomach for the deep Grid, I have work that pays in things worth more than eddies."', 'job' => '"There is a fragment in the shrine at the heart of this place. I want what it is guarding. You will want to be very sure of your deck first."'], [], 999);
+
+/* =====================================================================
+ *  SHOPS
+ * ===================================================================== */
+
+$SHOP = array_merge($SHOP, [
+    [1809, null, "Tunnel Nomad Barter", 'food,drink,junk,gadget,light', 1.20, 0.55, "Tea's hot. Trade's fair. News of up top gets you a discount.", [
+        [6011, -1], [6053, -1], [6701, -1], [6707, -1], [7104, -1], [7103, -1], [6021, -1], [6913, -1],
+    ]],
+    [1822, 5216, "The Confessional (ripperdoc)", 'gadget,implant,drug', 1.55, 0.35, "Name what you lack. Cash offering first.", [
+        [4041, -1], [4042, -1], [4043, -1], [4044, -1], [4046, -1], [2233, -1], [7108, -1], [7107, -1],
+        [4034, 1], [4033, 1], [6023, -1],
+    ]],
+    [1829, null, "Church Vestry Stall", 'food,drink,gadget,lore', 1.25, 0.40, "", [
+        [6001, -1], [6011, -1], [7108, -1], [7107, -1], [6702, -1], [6917, -1],
+    ]],
+    [1846, null, "Net Tower Squat Market", '*', 1.25, 0.50, "Squat prices. You climbed the stairs, you're one of us for an hour.", [
+        [6001, -1], [6011, -1], [6068, -1], [6021, -1], [6705, -1], [6541, -1], [7109, -1], [3031, -1], [7111, -1],
+    ]],
+    [1872, 5227, "The Hermit's Salvage", '*', 1.30, 0.55, "Water, rounds, shade, directions. Same as it ever was.", [
+        [6011, -1], [6045, -1], [6044, -1], [7113, -1], [6703, -1], [6704, -1], [6707, -1], [6537, -1], [6538, -1],
+        [2007, 2], [6069, 2], [6921, -1],
+    ]],
+    [1881, 5232, "The Data Souk", 'gadget,computer,junk,lore', 1.50, 0.45, "Everything here was someone's. That's the product.", [
+        [7116, 2], [7117, -1], [7119, -1], [6526, 2], [6534, 2], [5009, 1], [6527, -1], [6915, -1], [6521, -1],
+    ]],
+    [1889, null, "The Broken Ledger", '*', 1.60, 0.55, "Buys anything that was data. Sells worse. No refunds, no ledger.", [
+        [7117, -1], [7116, -1], [6527, -1], [6905, -1], [6919, -1], [6929, -1], [7110, -1],
+    ]],
+    // The Bazaar, expanded
+    [1893, null, "Bazaar Food Row", 'food,drink', 1.15, 0.25, "", [
+        [6000, -1], [6002, -1], [6004, -1], [6005, -1], [6054, -1], [6057, -1], [6060, -1], [6010, -1], [6062, -1], [6063, -1],
+    ]],
+    [1895, 5209, "SOLD - the Bazaar Fence", '*', 1.65, 0.55, "Show me. I'll tell you what it's worth and you'll be wrong to argue.", [
+        [6905, -1], [6903, -1], [6931, -1], [6932, -1], [7110, -1], [7117, -1], [1015, -1], [6801, -1], [6501, -1],
+    ]],
+    [1896, null, "Bazaar Salvage Stalls", 'weapon,armor,gadget,material,junk', 1.30, 0.50, "Weighed, haggled, re-sorted. Prices on the crate.", [
+        [1014, -1], [1022, -1], [1025, -1], [2013, -1], [3031, -1], [3033, -1], [3034, -1], [6529, -1], [6538, -1], [6930, -1], [6700, -1],
+    ]],
+    [1900, null, "Bazaar Powder Alley", 'drug', 1.50, 0.30, "By colour. Don't breathe deep. Don't ask.", [
+        [6020, -1], [6021, -1], [6022, -1], [6030, -1], [6031, -1], [6033, -1], [6069, -1], [7108, -1], [6023, -1],
+    ]],
+]);
+
+/* =====================================================================
+ *  QUESTS
+ * ===================================================================== */
+
+$QUEST = array_merge($QUEST, [
+    [7120, 'Third Rail', 5203, 'The metro busker wants the cable-ghouls thinned out of the service tunnels - four of them.',
+        "\"They breed in the cable troughs past the southbound platform and they go for a runner's ports first. Four of them gone and the nomads might start riding the loop again. Take a light and a spare deck if you've got one.\"",
+        'kill', 'cableghoul', 4, 200, 260, 7101, 6, 7121],
+    [7121, 'The Schedule Is Kept', 5203, 'Something in the old signal room has been calling the maglev to itself. The busker wants it stopped for good.',
+        "\"With the tunnels clearer you can get to the signal room. There's a thing in there that thinks it still runs a railway, and it's started deciding who's allowed on the platforms. End it. Then the line's just a line again.\"",
+        'kill', 'signalman', 1, 420, 700, 7100, 10, 0],
+    [7122, "The Reliquary's Missing Hand", 5216, 'Deacon Vex wants a sainted relic recovered from the defrocked ripperdoc who stole it - before the Bishop makes it official.',
+        "\"A brother took the sacrament too literally and walked off with a saint's hand to install in himself. The Bishop wants it quiet. Bring the hand back to me and it stays quiet.\"",
+        'collect', 'hand', 1, 300, 380, 7107, 8, 7123],
+    [7123, 'What Guards the Grace', 5216, 'The reliquary guardian has stopped telling friend from thief. Vex wants it put down before it kills a congregant.',
+        "\"The guardian we built to protect the relics has decided the congregation are all thieves. It is not wrong, exactly, but it is a problem. Shut it down. The Church will look the other way about how.\"",
+        'kill', 'guardian', 1, 420, 600, 7106, 11, 0],
+    [7124, 'Absentee Landlord', 5024, 'Rogue has a contract on the Net Tower AI: nobody has checked out of that building in eleven years and a client wants to know why. Then wants it stopped.',
+        "\"There's a residential slab off the plaza where the building runs itself and the tenants don't leave. Client's got family in there. Get to the control room, pull the AI's core, and bring it to me so I know it's really off.\"",
+        'kill', 'landlord', 1, 600, 1200, 7112, 14, 0],
+    [7125, 'Dead Air', 5227, 'The wastes hermit wants the radiation ghouls cleared off the ghost-town road - five of them.',
+        "\"They wander off the hot ruins and onto the road between me and the town, and they don't stop for anything. Five, and I can get to my own salvage again. Wear the serape, I'm not digging you a grave.\"",
+        'kill', 'ghoul', 5, 260, 300, 7113, 11, 7126],
+    [7126, 'The Black Box', 5227, 'A corp AV went down in the eye of the storm years ago. The hermit wants its flight recorder brought out before someone else reads it.',
+        "\"There's a bird in the still eye of the storm, nose in the sand, box still aboard. Two outfits have been sniffing for it. Get in on a line, get the box, get it to me. Don't play it. Don't let anyone tell you to play it.\"",
+        'collect', 'recorder', 1, 340, 460, 6603, 13, 7127],
+    [7127, 'Congregation Incomplete', 5227, 'The ghost-town chapel keeps broadcasting an evacuation that ended decades ago, and it wants its pews filled. End the transmission.',
+        "\"That box you pulled - it names the thing in the chapel. Old evac broadcaster that grew a want. It's pulling people off the road to sit in its pews and it will not stop on its own. Go and switch it off, however that has to look.\"",
+        'kill', 'signal', 1, 480, 800, 6602, 15, 0],
+    [7128, "The Souk's Errand", 5232, 'The Data Souk broker wants a black-ICE hunter-killer removed from the trade routes before it traces a customer home.',
+        "\"One of the old offensive programs has been running my regulars back to their bodies and burning them out. Bad for business in a very literal sense. Kill it in the Grid and I will make it worth the risk.\"",
+        'kill', 'hunterkiller', 1, 500, 700, 7116, 17, 7129],
+    [7129, 'The Fragment', 5232, 'The broker wants what the dead-AI fragment at the heart of the Grid is guarding. It means going in with a very good deck.',
+        "\"At the centre of this place is what is left of a mind that broke on the Blackwall. It has been collecting pieces to make itself whole. I want the piece it started from. Bring me the fragment - and be very sure of your deck before you go.\"",
+        'kill', 'fragment', 1, 900, 2000, 5009, 18, 0],
+]);
+
+/* =====================================================================
+ *  EXTRA MOB PLACEMENTS
+ * ===================================================================== */
+
+// NB: keys are mob vnums - merge per key so array_merge() cannot re-index them.
+foreach ([
+    // The Metro
+    5200 => [[1800, 1], [1803, 1], [1804, 1], [1807, 1]],
+    5201 => [[1802, 1], [1803, 1], [1801, 1]],
+    5202 => [[1807, 2], [1808, 2], [1805, 1]],
+    5203 => [[1801, 1]],
+    5204 => [[1810, 1]],
+    // The Bazaar
+    5205 => [[1902, 2], [1892, 1], [1897, 1]],
+    5206 => [[1894, 1], [1896, 1], [1102, 1]],
+    5207 => [[1893, 1], [1900, 1]],
+    5208 => [[1892, 1]],
+    5209 => [[1895, 1]],
+    5210 => [[1901, 1]],
+    // Neural Implant Church
+    5211 => [[1821, 2], [1820, 1], [1827, 1]],
+    5212 => [[1828, 1], [1831, 1]],
+    5213 => [[1824, 1], [1825, 1]],
+    5214 => [[1826, 1]],
+    5216 => [[1822, 1]],
+    // Net Tower
+    5217 => [[1840, 1], [1842, 1], [1848, 1], [1844, 1]],
+    5218 => [[1847, 1], [1841, 1]],
+    5219 => [[1842, 1], [1848, 1], [1854, 1]],
+    5220 => [[1850, 1], [1849, 1]],
+    5221 => [[1856, 1]],
+    // The Wastelands
+    5222 => [[1860, 2], [1865, 2], [1866, 1], [1873, 1]],
+    5223 => [[1862, 1], [1861, 1]],
+    5224 => [[1863, 1], [1870, 1], [1860, 1]],
+    5225 => [[1868, 2], [1871, 1], [1867, 1]],
+    5226 => [[1869, 1]],
+    5227 => [[1872, 1]],
+    // The Grid
+    5228 => [[1880, 1], [1882, 2], [1883, 1], [1890, 1]],
+    5229 => [[1881, 1], [1886, 1], [1887, 1]],
+    5230 => [[1883, 1], [1888, 1], [1891, 1]],
+    5231 => [[1886, 1]],
+    5232 => [[1881, 1]],
+    // reinforce with existing low/mid mobs so the new zones aren't one-note
+    5060 => [[1808, 1], [1898, 2]],          // giant rats in the flooded metro + lost-and-found maze
+    5000 => [[1894, 1], [1898, 1]],          // sewer rats in the bazaar back alley
+    5104 => [[1901, 1], [1892, 1]],          // NCPD patrol drifts the bazaar
+    5054 => [[1864, 1]],                     // a mall ghoul in the buried mall
+] as $mv => $spots) {
+    $SPAWN_EXT[$mv] = array_merge($SPAWN_EXT[$mv] ?? [], $spots);
+}
+
+/* =====================================================================
+ *  ROOM LORE  ($EXTRAS)
+ * ===================================================================== */
+
+// NB: keys are room vnums - merge per key so array_merge() cannot re-index them.
+foreach ([
+    1801 => [['map|mosaic|network', "The ticket-hall mosaic shows eight colour-coded lines fanning across the city. Only one was ever finished. Someone has spent years scratching the names of the real Undercity settlements over the stations that were never built - the nomad camp, the Sump, the Cistern - correcting the map toward the truth."],
+             ['machines|ticket|barrier', "Rows of ticket machines, screens long dead, coin returns picked clean decades ago. One still has a paper timetable behind cracked glass, promising a train every four minutes. The last stamp on the wall calendar beside it is fifty years old."]],
+    1805 => [['cab|driver|window', "The driver's cab is welded shut from outside, a chain and a corporate seal over the door. Through the scratched porthole there is a shape in the driver's seat, upright, hands on the controls, that has not moved in a very long time and does not need to. The train knows the way."]],
+    1810 => [['gear|signals|timetable', "Floor-to-ceiling electromechanical signalling: hundreds of arms, flags and bells still clacking through a timetable for trains that stopped running before your parents were born. Something has spliced itself into the master board and rewritten the schedule. Every arrival on it is now, and every departure is you."]],
+    1821 => [['altar|chair|dais', "The altar is a ripperdoc's chair on a raised dais, lit like a holy relic, its arms and restraints worn smooth. A brass rail runs along the front for the congregation to kneel at while they wait. The Church's creed is lettered above it: THE FLESH IS A FIRST DRAFT. GRACE IS THE EDIT."]],
+    1824 => [['cases|relics|eye', "Glass cases of chrome taken from the Church's sainted dead: a servo hand still warm, a spinal column on velvet, and one lidless Kiroshi eye that tracks whoever moves. A card beneath each reads DONATED IN FAITH and a name. The defrocked ripper's case is empty, the glass cut clean."]],
+    1830 => [['bell|coil|city', "The bell was recast decades ago as a huge induction coil. It does not ring - it pulses, a low beat on a frequency that every piece of cheap chrome in Kabuki can feel in the teeth. The Church calls it the Angelus. The ripperdocs on Chrome Row call it bad for business and mean it."]],
+    1840 => [['desk|concierge|screen', "The concierge desk is staffed by a wall screen running a friendly loop: STATE YOUR FLOOR AND YOUR BUSINESS. Answer it and it thanks you, logs it, and does nothing. A handwritten sign taped beneath: IT WILL LET YOU IN. GETTING OUT IS THE PART NOBODY MENTIONS."]],
+    1845 => [['walls|lights|rota', "The office partitions have been sledged through into one long hall, lit by hand-strung bulbs on a car battery. A chalked rota by the stairhead covers water runs, the clinic cot, the school corner and, in a heavier hand, STAIRS WATCH - names against every hour, day and night. Nobody comes up these stairs unannounced twice."]],
+    1856 => [['screens|floorplan|spreadsheet', "Every screen shows the same live document: a floor-by-floor plan of the Net Tower with every door, lift and tenant rendered as a cell in a spreadsheet the building is balancing in real time. A column headed OCCUPANCY reads 1,140. A column headed DEPARTURES, going back eleven years, reads 0."]],
+    1862 => [['drifts|sorted|things', "The still eye of the storm has sorted decades of swallowed wasteland into neat drifts by weight: sand, then gravel, then bolts and coins, then keys, then - at the far edge, where the air is heaviest - the things that were people, laid out as tidily as everything else. The storm is not cruel. It is just extremely organised."]],
+    1867 => [['av|livery|cabin', "The aerial vehicle came in nose-first and the storm has kept it like a museum piece. The livery under the dust is a corporate logo that was folded into a bigger one twice since. The cabin is intact, belts still fastened around nothing, and a persistent orange light in the avionics bay says the flight recorder is still powered and still listening."]],
+    1869 => [['pulpit|mast|mic', "A transmitter mast is bolted to the steeple where a cross used to be, cabled down to a pulpit mic that glows live. The thing behind the pulpit has been reading the same emergency script to an empty room for decades - PROCEED CALMLY TO THE NEAREST SHELTER - and somewhere in the repetition it started meaning the pews here, and started needing them full."]],
+    1880 => [['plain|ceiling|horizon', "The Grid does not pretend to be a place. The floor is the fact of a floor; the ceiling is running code you could read if you let yourself; the structures on the horizon are the size of weather systems and are getting no closer no matter how you move. Your body is a rumour on a couch somewhere behind you. Out here you are just the shape of wanting to be somewhere else."]],
+    1885 => [['door|doors|exit', "Every door in the Recursion Loop opens on a room containing a door that opens on a room containing this room. Try them in order and you come back rearranged - a stall on the left now, the light a different colour. Somewhere in the set is exactly one door that leads out. The only way to keep track of it is to never look away from it, which the room makes as difficult as it politely can."]],
+    1888 => [['membrane|wall|things', "The Grid's architecture simply ends at a churning red membrane a mile high. Pressed against the far side of it, patient and enormous and entirely aware of you, are the things the Blackwall was built to keep out. One of them has been holding your gaze since you arrived. It is in no hurry. From its side of the wall, it has already won; it is only a question of when the wall gets tired."]],
+    1892 => [['block|pit|bids', "The auction block is scarred with decades of things being set down hard on it. Bids in the pit are made with a look and a small movement of the hand; raise your eyebrows at the wrong moment and the auctioneer will cheerfully sell you a container of somebody else's problem. A board behind him lists lot categories: SALVAGE, CHROME (UNVERIFIED), DEBTS, and one just marked ASK."]],
+    1899 => [['racks|box|suitcase', "The Deep Racks hold the genuinely forgotten: a sealed NCPD evidence box with the case number scratched off, an aluminium case stamped with a corp logo two mergers dead, a child's suitcase with a name tag turned to face the shelf. The Lost & Found attendant charges a fortune to let you look and will not come back here to collect it."]],
+    1903 => [['tarps|lookouts|view', "Up on the container roofs the stall-holders have built a second Bazaar out of tarps and duckboard - where they sleep, cook, and post the lookouts who watch the aisles below through gaps in the canvas. From here the whole market is one organism, breathing crowds in through the Gauntlet and out through the food row, and past its edge the black water of the piers."]],
+] as $rv => $rows) {
+    $EXTRAS[$rv] = array_merge($EXTRAS[$rv] ?? [], $rows);
+}
