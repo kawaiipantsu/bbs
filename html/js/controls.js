@@ -2,7 +2,7 @@
    two turnable knobs (brightness / contrast) and a power button that
    actually powers the CRT on and off with sound + effect. */
 
-import { sound } from './audio.js?v=5';
+import { sound } from './audio.js?v=6';
 
 const LS = {
   get: (k, d) => { try { const v = localStorage.getItem(k); return v == null ? d : v; } catch { return d; } },

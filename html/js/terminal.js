@@ -1,7 +1,7 @@
 /* terminal.js - renders server "frames" onto the CRT grid and turns keystrokes
    into /api/action calls. Modes: menu, pager, screen, line, form, game, chat. */
 
-import { sound } from './audio.js?v=5';
+import { sound } from './audio.js?v=6';
 
 /* xterm-256 palette for foreground indices > 15 (games / imported ANSI) */
 function xterm256(i) {

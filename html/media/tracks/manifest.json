@@ -1,19 +1,77 @@
 {
-  "station": "CHIPTUNE RADIO",
-  "note": "13 tracker modules on rotation. Sourced from The Mod Archive (modarchive.org). Each module remains the property of its author; provided here for non-commercial listening.",
-  "tracks": [
-    { "file": "gateway.s3m",               "title": "Gateway",                "artist": "Necros",   "format": "S3M" },
-    { "file": "numbers-on-the-modem.xm",    "title": "Numbers on the Modem",   "artist": "lug00ber", "format": "XM"  },
-    { "file": "isotoxin.s3m",               "title": "Isotoxin",               "artist": "Necros",   "format": "S3M" },
-    { "file": "plastic.xm",                 "title": "00:02:52 (Plastic)",     "artist": "",         "format": "XM"  },
-    { "file": "subchaos-psychedelic.xm",    "title": "subchaos-psychedelic",   "artist": "",         "format": "XM"  },
-    { "file": "memory.s3m",                 "title": "Memory",                 "artist": "",         "format": "S3M" },
-    { "file": "industrial.xm",              "title": "Industrial",             "artist": "DRAX",     "format": "XM"  },
-    { "file": "paralyze-distort-mix.s3m",   "title": "Paralyze (distort mix)", "artist": "",         "format": "S3M" },
-    { "file": "pepelats.xm",                "title": "Pepelats",               "artist": "Manwe",    "format": "XM"  },
-    { "file": "satellite-one.s3m",          "title": "Satellite One",          "artist": "",         "format": "S3M" },
-    { "file": "industrial-park.xm",         "title": "INDUSTRiAL PARK",        "artist": "",         "format": "XM"  },
-    { "file": "calm-mod.xm",                "title": "Calm Mod!",              "artist": "",         "format": "XM"  },
-    { "file": "revenge-of-unilogix.mod",    "title": "Revenge of Unilogix",    "artist": "",         "format": "MOD" }
+  "attribution": "Modules from archive.scene.org and The Mod Archive - each track remains the property of its author. Provided here for non-commercial listening.",
+  "categories": [
+    {
+      "id": "demoscene",
+      "name": "Demoscene Classics",
+      "tracks": [
+        { "file": "gateway.s3m",                     "title": "Gateway",              "artist": "Necros",    "format": "S3M" },
+        { "file": "isotoxin.s3m",                     "title": "Isotoxin",             "artist": "Necros",    "format": "S3M" },
+        { "file": "skaven-2nd-reality.s3m",           "title": "2nd Reality",          "artist": "Skaven",    "format": "S3M", "year": 1993 },
+        { "file": "skaven-catch-that-goblin.s3m",     "title": "Catch That Goblin",    "artist": "Skaven",    "format": "S3M" },
+        { "file": "skaven-network.s3m",               "title": "Network",              "artist": "Skaven",    "format": "S3M" },
+        { "file": "necros-introspection.s3m",         "title": "Introspection",        "artist": "Necros",    "format": "S3M" },
+        { "file": "necros-vision.mod",                "title": "Vision",               "artist": "Necros",    "format": "MOD" },
+        { "file": "andromeda-everlasting-dreams.xm",  "title": "Everlasting Dreams",   "artist": "Andromeda", "format": "XM" }
+      ]
+    },
+    {
+      "id": "chip",
+      "name": "Chiptunes",
+      "tracks": [
+        { "file": "4mat-electric-revenge.mod",   "title": "Electric Revenge",   "artist": "4-mat",  "format": "MOD" },
+        { "file": "4mat-a-city-at-night.mod",    "title": "A City at Night",    "artist": "4-mat",  "format": "MOD" },
+        { "file": "4mat-chip-shop.mod",          "title": "Chip Shop",          "artist": "4-mat",  "format": "MOD" },
+        { "file": "4mat-6beat.mod",              "title": "6-Beat",             "artist": "4-mat",  "format": "MOD" },
+        { "file": "4mat-madness.mod",            "title": "Madness",            "artist": "4-mat",  "format": "MOD" },
+        { "file": "skaven-mosquito.s3m",         "title": "Mosquito",           "artist": "Skaven", "format": "S3M" },
+        { "file": "cerror-n-gen-01.xm",          "title": "N-Gen #01",          "artist": "Cerror", "format": "XM" },
+        { "file": "cerror-n-gen-03.xm",          "title": "N-Gen #03",          "artist": "Cerror", "format": "XM" }
+      ]
+    },
+    {
+      "id": "oldskool",
+      "name": "Oldskool Amiga",
+      "tracks": [
+        { "file": "revenge-of-unilogix.mod",         "title": "Revenge of Unilogix",  "artist": "",                  "format": "MOD" },
+        { "file": "jogeir-back-to-reality.mod",       "title": "Back to Reality",      "artist": "Jogeir Liljedahl",  "format": "MOD" },
+        { "file": "jogeir-cruising.mod",              "title": "Cruising Hawaii",      "artist": "Jogeir Liljedahl",  "format": "MOD" },
+        { "file": "jogeir-essential-classics.mod",    "title": "Essential Classics",   "artist": "Jogeir Liljedahl",  "format": "MOD" },
+        { "file": "necros-stars.mod",                 "title": "Starlit Deception",    "artist": "Necros",            "format": "MOD" },
+        { "file": "necros-santurian-dreaming.mod",    "title": "Santurian Dreaming",   "artist": "Necros",            "format": "MOD" }
+      ]
+    },
+    {
+      "id": "dark",
+      "name": "Dark / Industrial",
+      "tracks": [
+        { "file": "numbers-on-the-modem.xm",     "title": "Numbers on the Modem",  "artist": "lug00ber",  "format": "XM" },
+        { "file": "plastic.xm",                  "title": "00:02:52 (Plastic)",    "artist": "",          "format": "XM" },
+        { "file": "memory.s3m",                  "title": "Memory",                "artist": "",          "format": "S3M" },
+        { "file": "industrial.xm",               "title": "Industrial",            "artist": "DRAX",      "format": "XM" },
+        { "file": "paralyze-distort-mix.s3m",    "title": "Paralyze (Distort Mix)","artist": "",          "format": "S3M" },
+        { "file": "industrial-park.xm",          "title": "Industrial Park",       "artist": "",          "format": "XM" },
+        { "file": "subchaos-psychedelic.xm",     "title": "Subchaos Psychedelic",  "artist": "",          "format": "XM" },
+        { "file": "keith303-industry.xm",        "title": "Industrial Dispute",    "artist": "keith303",  "format": "XM" },
+        { "file": "keith303-death.xm",           "title": "Like Lovin the Death",  "artist": "keith303",  "format": "XM" },
+        { "file": "drax-enigma.xm",              "title": "Enigmatic",             "artist": "DRAX",      "format": "XM" },
+        { "file": "drax-inferno.xm",             "title": "Infernal Power",        "artist": "DRAX",      "format": "XM" },
+        { "file": "cygnes-cyber.it",             "title": "Cyber",                 "artist": "Cygnes",    "format": "IT" },
+        { "file": "cerror-n-gen-02.xm",          "title": "N-Gen #02",             "artist": "Cerror",    "format": "XM" }
+      ]
+    },
+    {
+      "id": "ambient",
+      "name": "Ambient / Space",
+      "tracks": [
+        { "file": "pepelats.xm",              "title": "Pepelats",            "artist": "Manwe",     "format": "XM" },
+        { "file": "satellite-one.s3m",        "title": "Satellite One",       "artist": "",          "format": "S3M" },
+        { "file": "calm-mod.xm",              "title": "Calm Mod!",           "artist": "",          "format": "XM" },
+        { "file": "awesome-deep.xm",          "title": "Deep in Your Heart",  "artist": "Awesome",   "format": "XM" },
+        { "file": "awesome-blue.xm",          "title": "Blue Crystal",        "artist": "Awesome",   "format": "XM" },
+        { "file": "andromeda-sunchild.xm",    "title": "SunChild",            "artist": "Andromeda", "format": "XM" },
+        { "file": "cygnes-time.s3m",          "title": "As Time Goes By",     "artist": "Cygnes",    "format": "S3M" }
+      ]
+    }
   ]
 }

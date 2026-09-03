@@ -1,12 +1,12 @@
 /* app.js - wires the CRT, terminal, audio, boot sequence and HUD together. */
 
-import { Terminal } from './terminal.js?v=5';
-import { runBoot, skipBoot } from './boot.js?v=5';
-import { sound } from './audio.js?v=5';
-import { action, ticker, state } from './net.js?v=5';
-import { installChat } from './chat.js?v=5';
-import { installControls } from './controls.js?v=5';
-import { chiptune } from './chiptune.js?v=5';
+import { Terminal } from './terminal.js?v=6';
+import { runBoot, skipBoot } from './boot.js?v=6';
+import { sound } from './audio.js?v=6';
+import { action, ticker, state } from './net.js?v=6';
+import { installChat } from './chat.js?v=6';
+import { installControls } from './controls.js?v=6';
+import { chiptune } from './chiptune.js?v=6';
 
 const $ = sel => document.querySelector(sel);
 const LS = {
@@ -197,6 +197,9 @@ function handleChiptune(frame) {
   if (c.action === 'play') {
     sound.stopMusic?.(0.6);
     chiptune.play(c.index | 0, { onEnd: () => syncMusic() });
+  } else if (c.action === 'playqueue') {
+    sound.stopMusic?.(0.6);
+    chiptune.playQueue(c.queue || [], { onEnd: () => syncMusic() });
   } else if (c.action === 'stop') {
     chiptune.stop();
     syncMusic();
