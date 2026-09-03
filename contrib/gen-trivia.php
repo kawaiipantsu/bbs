@@ -106,6 +106,20 @@ $add('movie-trivia', 'The character Vito Corleone appears in which film?', ['Sca
 $add('movie-trivia', 'Which movie is famous for the line and scene "I\'m the king of the world!"?', ['Titanic', 'The Aviator', 'Master and Commander', 'Waterworld'], 0);
 $add('movie-trivia', 'Andy Serkis provided motion capture for which Middle-earth character?', ['Sauron', 'Gollum', 'Treebeard', 'Elrond'], 1);
 
+/* ---------- Duke Nukem one-liners ---------- */
+$add('duke', 'Complete the Duke Nukem line: "Hail to the ___, baby!"', ['chief', 'king', 'boss', 'prez'], 1);
+$add('duke', '"It\'s time to kick ass and chew bubble gum... and I\'m all ___ of gum."', ['out', 'sick', 'kinds', 'over it'], 0);
+$add('duke', 'Which of these is a real Duke Nukem catchphrase?', ['Get over here', 'Come get some', 'Finish him', 'Stay a while'], 1);
+$add('duke', 'Duke picks up a weapon and says: "___, baby!"', ['Sweet', 'Groovy', 'Radical', 'Excellent'], 1);
+$add('duke', 'Looking in a mirror, Duke says: "Damn, I\'m looking ___!"', ['sharp', 'fine', 'good', 'buff'], 2);
+$add('duke', 'Duke Nukem 3D was made by which studio?', ['id Software', '3D Realms', 'Epic MegaGames', 'Raven'], 1);
+$add('duke', '"Nobody steals our chicks... and ___."', ['gets away', 'lives', 'walks', 'survives'], 1);
+$add('duke', 'Duke stomps an alien and quips: "___ \'em out!"', ['Blow it', 'Chew', 'Knock', 'Take'], 0, 'From "Blow it out your ___".');
+$add('duke', '"Let God sort \'em ___."', ['out', 'now', 'later', 'quick'], 0);
+$add('duke', 'Which movie tough-guy franchise heavily inspired Duke\'s one-liners?', ['James Bond', 'Rambo / Terminator / Army of Darkness', 'John Wick', 'Mission: Impossible'], 1);
+$add('duke', 'At an arcade machine Duke says he\'d rather play "___" than watch it.', ['Duke Nukem', 'a real game', 'this', 'pinball'], 0);
+$add('duke', '"My name\'s Duke Nukem, and I\'m coming to get the rest of ___."', ['you', 'them', 'my money', 'the aliens'], 1);
+
 /* ---------- emit SQL ---------- */
 $esc = fn (string $s) => "'" . str_replace(["\\", "'"], ["\\\\", "\\'"], $s) . "'";
 $vals = [];
@@ -134,7 +148,7 @@ $sql = "-- Trivia / Quiz Bot question bank (bundled, no remote dependency).\n"
      . "ON DUPLICATE KEY UPDATE name=VALUES(name), description=VALUES(description), module=VALUES(module),\n"
      . "  score_label=VALUES(score_label), score_order=VALUES(score_order), enabled=VALUES(enabled), sort=VALUES(sort);\n";
 
-$path = '/var/www/vhosts-external/bbs.thugs.red/mysql/migrations/2026_09_04_20_trivia.sql';
+$path = '/var/www/vhosts-external/bbs.thugs.red/mysql/migrations/2026_09_05_10_trivia_bank.sql';
 file_put_contents($path, $sql);
 printf("wrote %s : %d questions across %d categories, %d bytes\n", $path, count($Q), count(array_unique(array_column($Q, 0))), strlen($sql));
 foreach (array_count_values(array_column($Q, 0)) as $c => $n) echo "  $c: $n\n";

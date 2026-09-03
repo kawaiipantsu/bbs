@@ -1293,6 +1293,7 @@ final class GamesModule extends Module
         'fun'          => 'Fun Questions',
         'movie-quote'  => 'Movie Quotes',
         'movie-trivia' => 'Movie Trivia',
+        'duke'         => 'Duke Nukem One-Liners',
     ];
     private const TRIVIA_ROUND = 10;
 
