@@ -95,7 +95,7 @@ final class ChiptuneModule extends Module
             if ($key === 'Q' || $key === 'ESC') {
                 return $e->exitModule();
             }
-            return Frame::make('screen')->title('Chiptune Radio')->mode('menu')
+            return Frame::make('screen')->title('Chiptune Radio')->mode('game')
                 ->header('CHIPTUNE RADIO', 'offline')->blank()
                 ->pipe('|12   No modules found.')
                 ->pipe('|08   Expected a manifest at html/media/tracks/manifest.json')
@@ -253,7 +253,7 @@ final class ChiptuneModule extends Module
         $n   = count($cats);
         $sel = $n > 0 ? max(0, min($sel, $n - 1)) : 0;
 
-        $f = Frame::make('screen')->title('Chiptune Radio')->mode('menu')
+        $f = Frame::make('screen')->title('Chiptune Radio')->mode('game')
             ->header('CHIPTUNE RADIO', $count . ' modules on rotation')->blank();
 
         $f->pipe('|08   Real tracker modules streamed through libopenmpt (WASM).  Pick a crate.')
@@ -297,7 +297,7 @@ final class ChiptuneModule extends Module
         $n   = count($ids);
         $sel = $n > 0 ? max(0, min($sel, $n - 1)) : 0;
 
-        $f = Frame::make('screen')->title('Chiptune Radio')->mode('menu')
+        $f = Frame::make('screen')->title('Chiptune Radio')->mode('game')
             ->header('CHIPTUNE RADIO / ' . $curCat['name'], $n . ($n === 1 ? ' module' : ' modules'))
             ->blank();
 
@@ -351,7 +351,7 @@ final class ChiptuneModule extends Module
         $n   = count($pl);
         $sel = $n > 0 ? max(0, min($sel, $n - 1)) : 0;
 
-        $f = Frame::make('screen')->title('Chiptune Radio')->mode('menu')
+        $f = Frame::make('screen')->title('Chiptune Radio')->mode('game')
             ->header('CHIPTUNE RADIO / Playlist', $n . ($n === 1 ? ' track queued' : ' tracks queued'))
             ->blank();
 
