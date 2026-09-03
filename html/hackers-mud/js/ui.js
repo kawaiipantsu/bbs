@@ -627,7 +627,10 @@ export class UI {
 
   /* ---- sound + music mixer popover ---- */
   soundIcon(on) { this.el('btnSnd').textContent = on ? '\u{1F50A}' : '\u{1F507}'; this._sndOn = on; }
-  _closeMixer() { const m = this.el('game').querySelector('.mix'); if (m) m.remove(); }
+  _closeMixer() {
+    if (this._npTimer) { clearInterval(this._npTimer); this._npTimer = null; }
+    const m = this.el('game').querySelector('.mix'); if (m) m.remove();
+  }
   _toggleMixer() {
     if (this.el('game').querySelector('.mix')) { this._closeMixer(); return; }
     audio.unlock();
@@ -645,11 +648,32 @@ export class UI {
       <div class="mrow"><label>Music</label><input type="range" min="0" max="100" value="${pc(mix.music)}" data-b="music"></div>
       <div class="mrow"><label>Effects</label><input type="range" min="0" max="100" value="${pc(mix.sfx)}" data-b="sfx"></div>
       <div class="mrow"><label>Ambient</label><input type="range" min="0" max="100" value="${pc(mix.amb)}" data-b="amb"></div>
+      <p style="font-size:10px;color:var(--dim);margin:8px 0 0">Music engine</p>
+      <div class="seg" style="margin-top:6px">
+        <button data-m="gen" class="${mix.musicMode === 'chip' ? '' : 'on'}">Generated</button>
+        <button data-m="chip" class="${mix.musicMode === 'chip' ? 'on' : ''}">Chiptune</button>
+      </div>
+      <p class="npchip" style="font-size:10px;color:var(--cyan);margin:6px 0 0;min-height:12px"></p>
       <p style="font-size:10px;color:var(--dim);margin:6px 0 0">music sits low so effects stay clear</p>`;
     this.el('game').appendChild(wrap);
     wrap.querySelectorAll('input[data-b]').forEach(inp => inp.addEventListener('input', () => {
       audio.setMix({ [inp.dataset.b]: (+inp.value) / 100 });
     }));
+    const syncNp = () => {
+      const el = wrap.querySelector('.npchip'); if (!el) return;
+      const m = audio.nowPlayingTrack ? audio.nowPlayingTrack() : null;
+      el.textContent = m ? ('♪ ' + (m.title || '') + (m.artist ? ' — ' + m.artist : '')) : '';
+    };
+    wrap.querySelectorAll('button[data-m]').forEach(b => b.onclick = () => {
+      const mode = b.dataset.m;
+      if ((audio.getMix().musicMode || 'gen') === mode) return;
+      audio.setMix({ musicMode: mode });
+      wrap.querySelectorAll('button[data-m]').forEach(x => x.classList.toggle('on', x.dataset.m === mode));
+      syncNp();
+    });
+    if (this._npTimer) clearInterval(this._npTimer);
+    this._npTimer = setInterval(syncNp, 1500);
+    syncNp();
     wrap.querySelector('[data-k="master"]').onclick = (e) => {
       this.emit('sound');
       const nowOn = this._sndOn !== false;

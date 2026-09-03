@@ -1,7 +1,7 @@
 /* audio.js - synthesised SFX + ambient beds for the graphical client.
    No sample files. Handles iOS unlock (silent-switch + suspended context). */
 
-const MIX_DEFAULT = { master: 0.6, music: 0.32, sfx: 1.0, amb: 0.7, musicOn: true };
+const MIX_DEFAULT = { master: 0.6, music: 0.32, sfx: 1.0, amb: 0.7, musicOn: true, musicMode: 'gen' };
 
 class Audio {
   constructor() {
@@ -12,6 +12,9 @@ class Audio {
       this.mix = { ...MIX_DEFAULT, ...s };
     } catch (_) {}
     this._musTrack = null;
+    this._chipMod = null;       // lazy import() promise for ./chiptune.js
+    this._chipRotating = false; // chiptune-radio rotation is active
+    this._chipNow = null;       // { file,title,artist,format } of the current module
   }
 
   _ensure() {
@@ -40,15 +43,41 @@ class Audio {
 
   getMix() { return { ...this.mix }; }
   setMix(part) {
+    const prevMode = this.mix.musicMode;
+    const modeChanged = part && ('musicMode' in part) && part.musicMode !== prevMode;
+    const volChanged  = part && ('music' in part);
     this.mix = { ...this.mix, ...part };
     try { localStorage.setItem('hm_mix', JSON.stringify(this.mix)); } catch (_) {}
-    if (!this.ctx) return;
-    const t = this.ctx.currentTime, r = (g, v) => g && g.gain.setTargetAtTime(v, t, 0.05);
-    r(this.master, this.mix.master);
-    r(this.sfxG, this.mix.sfx);
-    r(this.ambG, this.mix.amb);
-    r(this.musG, this.mix.musicOn ? this.mix.music : 0);
-    if (this.mix.musicOn && this._musTrack && !this._musTimer) this.music(this._musTrack, true);
+    if (this.ctx) {
+      const t = this.ctx.currentTime, r = (g, v) => g && g.gain.setTargetAtTime(v, t, 0.05);
+      r(this.master, this.mix.master);
+      r(this.sfxG, this.mix.sfx);
+      r(this.ambG, this.mix.amb);
+      r(this.musG, this.mix.musicOn ? this.mix.music : 0);
+    }
+    if (modeChanged) {
+      // swap engines immediately: stop whichever is running, start the other
+      this.stopMusic();
+      if (this.mix.musicOn && this.on && this._musTrack) this.music(this._musTrack, true);
+      return;
+    }
+    if (volChanged && this.mix.musicMode === 'chip' && this._chipMod) {
+      this._chipMod.then(c => { try { c && c.setVolume(this.mix.music); } catch (_) {} });
+    }
+    if (this.mix.musicOn && this._musTrack && !this._musTimer && !this._chipRotating) this.music(this._musTrack, true);
+  }
+
+  /* lazy handle on the chiptune-radio singleton (imported only when needed) */
+  _chip() {
+    if (!this._chipMod) {
+      this._chipMod = import('./chiptune.js')
+        .then(m => m.chiptune)
+        .catch(e => { console.warn('[audio] chiptune module load failed', e); this._chipMod = null; return null; });
+    }
+    return this._chipMod;
+  }
+  nowPlayingTrack() {
+    return (this.mix.musicMode === 'chip' && this._chipNow) ? this._chipNow : null;
   }
 
   unlock() {
@@ -208,6 +237,31 @@ class Audio {
     this._ensure();
     if (!this.ctx) return;
     if (this.ctx.state === 'suspended') this.ctx.resume().catch(() => {});
+
+    // ---- chiptune-radio mode: real tracker modules on shuffle ----
+    if (this.mix.musicMode === 'chip') {
+      // make sure the generative engine is fully stopped
+      if (this._musTimer) { clearInterval(this._musTimer); this._musTimer = null; }
+      if (this._musPad) {
+        try { this._musPad.g.gain.setTargetAtTime(0.0001, this.ctx.currentTime, 0.4); this._musPad.o.forEach(o => o.stop(this.ctx.currentTime + 1.2)); } catch (_) {}
+        this._musPad = null;
+      }
+      this._mus = null;
+      if (this._chipRotating && !force) return;   // track ('idle'/'battle') is irrelevant here
+      this._chipRotating = true;
+      this._chip().then(async c => {
+        if (!c || this.mix.musicMode !== 'chip' || !this.mix.musicOn || !this.on) { this._chipRotating = false; return; }
+        try {
+          await c.init(this.ctx, this.musG);
+          if (c.failed || this.mix.musicMode !== 'chip' || !this.mix.musicOn || !this.on) { this._chipRotating = false; return; }
+          c.setVolume(this.mix.music);
+          c.playRandom({ onTrack: (m) => { this._chipNow = m; } });
+        } catch (e) { console.warn('[audio] chiptune start failed', e); this._chipRotating = false; }
+      });
+      return;
+    }
+
+    // ---- generative synth mode ----
     if (this._musTimer && this._mus && this._mus.track === track && !force) return;
     this.stopMusic();
 
@@ -227,6 +281,9 @@ class Audio {
     if (this._musTimer) { clearInterval(this._musTimer); this._musTimer = null; }
     if (this._musPad) { try { this._musPad.g.gain.setTargetAtTime(0.0001, this.ctx.currentTime, 0.4); this._musPad.o.forEach(o => o.stop(this.ctx.currentTime + 1.2)); } catch (_) {} this._musPad = null; }
     this._mus = null;
+    this._chipRotating = false;
+    this._chipNow = null;
+    if (this._chipMod) this._chipMod.then(c => { try { c && c.stop(); } catch (_) {} });
   }
   _musPhrase() {
     const m = this._mus; if (!m) return;

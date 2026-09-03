@@ -85,7 +85,7 @@ HTML;
             "default-src 'self'", "base-uri 'self'", "form-action 'self'",
             "frame-ancestors 'none'", "img-src 'self' data: blob:",
             "media-src 'self' blob: data:", "font-src 'self' data:",
-            "style-src 'self' 'unsafe-inline'", "script-src 'self'",
+            "style-src 'self' 'unsafe-inline'", "script-src 'self' 'wasm-unsafe-eval'",
             "connect-src 'self'", "worker-src 'self' blob:",
         ]);
         return Response::html($html)
