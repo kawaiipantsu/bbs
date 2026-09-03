@@ -275,9 +275,17 @@ final class Player
 
     /* ---- xp / level / death --------------------------------------- */
 
+    /** Total XP needed to REACH $lvl. Level 1 is the start, so it's 0.
+     *  The old curve (80·lvl^1.9) made level 1 "cost" 80, which the progress
+     *  bars subtracted as the level floor - so a fresh runner's bar sat at
+     *  0% until 80 XP and levelling to 2 took ~50 kills. Softened for the
+     *  early game. */
     public static function xpForLevel(int $lvl): int
     {
-        return (int) round(80 * pow($lvl, 1.9));
+        if ($lvl <= 1) {
+            return 0;
+        }
+        return (int) round(30 * pow($lvl - 1, 2.1));
     }
 
     /** @return list<string> level-up messages */
