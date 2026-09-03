@@ -54,10 +54,10 @@ $room = function (int $vnum, string $zone, string $name, int $x, int $y, int $z,
 };
 
 /* ---- Zone: KABUKI (1000-1099) ------------------------------------- */
-$room(1000, 'kabuki', 'Your Coffin - Kabuki Hab-Stack', 0, 0, 0,
-    "A rented sleep-coffin barely longer than you are. A cracked monitor, a foam mat, a lockbox bolted to the floor. It is yours until the rent is not. This is as safe as Night City gets.\nThe hatch opens onto the stairwell, DOWN.", 'safe indoors nomob start');
+$room(1000, 'kabuki', 'Your Sleep Pod - Kabuki Hab-Stack', 0, 0, 0,
+    "A rented capsule the size of a generous cupboard: a moulded fibreglass shell, a gel mat that has met a thousand backs, a fan that ticks, and a cracked wall monitor cycling ads you cannot switch off. A thumb-locked stash drawer is bolted under the mat. Your name is on the rental for as long as the credits clear. It is, by Night City standards, safe.\nThe pod hatch folds down onto the common deck and the stairwell, DOWN.", 'safe indoors nomob start');
 $room(1001, 'kabuki', 'Hab-Stack Stairwell', 0, 1, 0,
-    "Forty flights of perforated steel, half the bulbs dead, all of it sweating condensation. Someone has tagged every landing with the same grinning skull. UP goes to the coffins, DOWN spills onto the street.", 'indoors');
+    "Forty flights of perforated steel, half the bulbs dead, all of it sweating condensation. Someone has tagged every landing with the same grinning skull. UP goes to the sleep pods and the common deck, DOWN spills onto the street; a short corridor runs EAST to the deck itself.", 'indoors');
 $room(1002, 'kabuki', 'Jig-Jig Street', 0, 2, 0,
     "The spine of Kabuki. Braindance parlours, noodle carts and holo-girls three metres tall selling things that are illegal in four jurisdictions. Rain turns the neon into a river of colour underfoot.", 'safe');
 $room(1003, 'kabuki', 'Jig-Jig Street, North End', 0, 3, 0,
@@ -463,17 +463,21 @@ $SHOP = [
     [1004, 5020, "Wakako's Noodle Bar", 'food,drink', 1.20, 0.30, "Sit. Eat. The broth does not wait for your problems.", [
         [6000, -1], [6002, -1], [6003, -1], [6004, -1], [6010, -1], [6011, -1],
     ]],
-    [1006, 5021, "Chrome Row Ripperdoc", 'gadget', 1.60, 0.35, "Chair's open. Eddies first, questions never.", [
+    [1006, 5021, "Chrome Row Ripperdoc", 'gadget,implant', 1.60, 0.35, "Chair's open. Eddies first, questions never.", [
         [4001, -1], [4002, -1], [4003, 2], [4008, 1], [3012, -1], [6702, -1], [6023, -1], [6021, -1],
+        [4041, -1], [4042, -1], [4043, 1], [4044, -1], [4046, -1], [2233, -1], [6539, -1],
     ]],
     [1007, null, "Ramen Row Stalls", 'food', 1.15, 0.25, "", [
         [6001, -1], [6004, -1], [6005, -1], [6002, -1], [6000, -1], [6012, -1],
+        [6054, -1], [6057, -1], [6060, -1],
     ]],
     [1008, 5022, "The Gristle", 'weapon,gadget', 1.45, 0.40, "Cash. No trades on ammo. Don't touch what you're not buying.", [
         [1000, -1], [1003, -1], [1004, -1], [1007, -1], [2000, -1], [2001, -1], [2002, 3], [1006, 2], [6503, -1], [6500, -1],
+        [1022, -1], [1023, -1], [1025, -1], [2013, -1], [2014, -1], [6541, -1],
     ]],
     [1009, 5023, "Pawnshop 'Last Resort'", '*', 1.70, 0.45, "Selling? Slot it in the tray. Buying? Everything's marked.", [
         [1002, -1], [3000, -1], [3007, -1], [5000, -1], [6700, -1], [6801, -1], [6021, -1],
+        [3031, -1], [3032, -1], [3033, -1], [6931, -1], [6932, -1], [6804, -1], [6805, -1],
     ]],
     [1102, 5030, "The Watson Bazaar", '*', 1.40, 0.45, "Whatever it is, we have it in the back. Probably. Eventually.", [
         [3013, -1], [5005, -1], [6022, -1], [6032, -1], [6501, -1], [6505, -1], [6801, -1], [3009, 2], [6510, 2],
@@ -485,13 +489,14 @@ $SHOP = [
         [4003, -1], [4005, 1], [4006, 1], [4007, 1], [4009, 1], [3008, 1], [2201, 2], [6501, -1],
     ]],
     [1105, null, "Bazaar Apothecary", 'drug', 1.50, 0.30, "By colour. Don't mix the reds. Or do. Your funeral.", [
-        [6020, -1], [6022, -1], [6030, -1], [6031, -1], [6032, -1], [6033, -1], [6040, 3], [6023, -1],
+        [6020, -1], [6022, -1], [6030, -1], [6031, -1], [6032, -1], [6033, -1], [6040, 3], [6023, -1], [6069, 2],
     ]],
     [1113, 5036, "Smuggler's Rest", 'food,drink,junk', 1.30, 0.50, "Sit anywhere that isn't someone. First one's not free but the advice is.", [
         [6013, -1], [6014, 4], [6011, -1], [6006, -1], [6010, -1], [6701, -1],
     ]],
-    [1205, 5043, "Militech Boutique", 'weapon', 1.90, 0.30, "Everything on the wall is licensed. Everything under it is a conversation.", [
+    [1205, 5043, "Militech Boutique", 'weapon,armor', 1.90, 0.30, "Everything on the wall is licensed. Everything under it is a conversation.", [
         [2001, -1], [2004, -1], [2006, 2], [3006, -1], [3009, -1], [3021, 1], [6511, -1], [6521, 1],
+        [2014, -1], [2016, 2], [3036, 1],
     ]],
     [1207, null, "The Gold Room", 'drink,food', 2.20, 0.20, "If you must ask the price, the door is behind you.", [
         [6014, -1], [6006, -1], [6032, -1],
