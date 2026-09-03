@@ -172,6 +172,7 @@ export class Scene {
     const take = () => free.length ? free.splice((r() * free.length) | 0, 1)[0] : [MID_X + 1, MID_Y];
     for (const m of room.mobs || []) { const [x, y] = take(); this.ents.push({ kind: 'mob', gx: x, gy: y, data: m, bob: r() * 6 }); }
     for (const it of room.items || []) { const [x, y] = take(); this.ents.push({ kind: 'item', gx: x, gy: y, data: it }); }
+    for (const pl of room.players || []) { const [x, y] = take(); this.ents.push({ kind: 'player', gx: x, gy: y, data: pl, bob: r() * 6 }); }
   }
 
   _syncEntities(room) {
@@ -189,6 +190,15 @@ export class Scene {
     const haveIt = new Set(this.ents.filter(e => e.kind === 'item').map(e => e.data.id));
     for (const it of room.items || []) if (!haveIt.has(it.id)) { const s = this._freeSpot(); this.ents.push({ kind: 'item', gx: s[0], gy: s[1], data: it }); }
     this.ents = this.ents.filter(e => e.kind !== 'item' || itIds.has(e.data.id));
+    // other players - keyed by name (handles are unique); keep positions for stayers
+    const plNames = new Set((room.players || []).map(p => p.name));
+    const havePl = new Map(this.ents.filter(e => e.kind === 'player').map(e => [e.data.name, e]));
+    for (const pl of room.players || []) {
+      const e = havePl.get(pl.name);
+      if (e) e.data = pl;
+      else { const s = this._freeSpot(); this.ents.push({ kind: 'player', gx: s[0], gy: s[1], data: pl, bob: Math.random() * 6 }); }
+    }
+    this.ents = this.ents.filter(e => e.kind !== 'player' || plNames.has(e.data.name));
   }
   _freeSpot() {
     for (let i = 0; i < 40; i++) { const x = 1 + ((Math.random() * (GW - 2)) | 0), y = 1 + ((Math.random() * (GH - 2)) | 0); if (!this._blocked(x, y) && !this._entAt(x, y)) return [x, y]; }
@@ -276,6 +286,7 @@ export class Scene {
   }
   _bump(ent) {
     if (ent.kind === 'item') this.emit('interact', { type: 'item', item: ent.data });
+    else if (ent.kind === 'player') this.emit('interact', { type: 'player', player: ent.data });
     else {
       const m = ent.data;
       this.emit('interact', { type: 'mob', mob: m, hostile: m.hostile || m.state === 'fighting' });
@@ -306,6 +317,29 @@ export class Scene {
   floatAtMob(id, text, color) {
     const e = this.ents.find(x => x.kind === 'mob' && x.data.id === id);
     if (e) this.float(text, color, e);
+  }
+  /* name plate above an actor's head (other players + optionally the pc) */
+  _nameTag(ctx, x, headY, name, level, color = '#3ce88b', alpha = 1) {
+    if (!name) return;
+    const label = level ? name + '  L' + level : name;
+    const fs = Math.max(9, Math.round(this.T * 0.26));
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.font = 'bold ' + fs + 'px ui-monospace,SFMono-Regular,Menlo,monospace';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    const w = ctx.measureText(label).width + 12;
+    const h = fs + 6;
+    const bx = x - w / 2, by = headY - h - 4;
+    ctx.fillStyle = 'rgba(5,6,12,.82)';
+    ctx.strokeStyle = color; ctx.lineWidth = 1;
+    if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(bx, by, w, h, 3); ctx.fill(); ctx.stroke(); }
+    else { ctx.fillRect(bx, by, w, h); ctx.strokeRect(bx, by, w, h); }
+    // little pointer down to the head
+    ctx.beginPath(); ctx.moveTo(x - 3, by + h); ctx.lineTo(x + 3, by + h); ctx.lineTo(x, by + h + 4); ctx.closePath();
+    ctx.fillStyle = 'rgba(5,6,12,.82)'; ctx.fill();
+    ctx.fillStyle = color;
+    ctx.fillText(label, x, by + h / 2 + 0.5);
+    ctx.restore();
   }
 
   /* ---- graphic battle: queue of parsed combat rounds ---- */
@@ -480,8 +514,15 @@ export class Scene {
       if (d.pc) {
         const lx = this._lunge ? this._lunge.dx * this._lunge.life : 0;
         const ly = this._lunge ? this._lunge.dy * this._lunge.life : 0;
-        drawActor(ctx, this.pc.px + this.T / 2 + lx, this.pc.py + this.T * 0.9 + ly, this.T * 1.15,
+        const pcx = this.pc.px + this.T / 2 + lx, pcy = this.pc.py + this.T * 0.9 + ly;
+        drawActor(ctx, pcx, pcy, this.T * 1.15,
           this.player?.archetype || 'netrunner', { tt: this.tt, facing: this.pc.face, walk: this.pc.walk, boss: false });
+        if (this.player?.name) this._nameTag(ctx, pcx, this.pc.py - this.T * 0.05, this.player.name, 0, '#e7e9f5', 0.55);
+      } else if (d.e.kind === 'player') {
+        const e = d.e, p = e.data;
+        const cx = e.gx * this.T + this.T / 2, cy = e.gy * this.T + this.T * 0.9;
+        drawActor(ctx, cx, cy, this.T * 1.15, p.archetype || 'civ', { tt: this.tt + e.bob * 120, facing: 's', walk: false });
+        this._nameTag(ctx, cx, e.gy * this.T + this.T * 0.05, p.name, p.level || 0, '#3ce88b', 1);
       } else {
         const e = d.e;
         const cx = e.gx * this.T + this.T / 2, cy = e.gy * this.T + this.T * 0.9;

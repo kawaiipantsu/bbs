@@ -154,6 +154,10 @@ function startGame(state) {
   scene.on('portal', exits => ui.portalChoice(exits));
   scene.on('interact', d => {
     if (d.type === 'item') return sendCmd('get ' + d.item.kw);
+    if (d.type === 'player') {
+      const p = d.player;
+      return ui.toast(p.name + (p.title ? ' — ' + p.title : '') + '  ·  L' + (p.level || '?') + ' ' + (p.archetype || ''));
+    }
     const m = d.mob;
     if (d.hostile) return sendCmd('kill ' + m.kw);
     if (m.shop) return openShop(m.kw);
