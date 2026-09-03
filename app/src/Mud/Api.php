@@ -215,8 +215,17 @@ final class Api
      *  player can touch carries its full stats, mods and description. */
     private static function tplCard(array $t): array
     {
-        $mods = !empty($t['stat_mods']) ? json_decode((string) $t['stat_mods'], true) : null;
-        $eff  = !empty($t['effect']) ? json_decode((string) $t['effect'], true) : null;
+        // stat_mods / effect arrive as a JSON string from a raw template row,
+        // but already decoded to an array when the template came through
+        // World::itemTemplate() (inventory / equipment).
+        $mods = $t['stat_mods'] ?? null;
+        if (is_string($mods)) {
+            $mods = $mods !== '' ? json_decode($mods, true) : null;
+        }
+        $eff = $t['effect'] ?? null;
+        if (is_string($eff)) {
+            $eff = $eff !== '' ? json_decode($eff, true) : null;
+        }
         return [
             'name'   => $t['name'],
             'icon'   => self::itemIcon($t),
