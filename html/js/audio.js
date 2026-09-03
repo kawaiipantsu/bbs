@@ -25,18 +25,61 @@ export class Sound {
     this.master = this.ctx.createGain();
     this.master.gain.value = 0.5;
     this.master.connect(this.ctx.destination);
+    // iOS re-suspends the context whenever it feels like it - chase it back.
+    this.ctx.onstatechange = () => {
+      if (this._unlocked && this.ctx.state === 'suspended') this.ctx.resume().catch(() => {});
+    };
   }
 
-  /** Call from a user gesture to satisfy autoplay policy. */
+  /**
+   * Call from a user gesture to satisfy autoplay policy. iOS Safari needs
+   * more hand-holding than desktop: resume the context AND play a one-sample
+   * silent buffer inside the gesture, and prime a muted <audio> element so
+   * WebAudio is routed through the path that ignores the ring/silent switch.
+   */
   unlock() {
     this._ensure();
-    if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
+    if (!this.ctx) return;
+    if (this.ctx.state === 'suspended') this.ctx.resume().catch(() => {});
+    try {
+      const b = this.ctx.createBuffer(1, 1, 22050);
+      const s = this.ctx.createBufferSource();
+      s.buffer = b;
+      s.connect(this.ctx.destination);
+      s.start(0);
+    } catch (_) {}
+    this._primeMediaEl();
     this._unlocked = true;
+  }
+
+  /** A silent looping <audio> element - on iOS this lifts the mute-switch
+      silencing for the whole page's audio, WebAudio included. */
+  _primeMediaEl() {
+    if (this._mediaPrimed) return;
+    try {
+      const el = document.createElement('audio');
+      el.setAttribute('playsinline', '');
+      el.loop = true;
+      el.preload = 'auto';
+      // 0.05s of silent WAV as a data URI
+      el.src = 'data:audio/wav;base64,UklGRjIAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQ4AAAAAAAAAAAAAAAAAAAAAAAA=';
+      el.volume = 0.001;
+      const p = el.play();
+      if (p && p.catch) p.catch(() => {});
+      this._mediaEl = el;
+      this._mediaPrimed = true;
+    } catch (_) {}
   }
 
   setEnabled(on) {
     this.enabled = !!on;
     if (on) this.unlock();
+    else this.ambientStop();
+  }
+
+  /** Cheap idempotent nudge - call on every keydown/click. */
+  resume() {
+    if (this.ctx && this._unlocked && this.ctx.state === 'suspended') this.ctx.resume().catch(() => {});
   }
 
   get ready() { return this.enabled && this.ctx && this._unlocked; }
@@ -236,6 +279,186 @@ export class Sound {
   stopErrorLoop() {
     if (this._errLoop) { clearTimeout(this._errLoop); this._errLoop = null; }
     this._errType = null;
+  }
+
+  /* ---- Hackers-MUD: one-shot effect sounds ----------------------- */
+
+  /** Dispatch a named MUD effect. Unknown names are ignored. */
+  mud(name) {
+    if (!this.ready) return;
+    const t = this.ctx.currentTime;
+    switch (name) {
+      case 'step': case 'step2': {
+        const lo = name === 'step' ? 90 : 70;
+        this._noise(t, 0.06, { gain: 0.06, band: 260 + Math.random() * 60, q: 1.2 });
+        this._tone(lo + Math.random() * 20, t, 0.05, { type: 'sine', gain: 0.05, glide: 45 });
+        break;
+      }
+      case 'door':
+        this._noise(t, 0.05, { gain: 0.16, band: 180, q: 0.6 });
+        this._tone(140, t + 0.03, 0.12, { type: 'square', gain: 0.06, glide: 70 });
+        this._tone(1200, t + 0.02, 0.04, { type: 'square', gain: 0.03 });
+        break;
+      case 'swing': case 'miss':
+        this._noise(t, 0.14, { gain: 0.07, band: 1700, q: 0.4 });
+        this._tone(500, t, 0.12, { type: 'sine', gain: 0.03, glide: 1600 });
+        break;
+      case 'blade':
+        this._tone(1800, t, 0.14, { type: 'sawtooth', gain: 0.05, glide: 400 });
+        this._noise(t, 0.1, { gain: 0.05, band: 3200, q: 0.5 });
+        break;
+      case 'hit':
+        this._noise(t, 0.09, { gain: 0.13, band: 380, q: 0.8 });
+        this._tone(120, t, 0.1, { type: 'square', gain: 0.08, glide: 60 });
+        break;
+      case 'crit':
+        this._noise(t, 0.16, { gain: 0.2, band: 300, q: 0.7 });
+        this._tone(90, t, 0.22, { type: 'square', gain: 0.12, glide: 40 });
+        this._tone(240, t + 0.02, 0.18, { type: 'sawtooth', gain: 0.06, glide: 80 });
+        break;
+      case 'gun':
+        this._noise(t, 0.05, { gain: 0.22, band: 900, q: 0.3 });
+        this._noise(t, 0.18, { gain: 0.08, band: 220, q: 0.4 });
+        this._tone(70, t, 0.14, { type: 'square', gain: 0.1, glide: 40 });
+        break;
+      case 'enemyhit':
+        this._noise(t, 0.08, { gain: 0.09, band: 500, q: 0.9 });
+        this._tone(200, t, 0.09, { type: 'sawtooth', gain: 0.05, glide: 110 });
+        break;
+      case 'hurt':
+        this._tone(300, t, 0.16, { type: 'sawtooth', gain: 0.08, glide: 140 });
+        this._noise(t, 0.1, { gain: 0.05, band: 700 });
+        break;
+      case 'kill':
+        this._tone(180, t, 0.28, { type: 'square', gain: 0.09, glide: 50 });
+        this._noise(t + 0.02, 0.18, { gain: 0.08, band: 260, q: 0.5 });
+        break;
+      case 'aggro':
+        this._tone(140, t, 0.3, { type: 'sawtooth', gain: 0.07, glide: 220 });
+        this._tone(90, t + 0.05, 0.3, { type: 'square', gain: 0.05, glide: 130 });
+        break;
+      case 'coin': case 'buy': case 'sell':
+        this._tone(1660, t, 0.06, { type: 'square', gain: 0.06 });
+        this._tone(2100, t + 0.05, 0.08, { type: 'square', gain: 0.06 });
+        if (name !== 'sell') this._tone(2640, t + 0.11, 0.1, { type: 'triangle', gain: 0.05 });
+        break;
+      case 'pickup':
+        this._tone(880, t, 0.04, { type: 'square', gain: 0.05 });
+        this._tone(1320, t + 0.04, 0.05, { type: 'square', gain: 0.045 });
+        break;
+      case 'drink':
+        this._noise(t, 0.22, { gain: 0.05, band: 600, q: 1.5 });
+        this._tone(400, t, 0.2, { type: 'sine', gain: 0.03, glide: 520 });
+        break;
+      case 'eat':
+        this._noise(t, 0.08, { gain: 0.07, band: 900, q: 1 });
+        this._noise(t + 0.12, 0.08, { gain: 0.06, band: 700, q: 1 });
+        break;
+      case 'equip':
+        this._noise(t, 0.05, { gain: 0.08, band: 2200, q: 0.6 });
+        this._tone(600, t, 0.06, { type: 'square', gain: 0.04, glide: 300 });
+        break;
+      case 'hack':
+        for (let i = 0; i < 4; i++) {
+          this._tone(1400 + Math.random() * 900, t + i * 0.05, 0.04, { type: 'square', gain: 0.035 });
+        }
+        break;
+      case 'hackok':
+        [660, 880, 1320].forEach((f, i) => this._tone(f, t + i * 0.05, 0.09, { type: 'triangle', gain: 0.05 }));
+        break;
+      case 'hackfail':
+        this._tone(200, t, 0.14, { type: 'sawtooth', gain: 0.07 });
+        this._tone(150, t + 0.12, 0.16, { type: 'sawtooth', gain: 0.06 });
+        break;
+      case 'levelup':
+        [523, 659, 784, 1046, 1318].forEach((f, i) =>
+          this._tone(f, t + i * 0.07, 0.16, { type: 'triangle', gain: 0.06 }));
+        break;
+      case 'quest':
+        [784, 1046, 1568].forEach((f, i) => this._tone(f, t + i * 0.08, 0.14, { type: 'triangle', gain: 0.055 }));
+        break;
+      case 'death':
+        this._tone(400, t, 0.5, { type: 'sine', gain: 0.09, glide: 120 });
+        this._tone(402, t, 0.5, { type: 'sine', gain: 0.06 });
+        this._noise(t + 0.4, 0.5, { gain: 0.04, band: 400, q: 0.3 });
+        break;
+      case 'trace':
+        for (let i = 0; i < 6; i++) this._tone(1800, t + i * 0.14, 0.06, { type: 'square', gain: 0.05 });
+        break;
+      default:
+        break;
+    }
+  }
+
+  /* ---- Hackers-MUD: looping ambient bed per zone ----------------- */
+
+  /** Start or cross-fade to an ambient bed. key: rain|hum|drip|wind|static|room */
+  ambient(key) {
+    if (!this.enabled) { this._ambientKey = key; return; }
+    this._ensure();
+    if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume().catch(() => {});
+    if (this._ambientKey === key && this._ambientNodes) return;
+    this.ambientStop(0.6);
+    this._ambientKey = key;
+    if (!this.ctx) return;
+
+    const out = this.ctx.createGain();
+    out.gain.setValueAtTime(0.0001, this.ctx.currentTime);
+    out.gain.exponentialRampToValueAtTime(0.9, this.ctx.currentTime + 0.8);
+    out.connect(this.master);
+
+    // steady filtered-noise floor
+    const n = this.ctx.createBufferSource();
+    const len = Math.floor(this.ctx.sampleRate * 2);
+    const buf = this.ctx.createBuffer(1, len, this.ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    n.buffer = buf; n.loop = true;
+    const f = this.ctx.createBiquadFilter();
+    const g = this.ctx.createGain();
+
+    const cfg = {
+      rain:   { type: 'bandpass', freq: 1600, q: 0.4, gain: 0.03 },
+      hum:    { type: 'lowpass',  freq: 180,  q: 0.7, gain: 0.05 },
+      drip:   { type: 'lowpass',  freq: 500,  q: 0.6, gain: 0.02 },
+      wind:   { type: 'bandpass', freq: 500,  q: 0.3, gain: 0.035 },
+      static: { type: 'highpass', freq: 2200, q: 0.4, gain: 0.02 },
+      room:   { type: 'lowpass',  freq: 320,  q: 0.6, gain: 0.02 },
+    }[key] || { type: 'lowpass', freq: 400, q: 0.5, gain: 0.02 };
+
+    f.type = cfg.type; f.frequency.value = cfg.freq; f.Q.value = cfg.q;
+    g.gain.value = cfg.gain;
+    n.connect(f).connect(g).connect(out);
+    n.start();
+
+    this._ambientNodes = { out, n };
+
+    // sparse motif on top (drips, gusts, distant traffic booms)
+    const motif = () => {
+      if (!this._ambientNodes || this._ambientKey !== key) return;
+      const tt = this.ctx.currentTime;
+      if (key === 'drip') this._tone(900 + Math.random() * 400, tt, 0.05, { type: 'sine', gain: 0.03, glide: 300 });
+      else if (key === 'wind') this._noise(tt, 0.9, { gain: 0.03, band: 300 + Math.random() * 300, q: 0.2 });
+      else if (key === 'rain') this._noise(tt, 0.4, { gain: 0.015, band: 4000, q: 0.5 });
+      else if (key === 'hum' || key === 'room') this._tone(55, tt, 1.2, { type: 'sine', gain: 0.02 });
+      else if (key === 'static') for (let i = 0; i < 3; i++) this._tone(2000 + Math.random() * 2000, tt + i * 0.1, 0.05, { type: 'square', gain: 0.015 });
+      this._ambientTimer = setTimeout(motif, 1400 + Math.random() * 2600);
+    };
+    this._ambientTimer = setTimeout(motif, 900);
+  }
+
+  ambientStop(fade = 0.4) {
+    if (this._ambientTimer) { clearTimeout(this._ambientTimer); this._ambientTimer = null; }
+    const nodes = this._ambientNodes;
+    this._ambientNodes = null;
+    this._ambientKey = null;
+    if (!nodes || !this.ctx) return;
+    try {
+      nodes.out.gain.cancelScheduledValues(this.ctx.currentTime);
+      nodes.out.gain.setValueAtTime(Math.max(0.0001, nodes.out.gain.value), this.ctx.currentTime);
+      nodes.out.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + fade);
+      nodes.n.stop(this.ctx.currentTime + fade + 0.05);
+    } catch (_) {}
   }
 
   /* ---- the modem ---------------------------------------------------

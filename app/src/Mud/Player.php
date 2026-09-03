@@ -313,20 +313,60 @@ final class Player
     public static function die(int $playerId, string $cause): array
     {
         $p = self::byId($playerId);
+        $fell = (int) $p['room_id'];
         $lost = (int) floor($p['money'] * 0.25);
+
+        // everything you were carrying (not worn) stays where you fell, in a
+        // body bag - go back for it before something else does.
+        $carried = self::inventory($playerId);
+        $bagged = 0;
+        foreach ($carried as $i) {
+            if (str_contains((string) $i['tpl']['flags'], 'nodrop')) {
+                continue;
+            }
+            World::moveItem((int) $i['id'], 'room', $fell);
+            $bagged++;
+        }
+        if ($bagged > 0) {
+            World::spawnItem(6918, 'room', $fell); // a body bag marker
+        }
+
         Db::q(
             "UPDATE mud_players SET hp = GREATEST(1, ROUND(max_hp * 0.25)), energy = 0, state = 'idle',
              pos = 'standing', target_mob = NULL, room_id = respawn_room_id, deaths = deaths + 1,
              money = money - ? WHERE id = ?",
             [$lost, $playerId]
         );
-        // drop a credchip with the lost eddies where you fell? keep simple: eddies just gone (trauma team fee)
         Db::q('DELETE FROM mud_player_effects WHERE player_id = ?', [$playerId]);
         World::event($playerId, 'death', "{$p['name']} flatlined ($cause). Trauma Team billed ¥$lost.");
-        return [
+        $out = [
             '|12You black out. Cold. Then bright light and a Trauma Team invoice.',
             "|08You wake at a safehouse, patched up. ¥$lost gone in fees.",
         ];
+        if ($bagged > 0) {
+            $out[] = "|08Everything you were carrying ($bagged item" . ($bagged === 1 ? '' : 's') . ') is still where you fell. Better hurry.';
+        }
+        return $out;
+    }
+
+    /* ---- NCPD wanted level -------------------------------------- */
+
+    public static function wanted(array|int $p): int
+    {
+        $v = is_array($p) ? ($p['wanted'] ?? 0) : (int) Db::val('SELECT wanted FROM mud_players WHERE id = ?', [$p]);
+        return max(0, min(100, (int) $v));
+    }
+
+    /** @return int the new wanted level */
+    public static function addWanted(int $playerId, int $delta): int
+    {
+        Db::q('UPDATE mud_players SET wanted = GREATEST(0, LEAST(100, wanted + ?)) WHERE id = ?', [$delta, $playerId]);
+        return (int) Db::val('SELECT wanted FROM mud_players WHERE id = ?', [$playerId]);
+    }
+
+    public static function clearWanted(int $playerId): void
+    {
+        Db::q('UPDATE mud_players SET wanted = 0 WHERE id = ?', [$playerId]);
     }
 
     public static function touch(int $playerId): void

@@ -168,6 +168,30 @@ final class World
         return Db::one('SELECT * FROM mud_shops WHERE room_id = ?', [$roomId]);
     }
 
+    /** Readable lore in a room. @return list<array{keywords:string,body:string}> */
+    public static function roomExtras(int $roomId): array
+    {
+        return Db::all('SELECT keywords, body FROM mud_room_extras WHERE room_id = ?', [$roomId]);
+    }
+
+    /** Match a look/examine keyword against a room's extras; null if none. */
+    public static function roomExtra(int $roomId, string $kw): ?string
+    {
+        $kw = strtolower(trim($kw));
+        if ($kw === '') {
+            return null;
+        }
+        foreach (self::roomExtras($roomId) as $e) {
+            foreach (explode('|', strtolower($e['keywords'])) as $k) {
+                $k = trim($k);
+                if ($k !== '' && ($k === $kw || str_contains($k, $kw) || str_contains($kw, $k))) {
+                    return $e['body'];
+                }
+            }
+        }
+        return null;
+    }
+
     /** @return list<array> stock rows with template merged */
     public static function shopStock(int $shopId): array
     {

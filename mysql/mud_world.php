@@ -40,6 +40,8 @@ $ZONES = [
     'zone'     => ['The Combat Zone',     'A dead shopping arcade the city gave up on. Scavs nest in the food court.', 9, 20],
     'undercity'=> ['The Undercity',       'Maintenance tunnels, storm drains and things that learned to live down here.', 6, 18],
     'blackwall'=> ['The Blackwall Fringe','Where the old Net rots against the wall that keeps the rogue AIs out.', 16, 30],
+    'arcade'   => ['The Neon Kitsune',    'A three-floor braindance parlour and arcade off Jig-Jig. The Tyger Claws launder half of Kabuki through it.', 2, 12],
+    'badlands' => ['The Badlands Edge',   'Past the city limits: dead highway, solar-farm bones and the nomad clans who make the desert work.', 6, 20],
 ];
 
 /**
@@ -545,7 +547,7 @@ $QUEST = [
  * ============================================================ */
 
 if ($statsOnly) {
-    foreach (['mud_zones', 'mud_rooms', 'mud_exits', 'mud_item_templates', 'mud_mob_templates', 'mud_mob_instances', 'mud_shops', 'mud_shop_stock', 'mud_quests', 'mud_players'] as $t) {
+    foreach (['mud_zones', 'mud_rooms', 'mud_exits', 'mud_room_extras', 'mud_item_templates', 'mud_mob_templates', 'mud_mob_instances', 'mud_shops', 'mud_shop_stock', 'mud_quests', 'mud_players'] as $t) {
         printf("  %-22s %d\n", $t, (int) Db::val("SELECT COUNT(*) FROM `$t`"));
     }
     exit(0);
@@ -593,6 +595,15 @@ $EX = [
     [1506, 'n', 1507],
 ];
 
+/* ---- content expansion: extra rooms, mobs, items, shops, quests, lore ----
+   Split into its own file to keep this one readable. It uses the $room/$mob/
+   $item closures and appends to $SHOP / $QUEST / $EX, and fills these: */
+$EXTRAS    = [];   // [room_vnum => [[keywords, body], ...]]  - readable room lore
+$SPAWN_EXT = [];   // [mob_vnum  => [[room_vnum, count], ...]]
+if (is_file(__DIR__ . '/mud_world_ext.php')) {
+    require __DIR__ . '/mud_world_ext.php';
+}
+
 // Normalise any stray PHP escape artefacts (a literal \' or \" that slipped in
 // via a double-quoted source string) before anything reaches the database.
 $fixEsc = static function (&$v): void {
@@ -606,18 +617,45 @@ array_walk_recursive($IT, $fixEsc);
 array_walk_recursive($SHOP, $fixEsc);
 array_walk_recursive($QUEST, $fixEsc);
 array_walk_recursive($EX, $fixEsc);
+array_walk_recursive($EXTRAS, $fixEsc);
 
 Db::pdo()->beginTransaction();
 try {
-    // wipe world + templates + instances; keep player characters
+    // Room ids change on every rebuild, so snapshot each player's LOCATION by
+    // room vnum and their carried/worn items by item vnum, then restore both
+    // after the world is rebuilt. Players keep level, skills, eddies, quests.
+    $keptItems = [];
+    $keptWhere = [];
+    $havePlayers = Db::val("SELECT 1 FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'mud_players'")
+        && (int) Db::val("SELECT COUNT(*) FROM mud_players") > 0;
+    if ($havePlayers) {
+        $keptItems = Db::all(
+            "SELECT ii.loc_id AS player_id, pe.slot AS slot, it.vnum AS vnum,
+                    ii.`condition` AS `condition`, ii.charges_left AS charges_left, ii.custom_name AS custom_name
+             FROM mud_item_instances ii
+             JOIN mud_item_templates it ON it.id = ii.template_id
+             LEFT JOIN mud_player_equipment pe ON pe.instance_id = ii.id
+             WHERE ii.loc_type = 'player'"
+        );
+        $keptWhere = Db::all(
+            "SELECT p.id AS player_id, r1.vnum AS room_vnum, r2.vnum AS respawn_vnum
+             FROM mud_players p
+             LEFT JOIN mud_rooms r1 ON r1.id = p.room_id
+             LEFT JOIN mud_rooms r2 ON r2.id = p.respawn_room_id"
+        );
+    }
+
+    // wipe world + templates + instances; keep player characters, skills, quests
     foreach ([
         'mud_exits', 'mud_shop_stock', 'mud_shops', 'mud_mob_instances', 'mud_item_instances',
-        'mud_mob_templates', 'mud_item_templates', 'mud_rooms', 'mud_zones', 'mud_quests',
+        'mud_mob_templates', 'mud_item_templates', 'mud_room_extras', 'mud_rooms', 'mud_zones', 'mud_quests',
         'mud_player_equipment', 'mud_player_effects',
     ] as $t) {
-        Db::q("DELETE FROM `$t`");
+        if (Db::val("SELECT 1 FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = ?", [$t])) {
+            Db::q("DELETE FROM `$t`");
+        }
     }
-    echo "  wiped world tables\n";
+    echo '  wiped world tables' . ($keptItems ? ' (snapshotted ' . count($keptItems) . ' player item(s))' : '') . "\n";
 
     // zones
     $zoneId = [];
@@ -679,8 +717,9 @@ try {
     echo "  exits: $exCount\n";
 
     // item templates
+    $itemId = [];
     foreach ($IT as $vnum => $it) {
-        Db::insert('mud_item_templates', [
+        $itemId[$vnum] = Db::insert('mud_item_templates', [
             'vnum' => $vnum, 'name' => $it['name'], 'keywords' => $it['kw'],
             'room_desc' => $it['room_desc'] ?: (ucfirst($it['name']) . ' lies here.'),
             'long_desc' => $it['long_desc'] ?: $it['name'],
@@ -692,6 +731,34 @@ try {
         ]);
     }
     echo '  item templates: ' . count($IT) . "\n";
+
+    // re-grant the player items we snapshotted before the wipe
+    $regrant = 0;
+    foreach ($keptItems as $k) {
+        if (!isset($itemId[(int) $k['vnum']])) {
+            continue;   // that item no longer exists in the world - drop it
+        }
+        $newId = Db::insert('mud_item_instances', [
+            'template_id'  => $itemId[(int) $k['vnum']],
+            'loc_type'     => 'player',
+            'loc_id'       => (int) $k['player_id'],
+            'condition'    => (int) ($k['condition'] ?? 100),
+            'charges_left' => (int) ($k['charges_left'] ?? -1),
+            'custom_name'  => $k['custom_name'] ?: null,
+            'created_at'   => date('Y-m-d H:i:s'),
+        ]);
+        if (!empty($k['slot'])) {
+            Db::insert('mud_player_equipment', [
+                'player_id'   => (int) $k['player_id'],
+                'slot'        => $k['slot'],
+                'instance_id' => $newId,
+            ]);
+        }
+        $regrant++;
+    }
+    if ($regrant) {
+        echo "  re-granted $regrant player item(s)\n";
+    }
 
     // mob templates
     $mobId = [];
@@ -710,7 +777,7 @@ try {
     }
     echo '  mob templates: ' . count($mobId) . "\n";
 
-    // mob spawns: [mob_vnum => [room_vnum, count]]
+    // mob spawns: [mob_vnum => [[room_vnum, count], ...]]
     $SPAWN = [
         5000 => [[1016, 1], [1020, 2], [1017, 1]],
         5001 => [[1013, 1], [1020, 1], [1006, 1], [1101, 1]],
@@ -755,6 +822,9 @@ try {
         5072 => [[1502, 1], [1503, 1]],
         5073 => [[1507, 1]],
     ];
+    foreach ($SPAWN_EXT as $mv => $spots) {
+        $SPAWN[$mv] = array_merge($SPAWN[$mv] ?? [], $spots);
+    }
     $spawnCount = 0;
     foreach ($SPAWN as $mvnum => $spots) {
         foreach ($spots as [$rvnum, $n]) {
@@ -810,6 +880,20 @@ try {
     }
     echo '  quests: ' . count($QUEST) . "\n";
 
+    // room lore / readable extras
+    $exN = 0;
+    foreach ($EXTRAS as $rvnum => $rows) {
+        if (!isset($roomId[$rvnum])) {
+            fwrite(STDERR, "  ! extra skips missing room $rvnum\n");
+            continue;
+        }
+        foreach ($rows as [$kw, $body]) {
+            Db::insert('mud_room_extras', ['room_id' => $roomId[$rvnum], 'keywords' => $kw, 'body' => $body]);
+            $exN++;
+        }
+    }
+    echo "  room extras: $exN\n";
+
     // config
     $startId = $roomId[1000];
     foreach ([
@@ -823,10 +907,20 @@ try {
     }
     echo "  config: start/respawn room = $startId\n";
 
-    // reset any existing characters into a clean state
-    $moved = Db::q('UPDATE mud_players SET room_id = ?, respawn_room_id = ?, state = "idle", pos = "standing", target_mob = NULL', [$startId, $startId])->rowCount();
-    if ($moved) {
-        echo "  reset $moved existing player(s) to the start room\n";
+    // restore each player's location (mapped through room vnum), clear any
+    // transient fight state; level / skills / eddies / quests are untouched.
+    $relocated = 0;
+    foreach ($keptWhere as $w) {
+        $room    = $roomId[(int) $w['room_vnum']]    ?? $startId;
+        $respawn = $roomId[(int) $w['respawn_vnum']] ?? $startId;
+        Db::q(
+            'UPDATE mud_players SET room_id = ?, respawn_room_id = ?, state = "idle", target_mob = NULL WHERE id = ?',
+            [$room, $respawn, (int) $w['player_id']]
+        );
+        $relocated++;
+    }
+    if ($relocated) {
+        echo "  restored $relocated player(s) to their last location\n";
     }
 
     Db::pdo()->commit();

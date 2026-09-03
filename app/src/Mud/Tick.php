@@ -119,6 +119,81 @@ final class Tick
                 self::queue((int) $t['player_id'], $lines);
             }
         }
+
+        self::ncpdHeat();
+        self::worldEvents();
+    }
+
+    /**
+     * NCPD wanted level: it cools slowly while you keep your head down (out of
+     * street/plaza zones), and when it is high a MaxTac responder drops on you.
+     */
+    private static function ncpdHeat(): void
+    {
+        // cool down: -1 every tick if not standing on a patrolled street this minute
+        Db::q(
+            "UPDATE mud_players p
+             JOIN mud_rooms r ON r.id = p.room_id
+             JOIN mud_zones z ON z.id = r.zone_id
+             SET p.wanted = GREATEST(0, p.wanted - 1)
+             WHERE p.wanted > 0
+               AND (z.slug IN ('undercity','blackwall','badlands') OR r.flags LIKE '%safe%' OR r.flags LIKE '%indoors%')"
+        );
+
+        $hunted = Db::all(
+            "SELECT p.id, p.room_id, p.wanted FROM mud_players p
+             JOIN mud_rooms r ON r.id = p.room_id
+             WHERE p.wanted >= 60 AND p.state <> 'dead'
+               AND p.last_cmd_at > NOW() - INTERVAL 3 MINUTE
+               AND r.flags NOT LIKE '%safe%'
+             ORDER BY RAND() LIMIT 4"
+        );
+        foreach ($hunted as $h) {
+            // one MaxTac at a time per player
+            $already = Db::val(
+                "SELECT mi.id FROM mud_mob_instances mi JOIN mud_mob_templates mt ON mt.id = mi.template_id
+                 WHERE mt.flags LIKE '%hunter%' AND mi.room_id = ? AND mi.state <> 'dead'",
+                [$h['room_id']]
+            );
+            if ($already) {
+                continue;
+            }
+            $tpl = Db::one("SELECT id, max_hp FROM mud_mob_templates WHERE flags LIKE '%hunter%' LIMIT 1");
+            if (!$tpl) {
+                continue;
+            }
+            Db::insert('mud_mob_instances', [
+                'template_id'   => $tpl['id'],
+                'room_id'       => $h['room_id'],
+                'spawn_room_id' => $h['room_id'],
+                'hp'            => (int) $tpl['max_hp'],
+                'state'         => 'idle',
+                'last_act_at'   => date('Y-m-d H:i:s'),
+            ]);
+            self::queue((int) $h['id'], ['|12A spotlight pins you. "MAXTAC - GET DOWN!" They came for you specifically.']);
+        }
+    }
+
+    /** Occasional flavour broadcasts to everyone currently online. */
+    private static function worldEvents(): void
+    {
+        if (random_int(1, 6) !== 1) {
+            return;
+        }
+        $events = [
+            '|08[net] A gang war flares somewhere in Kabuki - gunfire echoing off the stacks.',
+            '|08[net] NCPD announces a "quality of life" sweep in Watson. Nobody believes them.',
+            '|08[net] Rain moving in off the bay. The whole city smells of ozone and wet concrete.',
+            '|08[net] A corp convoy rolls through Corpo Plaza under drone escort. Traffic stops for it.',
+            '|08[net] Somewhere under the city, something very large moves through the storm drains.',
+            '|08[net] The pirate station out in the Badlands reads tonight\'s Raffen sightings by mile marker.',
+            '|08[net] A Trauma Team AV screams overhead, someone\'s platinum contract cashing in.',
+            '|08[net] Power browns out across three districts, then catches. The neon stutters back on.',
+        ];
+        $msg = $events[array_rand($events)];
+        foreach (Db::all("SELECT id, data FROM mud_players WHERE last_cmd_at > NOW() - INTERVAL 10 MINUTE") as $p) {
+            self::queue((int) $p['id'], [$msg]);
+        }
     }
 
     /** Stash lines to show the player on their next command. */

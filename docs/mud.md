@@ -9,9 +9,15 @@ Your BBS account *is* your MUD character: the first time you jack in you pick a
 background and a `mud_players` row is created, keyed on your `user_id`. Guests
 cannot play (no account = no character).
 
-The world is a cyberpunk Night City: six districts, ~86 rooms, ~120 item
-templates, ~40 enemy types, 13 shops and 12 chained jobs. Everything lives in
-`mud_*` tables.
+The world is a cyberpunk Night City: **eight districts, ~128 rooms**, 200+ item
+templates, 70+ enemy types, 20+ shops, 26 chained jobs plus a repeatable
+bounty board, and ~45 readable room descriptions (`look <terminal|graffiti|
+sign>`). Everything lives in `mud_*` tables.
+
+**Audio**: the terminal plays synthesised effect sounds (footsteps, gunfire,
+blades, hacking, hits, pickups, level-ups) and a looping ambient bed per zone
+(rain / hum / drip / wind / static). `frame.meta.sfx` + `frame.meta.ambient`
+carry these; toggle all sound with the HUD **SOUND** button.
 
 ## Setup
 
@@ -59,10 +65,30 @@ resume where you stood.
 | fight | `kill <e>` (`k`/`attack`), *(blank line)* to trade a round, `flee`, `consider <e>`, `hack <e>` |
 | shop | `list`, `buy <x>`, `sell <x>`, `value <x>` |
 | talk | `talk <npc> [about <topic>]`, `say <msg>` (`'`), `emote <msg>` (`:`) |
-| jobs | `talk` to a fixer, `accept <job>`, `quests` |
-| crime | `rob <npc>`, `hack atm|terminal|vending|camera|door` |
+| jobs | `talk` to a fixer, `accept <job>`, `quests`; `board` at a job board for repeatable bounties |
+| grow | `spend <stat>` (level-up points), `train <skill>` at a trainer NPC (costs eddies) |
+| crime | `rob <npc>`, `hack atm|terminal|vending|camera|door`, `bribe` a bent fixer to clear NCPD heat |
 | body | `rest`, `sleep`, `wake`, `sit`, `stand` |
-| misc | `recall`/`home`, `deposit`/`withdraw <n>` (at a bank), `spend <stat>` |
+| misc | `recall`/`home`, `deposit`/`withdraw <n>` (at a bank), `scan` (adjacent rooms), `uninstall <chrome>` at a ripperdoc |
+
+### NCPD heat & death
+
+Hacking ATMs, tripping alarms and killing cops raise a **wanted** level (shown
+on the prompt and score sheet). It cools while you stay off the patrolled
+streets (indoors, the Undercity, the Badlands); at 60+ a **MaxTac responder**
+drops on you until you lose it, die, or `bribe` it away. On death, everything
+you were *carrying* (not worn) stays in a body bag where you fell - get back
+there before someone else does.
+
+### Districts
+
+Kabuki (start) · Watson Docks · Corpo Plaza · the Combat Zone · the Undercity,
+plus **the Neon Kitsune** (a Tyger Claw arcade/BD den off Jig-Jig, reached via
+the rooftops or Ping Alley) and **the Badlands Edge** (nomad camps, the Raffen
+Shiv, a solar-farm ruin - out past the wall on the maglev), and a **Deep
+Undercity** under the Cistern ending at a pre-war bunker. Four district bosses
+plus mini-bosses (the Kitsune, a Militech VP, Skinner of the Raffen Shiv, a
+fallout-shelter warden AI).
 
 ### Character
 
@@ -138,7 +164,14 @@ All prefixed `mud_`:
 `mud_mob_templates` / `mud_mob_instances` ·
 `mud_shops` / `mud_shop_stock` ·
 `mud_players` · `mud_player_equipment` / `mud_player_effects` /
-`mud_player_skills` · `mud_quests` / `mud_player_quests` · `mud_events`.
+`mud_player_skills` · `mud_quests` / `mud_player_quests` · `mud_events` ·
+`mud_room_extras` (readable lore). `mud_players.wanted` is the NCPD heat.
+
+The world seed is split: `mysql/mud_world.php` (the core) requires
+`mysql/mud_world_ext.php` (the content expansion - the two extra zones, the
+deep tunnels, the bulk of the items/mobs/quests, and the room lore). A rebuild
+now **preserves** each player's level, skills, eddies, quests, location and
+gear (snapshotted by vnum and restored after the wipe).
 
 ## Code
 

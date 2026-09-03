@@ -36,6 +36,7 @@ final class Combat
             [$dice, $bonus, $verb] = Player::weapon($p);
             $atk = random_int(1, 20) + Player::attackRating($p);
             $def = 10 + (int) $mob['ac'];
+            $swing = $verb === 'shoot' ? 'gun' : ($verb === 'strike' ? 'blade' : 'swing');
             if ($atk >= $def || random_int(1, 20) === 20) {
                 $crit = $atk - Player::attackRating($p) >= 19;
                 $dmg = max(1, World::roll($dice) + $bonus - intdiv((int) $mob['ac'], 4));
@@ -45,11 +46,13 @@ final class Combat
                 $mhp = (int) $mi['hp'] - $dmg;
                 Db::q('UPDATE mud_mob_instances SET hp = ?, state = "fighting", target_player = ?, last_act_at = NOW() WHERE id = ?',
                     [$mhp, $playerId, $mobInstId]);
+                Mud::sfx($swing, $crit ? 'crit' : 'hit');
                 $log[] = sprintf('|10You %s %s for |15%d|10 damage%s.', $verb, $mob['name'], $dmg, $crit ? ' |11(CRIT!)' : '');
                 if ($mhp <= 0) {
                     return array_merge($log, self::kill($playerId, $mobInstId));
                 }
             } else {
+                Mud::sfx($swing);
                 $log[] = sprintf('|08You %s at %s and miss.', $verb, $mob['name']);
             }
 
@@ -61,8 +64,10 @@ final class Combat
                 $mdmg = max(1, World::roll($mob['damage_dice'] ?: '1d4') - intdiv(Player::armorClass($p), 3));
                 $php = (int) $p['hp'] - $mdmg;
                 Db::q('UPDATE mud_players SET hp = ?, state = "fighting", target_mob = ? WHERE id = ?', [$php, $mobInstId, $playerId]);
+                Mud::sfx($php > 0 && $php <= (int) $p['max_hp'] * 0.3 ? 'hurt' : 'enemyhit');
                 $log[] = sprintf('|09%s hits you for |15%d|09 damage.', ucfirst($mob['name']), $mdmg);
                 if ($php <= 0) {
+                    Mud::sfx('death');
                     return array_merge($log, Player::die($playerId, 'killed by ' . $mob['name']));
                 }
             } else {
@@ -101,6 +106,7 @@ final class Combat
         $mob = $mi['tpl'];
         Db::q('UPDATE mud_mob_instances SET state="fighting", target_player=? WHERE id=?', [$playerId, $mobInstId]);
         Db::q('UPDATE mud_players SET state="fighting", target_mob=? WHERE id=? AND target_mob IS NULL', [$mobInstId, $playerId]);
+        Mud::sfx('aggro');
         $matk = random_int(1, 20) + (int) $mob['level'];
         $pdef = 10 + Player::armorClass($p);
         if ($matk >= $pdef) {
@@ -123,9 +129,23 @@ final class Combat
         $p = Player::byId($playerId);
         $mob = $mi['tpl'];
         $out = ["|11{$mob['name']} is dropped. It stops twitching."];
+        Mud::sfx('kill');
 
         Db::q("UPDATE mud_mob_instances SET state='dead', hp=0, died_at=NOW(), target_player=NULL WHERE id=?", [$mobInstId]);
         Db::q("UPDATE mud_players SET state='idle', target_mob=NULL, kills=kills+1 WHERE id=?", [$playerId]);
+
+        // killing NCPD or a corp responder raises your NCPD heat
+        if (in_array($mob['faction'], ['police'], true)) {
+            $bump = str_contains((string) $mob['flags'], 'hunter') ? 25 : 12;
+            $w = Player::addWanted($playerId, $bump);
+            $out[] = $w >= 60
+                ? '|12Every scanner in the district just lit up with your face. MaxTac inbound.'
+                : '|09You just killed a cop. NCPD does not forget that.';
+            World::event($playerId, 'wanted', "{$p['name']} killed {$mob['name']}.");
+        } elseif (in_array($mob['faction'], ['corpo', 'arasaka'], true) && str_contains((string) $mob['flags'], 'boss')) {
+            Player::addWanted($playerId, 15);
+            $out[] = '|09A corp exec flatlining on their own floor gets a response. Watch your back.';
+        }
 
         // money
         $money = random_int((int) $mob['money_min'], max((int) $mob['money_min'], (int) $mob['money_max']));
@@ -147,7 +167,11 @@ final class Combat
 
         // xp + skill xp
         $xp = (int) $mob['xp_reward'] + random_int(0, 2);
-        $out = array_merge($out, ["|10You gain |15$xp|10 XP."], Player::grantXp($playerId, $xp));
+        $lvlMsgs = Player::grantXp($playerId, $xp);
+        if ($lvlMsgs) {
+            Mud::sfx('levelup');
+        }
+        $out = array_merge($out, ["|10You gain |15$xp|10 XP."], $lvlMsgs);
         $ranged = ($eq = Player::equipmentSlot($playerId, 'wield')) && str_contains($eq['tpl']['flags'], 'ranged');
         $sk = Player::trainSkill($playerId, $ranged ? 'firearms' : 'melee', random_int(3, 7));
         if ($sk) {
@@ -159,9 +183,10 @@ final class Combat
             World::event($playerId, 'kill', "{$p['name']} took down {$mob['name']}.");
         }
 
-        // quest progress
+        // quest + bounty progress
         Quests::progress($playerId, 'kill', explode(' ', $mob['keywords'])[0]);
         Quests::progress($playerId, 'kill', 'vnum:' . $mob['vnum']);
+        Mud::bountyKill($playerId, $mob['keywords'] . ' ' . $mob['faction']);
         return $out;
     }
 

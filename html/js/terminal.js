@@ -148,6 +148,15 @@ export class Terminal {
     }
 
     if (frame.sound) this._playFrameSound(frame.sound);
+
+    // Hackers-MUD audio: per-move / combat effects + a looping zone bed.
+    const meta = frame.meta || {};
+    if (Array.isArray(meta.sfx)) {
+      meta.sfx.forEach((n, i) => setTimeout(() => sound.mud(n), i * 70));
+    }
+    if (meta.ambient) sound.ambient(meta.ambient);
+    else if (frame.view !== 'game') sound.ambientStop();
+
     if (frame.mode === 'redirect') { this._redirect(frame.meta || {}); return; }
     if (frame.mode === 'chat' && this.onChatEnter) { this.onChatEnter(frame); return; }
 

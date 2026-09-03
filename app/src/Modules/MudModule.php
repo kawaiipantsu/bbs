@@ -14,6 +14,10 @@ use Bbs\Mud\Player;
  * Bridges the BBS terminal to Hackers-MUD. Keeps a rolling scrollback in the
  * module sub-state; every keystroke line is fed to Mud::command() and the
  * returned pipe-coded lines are appended. ESC drops back to the Game Room.
+ *
+ * Audio: each render carries frame.meta.sfx (one-shot effect names queued by
+ * the command handlers) and frame.meta.ambient (the looping zone bed key);
+ * the client (terminal.js) plays them.
  */
 final class MudModule extends Module
 {
@@ -45,9 +49,11 @@ final class MudModule extends Module
 
         $uid = (int) $e->session->userId;
         $handle = $e->session->handle() ?: 'runner';
+        $sfx = [];
 
         // ---- first entry / reconnect bootstrap -------------------------
         if (!isset($st['phase'])) {
+            Mud::takeSfx();   // clear anything stale
             $open = Mud::open($uid, $handle);
             $st['phase'] = $open['phase'];
             $st['log'] = $open['lines'];
@@ -55,19 +61,19 @@ final class MudModule extends Module
             if (isset($open['player_id'])) {
                 $st['pid'] = (int) $open['player_id'];
             }
-            return $this->screen($st);
+            return $this->screen($st, Mud::takeSfx());
         }
 
         // plain redraw (client reconnect / post-redirect)
         if ($cmd === 'render' && $line === '' && $key === '') {
-            return $this->screen($st);
+            return $this->screen($st, []);
         }
 
         // ---- archetype selection ------------------------------------
         if ($st['phase'] === 'archetype') {
             $choice = $line !== '' ? $line : ($key !== '' ? $key : '');
             if ($choice === '') {
-                return $this->screen($st);
+                return $this->screen($st, []);
             }
             $res = Mud::chooseArchetype($uid, $handle, $choice);
             $this->append($st, $res['lines']);
@@ -75,8 +81,9 @@ final class MudModule extends Module
                 $st['phase'] = 'play';
                 $st['pid'] = (int) $res['player_id'];
                 $st['prompt'] = $res['prompt'] ?? '>';
+                $sfx[] = 'levelup';
             }
-            return $this->screen($st);
+            return $this->screen($st, array_merge($sfx, Mud::takeSfx()));
         }
 
         // ---- normal play -----------------------------------------
@@ -90,24 +97,23 @@ final class MudModule extends Module
         // key events. An empty line IS a valid command (advance combat / look).
         $submitted = $cmd === 'submit' || $key === 'ENTER' || $key === "\r" || $line !== '';
         if (!$submitted) {
-            return $this->screen($st);
+            return $this->screen($st, []);
         }
 
         if ($line !== '') {
             $this->append($st, ['|08> |07' . $line]);
         }
+        Mud::takeSfx();
         $out = Mud::command($pid, $line);
         $this->append($st, $out);
+        $sfx = Mud::takeSfx();
 
         $p = Player::byId($pid);
         if ($p) {
             $st['prompt'] = Mud::prompt($p);
-            // dropped out of the game entirely?
-            if (in_array((string) ($p['state'] ?? ''), ['quit'], true)) {
-                return $e->exitModule();
-            }
+            $st['room'] = (int) $p['room_id'];
         }
-        return $this->screen($st);
+        return $this->screen($st, $sfx);
     }
 
     /** Append lines to the rolling log, trimming to the cap. */
@@ -119,7 +125,8 @@ final class MudModule extends Module
         }
     }
 
-    private function screen(array $st): Frame
+    /** @param list<string> $sfx one-shot effect names to play this frame */
+    private function screen(array $st, array $sfx): Frame
     {
         $rows = Frame::pageSize(6);
         $log = $st['log'] ?? [];
@@ -131,12 +138,25 @@ final class MudModule extends Module
             $f->pipe($l === '' ? ' ' : $l);
         }
 
-        // status / prompt line
+        $ambient = 'room';
+        if (($st['phase'] ?? '') === 'play' && !empty($st['pid'])) {
+            $room = (int) ($st['room'] ?? 0);
+            if (!$room) {
+                $p = Player::byId((int) $st['pid']);
+                $room = $p ? (int) $p['room_id'] : 0;
+            }
+            if ($room) {
+                $ambient = Mud::ambientFor($room);
+            }
+        }
+
         $status = preg_replace('/\|\d\d/', '', (string) ($st['prompt'] ?? '>'));
         $status = trim($status) ?: '>';
         if (mb_strlen($status) > 72) {
             $status = mb_substr($status, 0, 72);
         }
-        return $f->prompt($status)->footer('type a command · ESC leaves the MUD · "help" for commands');
+        return $f->prompt($status)
+            ->meta(['sfx' => array_values(array_slice($sfx, 0, 6)), 'ambient' => $ambient])
+            ->footer('type a command · ESC leaves the MUD · "help" for commands');
     }
 }

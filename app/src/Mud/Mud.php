@@ -55,13 +55,59 @@ final class Mud
         'recall'    => ['home', 'safehouse'],
         'deposit'   => [],
         'withdraw'  => [],
-        'spend'     => ['raise', 'train'],
+        'spend'     => ['raise'],
+        'train'     => ['practice'],
         'quests'    => ['quest', 'journal', 'jobs', 'job'],
         'accept'    => [],
+        'board'     => ['bounties', 'bounty', 'jobboard'],
+        'scan'      => ['peek'],
+        'uninstall' => ['extract', 'remove-chrome'],
+        'bribe'     => ['payoff', 'launder'],
         'help'      => ['commands'],
         'time'      => [],
         'feed'      => [],   // world feed / recent events
     ];
+
+    /* ---- sound effects: handlers push names, MudModule drains them ---- */
+    /** @var list<string> */
+    private static array $sfx = [];
+
+    public static function sfx(string ...$names): void
+    {
+        foreach ($names as $n) {
+            self::$sfx[] = $n;
+        }
+    }
+
+    /** @return list<string> the queued effect names, cleared. */
+    public static function takeSfx(): array
+    {
+        $s = self::$sfx;
+        self::$sfx = [];
+        return array_slice($s, 0, 6);
+    }
+
+    /** Looping ambient bed key for a room: rain|hum|drip|wind|static|room. */
+    public static function ambientFor(int $roomId): string
+    {
+        $room = World::room($roomId);
+        if (!$room) {
+            return 'room';
+        }
+        $flags = (string) $room['flags'];
+        if (str_contains($flags, 'net')) {
+            return 'static';
+        }
+        $zone = (string) Db::val('SELECT slug FROM mud_zones WHERE id = ?', [$room['zone_id']]);
+        return match ($zone) {
+            'undercity'  => 'drip',
+            'badlands'   => 'wind',
+            'blackwall'  => 'static',
+            'arcade'     => 'room',
+            'corpo'      => str_contains($flags, 'indoors') ? 'hum' : 'rain',
+            default      => str_contains($flags, 'indoors') ? 'room' : 'rain',
+        };
+    }
 
     /* ---- session entry ------------------------------------------------ */
 
@@ -217,8 +263,32 @@ final class Mud
     {
         $p = Player::byId((int) $p['id']) ?: $p;
         $tag = $p['state'] === 'fighting' ? ' |09*FIGHT*|07' : ($p['pos'] !== 'standing' ? ' |08(' . $p['pos'] . ')|07' : '');
+        $w = Player::wanted($p);
+        if ($w >= 60) {
+            $tag .= ' |12*MAXTAC*|07';
+        } elseif ($w >= 20) {
+            $tag .= ' |09*WANTED*|07';
+        }
         return sprintf('|08[|12%d|08/|12%d|08hp |14%d|08/|14%d|08he |14¥%d|08 lv|15%d|08]%s >',
             $p['hp'], $p['max_hp'], $p['energy'], $p['max_energy'], $p['money'], $p['level'], $tag);
+    }
+
+    /** Strip a leading "a "/"an "/"the " so it reads after another article. */
+    public static function bare(string $name): string
+    {
+        return preg_replace('/^(a|an|the)\s+/i', '', $name) ?? $name;
+    }
+
+    /** Rough time-of-day for room flavour. */
+    public static function daylight(): array
+    {
+        $h = (int) date('G');
+        return match (true) {
+            $h >= 5 && $h < 8   => ['dawn',  '|08The sky over the towers is going from black to bruise. Kabuki never fully wakes; it just changes shift.'],
+            $h >= 8 && $h < 17  => ['day',   '|08Flat grey daylight. The neon looks tired and honest in it.'],
+            $h >= 17 && $h < 20 => ['dusk',  '|08The light is failing and the signs are winning. Rush hour of a city that never really stops.'],
+            default             => ['night', '|08Full dark, and the city is finally itself - all neon, rain and the far-off wow of a siren.'],
+        };
     }
 
     /* =============================================================
@@ -260,6 +330,7 @@ final class Mud
         $p['room_id'] = $x['to_room'];
         Player::visit($p, (int) $x['to_room']);
         World::event((int) $p['id'], 'move', '');
+        self::sfx($x['keyword'] || in_array($dir, ['in', 'out'], true) ? 'door' : (random_int(0, 1) ? 'step' : 'step2'));
         $out = ['|08You head ' . (World::DIRS[$dir] ?? $dir) . '.'];
         $out = array_merge($out, Render::room($p));
         // instant aggro on arrival
@@ -373,12 +444,14 @@ final class Mud
             $val = (int) ($i['tpl']['value'] ?: 1);
             Db::q('UPDATE mud_players SET money = money + ? WHERE id = ?', [$val, $p['id']]);
             World::destroyItem((int) $i['id']);
+            self::sfx('coin');
             return ["|14You pick up ¥$val."];
         }
         if (Player::carryWeight((int) $p['id']) + (float) $i['tpl']['weight'] > Player::maxCarry($p)) {
             return ['|08That is too heavy to add to your load.'];
         }
         World::moveItem((int) $i['id'], 'player', (int) $p['id']);
+        self::sfx('pickup');
         return ['|07You take ' . $i['tpl']['name'] . '.'];
     }
 
@@ -477,6 +550,7 @@ final class Mud
         $prev = Player::equipmentSlot((int) $p['id'], $slot);
         Player::equip((int) $p['id'], (int) $i['id'], $slot);
         $verb = str_starts_with($slot, 'implant_') ? 'jack in and install' : ($slot === 'wield' ? 'wield' : ($slot === 'held' ? 'hold' : 'put on'));
+        self::sfx('equip');
         $out = ["|10You $verb " . $t['name'] . '.'];
         if ($prev) {
             $out[] = '|08(you stop using ' . $prev['tpl']['name'] . ')';
@@ -526,6 +600,7 @@ final class Mud
         $t = $i['tpl'];
         $eff = $t['effect'] ?: [];
         $out = [];
+        self::sfx($t['type'] === 'drink' ? 'drink' : ($t['type'] === 'food' ? 'eat' : 'equip'));
         $consumed = in_array($t['type'], ['food', 'drink', 'drug'], true) || ($t['charges'] > 0 && $i['charges_left'] === -1 ? false : $t['charges'] > 0);
 
         if (isset($eff['heal'])) {
@@ -692,6 +767,7 @@ final class Mud
             if ((int) $s['qty'] > 0) {
                 Db::q('UPDATE mud_shop_stock SET qty = qty - 1 WHERE id = ?', [$s['id']]);
             }
+            self::sfx('buy');
             return ["|10You buy " . $t['name'] . " for ¥$price."];
         }
         return ['|08They do not sell "' . $kw . '".'];
@@ -718,6 +794,7 @@ final class Mud
         $price = max(1, (int) floor($t['value'] * (float) $shop['buy_markdown'] * ((int) $i['condition'] / 100)));
         Db::q('UPDATE mud_players SET money = money + ? WHERE id = ?', [$price, $p['id']]);
         World::destroyItem((int) $i['id']);
+        self::sfx('sell');
         return ["|10You sell " . $t['name'] . " for ¥$price."];
     }
 
@@ -820,7 +897,11 @@ final class Mud
         foreach (World::mobs((int) $p['room_id']) as $mi) {
             foreach (Quests::forGiver((int) $mi['tpl']['vnum']) as $q) {
                 if (str_contains(strtolower($q['name']), $name) && $name !== '') {
-                    return Quests::accept((int) $p['id'], $q);
+                    $r = Quests::accept((int) $p['id'], $q);
+                    if ($r && str_contains($r[0], 'ACCEPTED')) {
+                        self::sfx('quest');
+                    }
+                    return $r;
                 }
             }
         }
@@ -886,6 +967,7 @@ final class Mud
             }
         }
         Quests::progress((int) $p['id'], 'rob', explode(' ', $t['keywords'])[0]);
+        self::sfx('coin');
         return array_merge(["|10You pick " . $t['name'] . "'s pocket for ¥$take."], $extra);
     }
 
@@ -914,6 +996,7 @@ final class Mud
             return ['|09Your deck is overheating. Rest and let the heat sink cool.'];
         }
         Db::q('UPDATE mud_players SET energy = GREATEST(0, energy - 3) WHERE id = ?', [$p['id']]);
+        self::sfx('hack');
 
         // 1) a locked/electronic exit
         foreach (World::exits((int) $p['room_id']) as $dir => $x) {
@@ -922,6 +1005,7 @@ final class Mud
                 Player::trainSkill((int) $p['id'], 'hacking', 5);
                 if ($roll >= 10 + (int) $x['hack_dc']) {
                     Db::q('UPDATE mud_exits SET locked = 0 WHERE id = ?', [$x['id']]);
+                    self::sfx('hackok', 'door');
                     return ['|10ICE peels away. The lock ' . (World::DIRS[$dir] ?? $dir) . ' clicks open.'];
                 }
                 if ($roll < (int) $x['hack_dc']) {
@@ -997,6 +1081,8 @@ final class Mud
     private static function traceHeat(array $p, string $why): void
     {
         Player::addEffect((int) $p['id'], 'Traced', [], 90, 0, 'trace');
+        Player::addWanted((int) $p['id'], 8);
+        self::sfx('trace');
         World::event((int) $p['id'], 'trace', $why);
         // a NCPD patrol homes in on the trace: wake / relocate a nearby idle cop
         $cop = Db::one(
@@ -1109,6 +1195,288 @@ final class Mud
         return ["|10$stat raised to {$s[$stat]}.  |08(" . ((int) $p['unspent_points'] - 1) . ' points left)'];
     }
 
+    /* ---- train a skill at a trainer NPC ---------------- */
+
+    private static function trainerHere(array $p): ?array
+    {
+        foreach (World::mobs((int) $p['room_id']) as $mi) {
+            if (str_starts_with((string) $mi['tpl']['behavior'], 'trainer:') || str_contains((string) $mi['tpl']['behavior'], 'trainer:')) {
+                return $mi;
+            }
+        }
+        return null;
+    }
+
+    private static function cmd_train(array $p, array $args): array
+    {
+        $mi = self::trainerHere($p);
+        if (!$mi) {
+            return ['|08No one here trains. Find a trainer - the Motorpool out past the wall, a street coach in Kabuki, others about.'];
+        }
+        $can = [];
+        if (preg_match('/trainer:([a-z,]+)/', (string) $mi['tpl']['behavior'], $m)) {
+            $can = array_filter(explode(',', $m[1]));
+        }
+        $skill = strtolower($args[0] ?? '');
+        if ($skill === '' || !in_array($skill, $can, true)) {
+            return ['|07' . ucfirst($mi['tpl']['name']) . ' teaches: |15' . implode('|07, |15', $can)
+                . '|07.', '|08Syntax: |15train <skill>|08.  Each level costs eddies and gets steeper.'];
+        }
+        $lvl = Player::skill((int) $p['id'], $skill);
+        if ($lvl >= 20) {
+            return ['|08"There is nothing more I can show you in ' . $skill . '."'];
+        }
+        $cost = 120 + $lvl * $lvl * 40;
+        if ((int) $p['money'] < $cost) {
+            return ["|09That lesson costs ¥$cost. You are ¥" . ($cost - (int) $p['money']) . ' short.'];
+        }
+        Db::q('UPDATE mud_players SET money = money - ? WHERE id = ?', [$cost, $p['id']]);
+        Db::q(
+            'INSERT INTO mud_player_skills (player_id, skill, level, xp) VALUES (?,?,?,0)
+             ON DUPLICATE KEY UPDATE level = ?',
+            [(int) $p['id'], $skill, $lvl + 1, $lvl + 1]
+        );
+        self::sfx('levelup');
+        return ["|10You drill $skill until it is instinct.  |15$skill " . ($lvl + 1) . "|10.  |08(-¥$cost)"];
+    }
+
+    /* ---- ripperdoc: pull chrome back out --------------- */
+
+    private static function cmd_uninstall(array $p, array $args): array
+    {
+        $doc = null;
+        foreach (World::mobs((int) $p['room_id']) as $mi) {
+            if (str_contains((string) $mi['tpl']['behavior'], 'ripperdoc')) {
+                $doc = $mi;
+                break;
+            }
+        }
+        $selfKit = self::findItem(Player::inventory((int) $p['id']), 'ripperkit');
+        if (!$doc && !$selfKit) {
+            return ['|08You need a ripperdoc, or a ripperdoc field kit in your pack, to pull chrome safely.'];
+        }
+        $kw = strtolower(implode(' ', $args));
+        $target = null;
+        foreach (Player::equipment((int) $p['id']) as $eq) {
+            if (str_starts_with($eq['slot'], 'implant_')
+                && str_contains(strtolower($eq['tpl']['keywords'] . ' ' . $eq['tpl']['name']), $kw) && $kw !== '') {
+                $target = $eq;
+                break;
+            }
+        }
+        if (!$target) {
+            $worn = array_values(array_filter(Player::equipment((int) $p['id']), static fn ($e) => str_starts_with($e['slot'], 'implant_')));
+            if (!$worn) {
+                return ['|08You have no chrome installed.'];
+            }
+            return array_merge(['|07Installed chrome:'], array_map(static fn ($e) => '|08  ' . $e['tpl']['name'] . ' |08<' . substr($e['slot'], 8) . '>', $worn),
+                ['|08Syntax: |15uninstall <name>|08.']);
+        }
+        $fee = $doc ? 200 + (int) $target['tpl']['value'] : 0;   // free-ish with your own kit, but risky
+        if ($doc && (int) $p['money'] < $fee) {
+            return ["|09The doc wants ¥$fee to take that out clean. You cannot cover it."];
+        }
+        if ($doc) {
+            Db::q('UPDATE mud_players SET money = money - ? WHERE id = ?', [$fee, $p['id']]);
+        }
+        Player::unequip((int) $p['id'], $target['slot']);
+        $ok = $doc || random_int(1, 20) + intdiv(Player::effectiveStats($p)['tech'], 2) + Player::skill((int) $p['id'], 'engineering') >= 12;
+        if ($ok) {
+            World::moveItem((int) $target['id'], 'player', (int) $p['id']);
+            self::sfx('equip');
+            return [$doc
+                ? "|10The doc pulls the " . self::bare($target['tpl']['name']) . " clean and hands it back.  |08(-¥$fee)"
+                : "|10You pull the " . self::bare($target['tpl']['name']) . " yourself. It goes... mostly to plan."];
+        }
+        World::destroyItem((int) $target['id']);
+        Db::q('UPDATE mud_players SET hp = GREATEST(1, hp - ?) WHERE id = ?', [random_int(6, 16), $p['id']]);
+        self::sfx('hurt');
+        return ['|12The extraction goes wrong. The ' . self::bare($target['tpl']['name']) . ' is scrap and you are bleeding. Should have paid a doc.'];
+    }
+
+    /* ---- bribe your NCPD heat away --------------------- */
+
+    private static function cmd_bribe(array $p): array
+    {
+        $w = Player::wanted($p);
+        if ($w <= 0) {
+            return ['|08You are not wanted. Enjoy it while it lasts.'];
+        }
+        $fixer = null;
+        foreach (World::mobs((int) $p['room_id']) as $mi) {
+            $d = $mi['tpl']['dialogue'] ?? [];
+            if (isset($d['topics']['heat']) || str_contains((string) $mi['tpl']['behavior'], 'fence')) {
+                $fixer = $mi;
+                break;
+            }
+        }
+        if (!$fixer) {
+            return ['|08Nobody here can make a flag disappear. Ask around - a bent fixer works Gomorrah Lane, and Wirehead on the roofs deals in heat too.'];
+        }
+        $cost = 300 + $w * 30;
+        if ((int) $p['money'] < $cost) {
+            return ["|09Clearing that much heat costs ¥$cost. You have ¥{$p['money']}. Come back richer or cooler."];
+        }
+        Db::q('UPDATE mud_players SET money = money - ? WHERE id = ?', [$cost, $p['id']]);
+        Player::clearWanted((int) $p['id']);
+        World::event((int) $p['id'], 'wanted', "{$p['name']} bought their way off the list.");
+        self::sfx('coin');
+        return ['|11' . ucfirst($fixer['tpl']['name']) . " makes a call. \"Done. Your face is nobody's problem for a while.\"  |08(-¥$cost)"];
+    }
+
+    /* ---- the job board: repeatable procedural bounties - */
+
+    private static function boardHere(array $p): bool
+    {
+        return str_contains((string) (World::room((int) $p['room_id'])['flags'] ?? ''), 'board');
+    }
+
+    /** Three bounties that rotate every ~30 min, stable per board. */
+    private static function boardOffers(array $p): array
+    {
+        $seed = (int) $p['room_id'] * 7919 + intdiv(time(), 1800);
+        mt_srand($seed);
+        $pool = [
+            ['kill', 'rat',      'Vermin cull',      'Something with too many legs is nesting nearby. Thin it out.'],
+            ['kill', 'ganger',   'Turf notice',      'A crew is leaning on the wrong people. Push back.'],
+            ['kill', 'scav',     'Harvest halted',   'The Scavs are shopping for parts again. Discourage them.'],
+            ['kill', 'raffen',   'Road tax refund',  'Raffen Shiv hit a convoy. The clans want the balance settled.'],
+            ['kill', 'cop',      'Blue on the ground','Off the record: a patrol needs to not make it back. Deniable.'],
+            ['collect', 'scrip', 'Debt collection',  'Shake loose a stack of scrip from whoever is holding.'],
+            ['collect', 'scrap', 'Salvage quota',    'A buyer wants cyber-scrap by the armful. No questions.'],
+        ];
+        $lvl = (int) $p['level'];
+        $picks = [];
+        $keys = (array) array_rand($pool, 3);
+        foreach ($keys as $k) {
+            [$type, $target, $name, $desc] = $pool[$k];
+            $need = $type === 'kill' ? mt_rand(3, 6) : mt_rand(2, 5);   // mt_rand: seeded, so listing == accept
+            $reward = $need * (40 + $lvl * 14) + mt_rand(0, 60);
+            $picks[] = compact('type', 'target', 'name', 'desc', 'need', 'reward');
+        }
+        mt_srand();
+        return $picks;
+    }
+
+    private static function cmd_board(array $p, array $args): array
+    {
+        if (!self::boardHere($p)) {
+            return ['|08There is no job board here. Try the Afterlife, the Bazaar, the nomad camp, the rooftops.'];
+        }
+        $d = json_decode($p['data'] ?? '{}', true) ?: [];
+        $active = $d['bounty'] ?? null;
+        $sub = strtolower($args[0] ?? '');
+
+        // turn in a finished bounty
+        if ($active && ($active['have'] ?? 0) >= $active['need']) {
+            $r = (int) $active['reward'];
+            Db::q('UPDATE mud_players SET money = money + ? WHERE id = ?', [$r, $p['id']]);
+            unset($d['bounty']);
+            Db::q('UPDATE mud_players SET data = ? WHERE id = ?', [json_encode($d), $p['id']]);
+            self::sfx('coin', 'quest');
+            $xp = Player::grantXp((int) $p['id'], (int) round($r * 0.4));
+            return array_merge(["|11BOUNTY PAID: {$active['name']}  |14+¥$r"], $xp, ['|08The board refreshes. Type |15board|08 for new work.']);
+        }
+
+        if ($active && $sub !== 'drop') {
+            return ["|14Active bounty: |11{$active['name']}  |08[{$active['have']}/{$active['need']}]",
+                    '|07  ' . $active['desc'],
+                    '|08  Finish it and come back to any board to collect. |15board drop|08 to abandon it.'];
+        }
+        if ($sub === 'drop' && $active) {
+            unset($d['bounty']);
+            Db::q('UPDATE mud_players SET data = ? WHERE id = ?', [json_encode($d), $p['id']]);
+            return ['|08Bounty abandoned. The board does not care.'];
+        }
+
+        $offers = self::boardOffers($p);
+        if (in_array($sub, ['1', '2', '3', 'a', 'b', 'c'], true)) {
+            $idx = ctype_digit($sub) ? (int) $sub - 1 : ord($sub) - 97;
+            if (!isset($offers[$idx])) {
+                return ['|08No such listing.'];
+            }
+            $o = $offers[$idx];
+            $d['bounty'] = ['name' => $o['name'], 'desc' => $o['desc'], 'type' => $o['type'],
+                            'target' => $o['target'], 'need' => $o['need'], 'have' => 0, 'reward' => $o['reward']];
+            Db::q('UPDATE mud_players SET data = ? WHERE id = ?', [json_encode($d), $p['id']]);
+            self::sfx('quest');
+            return ["|11BOUNTY TAKEN: {$o['name']}  |08({$o['type']} {$o['target']} x{$o['need']}, |14¥{$o['reward']}|08)",
+                    '|07  ' . $o['desc']];
+        }
+
+        $out = ['|14  ' . strtoupper('job board') . '   |08- open bounties, refreshes on the half-hour', ''];
+        foreach ($offers as $i => $o) {
+            $out[] = sprintf('|08  [|15%d|08] |11%-18s |08%s %s x%d   |14¥%d', $i + 1, $o['name'], $o['type'], $o['target'], $o['need'], $o['reward']);
+            $out[] = '|08       ' . $o['desc'];
+        }
+        $out[] = '';
+        $out[] = '|08  |15board <n>|08 to take one. One bounty at a time.';
+        return $out;
+    }
+
+    /** Called from Combat on a kill - advances a matching active bounty. */
+    public static function bountyKill(int $playerId, string $keyword): void
+    {
+        self::bountyTick($playerId, 'kill', $keyword);
+    }
+
+    public static function bountyTick(int $playerId, string $type, string $token): void
+    {
+        $p = Player::byId($playerId);
+        if (!$p) {
+            return;
+        }
+        $d = json_decode($p['data'] ?? '{}', true) ?: [];
+        $b = $d['bounty'] ?? null;
+        if (!$b || $b['type'] !== $type || ($b['have'] ?? 0) >= $b['need']) {
+            return;
+        }
+        if (!str_contains(strtolower($token), strtolower($b['target'])) && $b['target'] !== '') {
+            // loosen: 'cop' matches police keywords, 'ganger' matches gang mob keywords
+            $aliases = ['cop' => 'officer|ncpd|maxtac|police', 'ganger' => 'ganger|enforcer|claw|maelstrom|scav|raffen'];
+            $rx = $aliases[$b['target']] ?? null;
+            if (!$rx || !preg_match('/' . $rx . '/i', $token)) {
+                return;
+            }
+        }
+        $b['have'] = (int) $b['have'] + 1;
+        $d['bounty'] = $b;
+        Db::q('UPDATE mud_players SET data = ? WHERE id = ?', [json_encode($d), $playerId]);
+        Mud::sfx('pickup');
+    }
+
+    /* ---- scan adjacent rooms -------------------------- */
+
+    private static function cmd_scan(array $p): array
+    {
+        $out = ['|14You scan the surroundings:'];
+        $any = false;
+        foreach (World::exits((int) $p['room_id']) as $dir => $x) {
+            if ($x['hidden']) {
+                continue;
+            }
+            $there = World::room((int) $x['to_room']);
+            if (!$there) {
+                continue;
+            }
+            $mobs = array_values(array_filter(World::mobs((int) $x['to_room']), static fn ($m) => $m['state'] !== 'dead'));
+            $label = World::DIRS[$dir] ?? $dir;
+            if (!$mobs) {
+                $out[] = sprintf('|08  %-9s %s - quiet', $label, $there['name']);
+            } else {
+                $names = array_slice(array_map(static fn ($m) => $m['tpl']['name'], $mobs), 0, 4);
+                $out[] = sprintf('|07  %-9s %s |08- |09%s', $label, $there['name'], implode(', ', $names));
+                $any = true;
+            }
+        }
+        if (count($out) === 1) {
+            $out[] = '|08  nowhere to scan from here.';
+        } elseif (!$any) {
+            $out[] = '|08  Nothing moving nearby.';
+        }
+        return $out;
+    }
+
     /* ---- examine --------------------------------------- */
 
     private static function cmd_examine(array $p, array $args, string $raw): array
@@ -1157,7 +1525,16 @@ final class Mud
                 return $out;
             }
         }
-        return ['|08You see no "' . $kw . '" here.'];
+        // readable room lore - terminals, graffiti, notes, ads
+        $lore = World::roomExtra((int) $p['room_id'], $kw);
+        if ($lore !== null) {
+            $out = [];
+            foreach (Render::wrapText($lore) as $l) {
+                $out[] = '|07' . $l;
+            }
+            return $out;
+        }
+        return ['|08You see no "' . $kw . '" here.  |08(try looking at the terminals, signs, graffiti...)'];
     }
 
     /* ---- help --------------------------------------------- */
@@ -1192,18 +1569,20 @@ final class Mud
             '|09  HACKERS-MUD  -  command reference   |08(help combat · help hacking)',
             '|08  ' . str_repeat('-', 60),
             '|07  MOVE     n s e w u d ne nw se sw   ·  enter / exit  ·  go <dir>',
-            '|07  SEE      look (l) · look <thing> · examine (x) <thing> · map (m)',
+            '|07  SEE      look (l) · look <thing> · examine (x) <thing> · map (m) · scan',
             '|07  SELF     score (sc) · inventory (i) · equipment (eq) · who · feed',
             '|07  ITEMS    get / drop / put <x> in <y> · give <x> to <y>',
-            '|07  GEAR     wear · wield · hold · implant · remove',
+            '|07  GEAR     wear · wield · hold · implant · remove · uninstall <chrome> (at a ripperdoc)',
             '|07  USE      use · eat · drink · inject <stim>',
             '|07  FIGHT    kill <e> · flee · consider <e> · hack <e>',
             '|07  SHOP     list · buy <x> · sell <x> · value <x>',
             '|07  TALK     talk <npc> [about <topic>] · say <msg> · emote <msg>',
-            '|07  JOBS     talk to a fixer · accept <job> · quests',
-            '|07  CRIME    rob <npc> · hack atm/terminal/camera',
+            '|07  JOBS     talk to a fixer · accept <job> · quests · board (repeatable bounties)',
+            '|07  GROW     spend <stat> · train <skill> (at a trainer)',
+            '|07  CRIME    rob <npc> · hack atm/terminal/camera · bribe (clear NCPD heat)',
             '|07  BODY     rest · sleep · wake · sit · stand',
-            '|07  MISC     recall (home) · deposit/withdraw <n> · spend <stat> · time',
+            '|07  MISC     recall (home) · deposit/withdraw <n> · time',
+            '|08  Look at the terminals, signs and graffiti - most rooms have something to read.',
             '|08  Leave the MUD any time with ESC - your character is saved.',
         ];
     }

@@ -24,6 +24,12 @@ final class Render
         return $out;
     }
 
+    /** Public word-wrap for callers outside this class. @return list<string> */
+    public static function wrapText(string $s, int $w = 92): array
+    {
+        return self::wrap($s, $w);
+    }
+
     /** @return list<string> */
     public static function room(array $p, ?array $room = null, bool $brief = false): array
     {
@@ -38,6 +44,10 @@ final class Render
         } elseif (!$brief) {
             foreach (self::wrap($room['description']) as $l) {
                 $out[] = '|07' . $l;
+            }
+            // a line of weather/time flavour for the outdoors
+            if (!str_contains($room['flags'], 'indoors') && !str_contains($room['flags'], 'safe')) {
+                $out[] = \Bbs\Mud\Mud::daylight()[1];
             }
         }
 
@@ -220,6 +230,11 @@ final class Render
             }
         }
         $out[] = "|08| |08" . str_pad("hunger {$p['hunger']}  thirst {$p['thirst']}  kills {$p['kills']}  deaths {$p['deaths']}", 63) . "|08|";
+        $wl = Player::wanted($p);
+        if ($wl > 0) {
+            $tier = $wl >= 60 ? '|12MAXTAC RESPONSE' : ($wl >= 20 ? '|09WANTED' : '|11flagged');
+            $out[] = '|08| ' . str_pad("NCPD heat: $tier |08($wl/100)", 72) . '|08|';
+        }
         $out[] = '|08`-------------------------------------------------------------------\'';
         return $out;
     }

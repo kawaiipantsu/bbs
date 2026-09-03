@@ -230,6 +230,7 @@ function keyboard() {
     if (!term.frame) { skipBoot(); return; }
 
     ev.preventDefault();
+    sound.resume?.();          // iOS re-suspends the context; nudge it back
     sound.stopErrorLoop?.();   // a keystroke silences any looping error tone
     sound.key();
     term.key(ev);
