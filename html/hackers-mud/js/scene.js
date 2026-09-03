@@ -1,5 +1,8 @@
 /* scene.js - the canvas game view: tiled room, sprites, movement, fx. */
 import { drawTile, drawProp, drawGroundItem, drawActor, THEME } from './sprites.js';
+import { preloadAtlas } from './atlas.js';
+
+const INDOOR_THEMES = new Set(['tunnel']);   // rendered as a walled room, not a street
 
 const GW = 13, GH = 9;                 // logical tiles per room
 const MID_X = 6, MID_Y = 4;
@@ -42,6 +45,7 @@ export class Scene {
     this._ro.observe(el);
     addEventListener('keydown', this._key = e => this._onKey(e));
     this.canvas.addEventListener('pointerdown', e => this._onClick(e));
+    preloadAtlas();
     this._raf = requestAnimationFrame(t => this._loop(t));
   }
   destroy() {
@@ -82,25 +86,46 @@ export class Scene {
 
   _buildGrid(room) {
     const r = rng((room.vnum || 1) * 2654435761);
+    const indoor = INDOOR_THEMES.has(this.theme) || room.indoors;
+    this.indoorRoom = indoor;
     this.grid = [];
+    const exitDirs = new Set((room.exits || []).filter(e => !e.hidden && EDGE[e.dir]).map(e => e.dir));
+
     for (let y = 0; y < GH; y++) {
       this.grid[y] = [];
       for (let x = 0; x < GW; x++) {
         const border = x === 0 || y === 0 || x === GW - 1 || y === GH - 1;
-        this.grid[y][x] = { wall: border, prop: null, exit: null, seed: (x * 31 + y * 17 + (room.vnum || 1)) };
+        let role;
+        if (border) role = indoor ? 'wall' : 'building';
+        else if (indoor) role = 'floor';
+        else {
+          // outdoor: a crossroads - road strip on MID row/col, sidewalk elsewhere
+          const onRoadV = x === MID_X && (exitDirs.has('n') || exitDirs.has('s'));
+          const onRoadH = y === MID_Y && (exitDirs.has('e') || exitDirs.has('w'));
+          if (onRoadV && onRoadH) role = 'roadline';
+          else if (onRoadV || onRoadH) role = 'road';
+          else role = 'sidewalk';
+        }
+        this.grid[y][x] = { wall: border, role, prop: null, exit: null, seed: (x * 31 + y * 17 + (room.vnum || 1)) };
       }
     }
-    // open exits in the border
+    if (!indoor && !exitDirs.size) {
+      // isolated outdoor room: give it a little plaza of sidewalk
+      for (let y = 1; y < GH - 1; y++) for (let x = 1; x < GW - 1; x++) this.grid[y][x].role = 'sidewalk';
+    }
+
+    // open exits in the border -> door tiles
     this.exitTiles = {};
     for (const ex of room.exits || []) {
       if (ex.hidden) continue;
       const spot = EDGE[ex.dir];
       if (spot) {
-        this.grid[spot[1]][spot[0]] = { wall: false, prop: null, exit: ex, seed: 1 };
+        this.grid[spot[1]][spot[0]] = { wall: false, role: 'door', prop: null, exit: ex, seed: 1 };
         this.exitTiles[ex.dir] = spot;
       }
     }
-    // vertical / interior exits -> a portal prop near a free inner tile
+
+    // vertical / interior exits -> a portal near a free inner tile
     const verticals = (room.exits || []).filter(e => !EDGE[e.dir] && !e.hidden);
     if (verticals.length) {
       const spot = [MID_X + (r() < .5 ? -2 : 2), MID_Y + (r() < .5 ? -1 : 1)];
@@ -109,15 +134,30 @@ export class Scene {
       this.grid[spot[1]][spot[0]].portalExits = verticals;
       room._portalSpot = spot;
     } else room._portalSpot = null;
-    // scatter decorative props on some inner border-adjacent tiles
-    const kinds = PROPS[this.theme] || PROPS.street;
-    for (let i = 0; i < 5; i++) {
+
+    // decorate: windows/doors on the non-exit border, props on the pavement
+    const props = indoor
+      ? ['acbox', 'crate', 'barrel', 'terminal']
+      : (this.theme === 'desert' ? ['car', 'crate', 'cone', 'barrier']
+        : this.theme === 'ruin' ? ['rubble', 'car', 'trash', 'cone']
+        : ['neon', 'tree', 'dumpster', 'vending', 'car', 'awning', 'sign', 'hydrant']);
+    // window/door dressing on solid border walls (visual only)
+    for (let x = 2; x < GW - 2; x += 2) {
+      for (const y of [0, GH - 1]) {
+        const c = this.grid[y]?.[x];
+        if (c && c.wall && !c.exit && r() < 0.6) c.dress = r() < 0.4 ? 'door' : 'window';
+      }
+    }
+    // scatter 3-5 solid props on sidewalk/floor tiles, away from the crossroads
+    let placed = 0, tries = 0;
+    while (placed < 4 + ((r() * 3) | 0) && tries++ < 40) {
       const x = 1 + ((r() * (GW - 2)) | 0), y = 1 + ((r() * (GH - 2)) | 0);
       const c = this.grid[y][x];
-      if (!c.wall && !c.prop && !(x === MID_X && y === MID_Y)) {
-        // don't wall the direct line between opposite exits too much
-        c.prop = kinds[(r() * kinds.length) | 0]; c.solid = true;
-      }
+      if (c.wall || c.prop || c.exit || (x === MID_X && y === MID_Y)) continue;
+      if (!indoor && (c.role === 'road' || c.role === 'roadline')) continue; // keep the road clear
+      c.prop = props[(r() * props.length) | 0];
+      c.solid = c.prop !== 'car' ? true : true;
+      placed++;
     }
   }
 
@@ -175,9 +215,26 @@ export class Scene {
     if (c?.exit) { this._takeExit(c.exit); return; }
     if (c?.portalExits) { this._portalMenu(c.portalExits); return; }
     const ent = this._entAt(gx, gy);
-    if (ent && Math.abs(gx - this.pc.gx) + Math.abs(gy - this.pc.gy) <= 1) { this._bump(ent); return; }
-    // walk toward
+    if (ent) {
+      if (Math.abs(gx - this.pc.gx) + Math.abs(gy - this.pc.gy) <= 1) { this._bump(ent); return; }
+      // walk to an adjacent free tile, then interact
+      const near = this._adjacentTo(gx, gy);
+      this.moveTarget = near;
+      this._pendingInteract = { id: ent.kind === 'mob' ? ent.data.id : 'i' + ent.data.id, gx, gy };
+      return;
+    }
+    this._pendingInteract = null;
     this.moveTarget = [gx, gy];
+  }
+  _adjacentTo(gx, gy) {
+    let best = null, bd = 1e9;
+    for (const [dx, dy] of [[0, 1], [0, -1], [1, 0], [-1, 0], [1, 1], [1, -1], [-1, 1], [-1, -1]]) {
+      const nx = gx + dx, ny = gy + dy;
+      if (nx <= 0 || ny <= 0 || nx >= GW - 1 || ny >= GH - 1 || this._blocked(nx, ny) || this._entAt(nx, ny)) continue;
+      const d = Math.abs(nx - this.pc.gx) + Math.abs(ny - this.pc.gy);
+      if (d < bd) { bd = d; best = [nx, ny]; }
+    }
+    return best || [this.pc.gx, this.pc.gy];
   }
 
   _dirTo(dx, dy) {
@@ -251,6 +308,73 @@ export class Scene {
     if (e) this.float(text, color, e);
   }
 
+  /* ---- graphic battle: queue of parsed combat rounds ---- */
+  playBattle(mobId, events) {
+    if (!events || !events.length) return;
+    const e = this.ents.find(x => x.kind === 'mob' && x.data.id === mobId);
+    this._battleMob = e || null;
+    this._battleAt = e ? { gx: e.gx, gy: e.gy } : { gx: this.pc.gx, gy: Math.max(1, this.pc.gy - 1) };
+    this._battleQ = events.slice(0, 14);
+    this._battleT = 0;
+    this.pc.face = this._dirTo(Math.sign(this._battleAt.gx - this.pc.gx), Math.sign(this._battleAt.gy - this.pc.gy));
+  }
+  _stepBattle(dt) {
+    if (!this._battleQ || !this._battleQ.length) { this._slashes = (this._slashes || []).filter(s => s.life > 0); return; }
+    this._battleT -= dt;
+    if (this._battleT > 0) return;
+    const ev = this._battleQ.shift();
+    this._battleT = 240;
+    const T = this.T;
+    const from = ev.src === 'you' ? this.pc : this._battleAt;
+    const to = ev.src === 'you' ? this._battleAt : this.pc;
+    const fx = from.px != null ? from.px + T / 2 : from.gx * T + T / 2;
+    const fy = from.py != null ? from.py + T / 2 : from.gy * T + T / 2;
+    const tx = to.px != null ? to.px + T / 2 : to.gx * T + T / 2;
+    const ty = to.py != null ? to.py + T / 2 : to.gy * T + T / 2;
+    // lunge
+    if (ev.src === 'you') { this._lunge = { dx: Math.sign(tx - fx) * T * 0.4, dy: Math.sign(ty - fy) * T * 0.4, life: 1 }; }
+    (this._slashes = this._slashes || []).push({ x: tx, y: ty, kind: ev.kind || 'swing', life: 1, miss: ev.miss });
+    if (ev.miss) { this.float('miss', '#8b90b2', { gx: (tx / T) | 0, gy: (ty / T) | 0 }); }
+    else {
+      const col = ev.src === 'you' ? (ev.crit ? '#ffcf4a' : '#66e0ff') : '#ff3b57';
+      this.float((ev.crit ? '!' : '') + '-' + (ev.dmg || 0), col, { gx: (tx / T) | 0, gy: (ty / T - 0.3) | 0 });
+      if (ev.crit) this.shake(7); else this.shake(3);
+      if (ev.src === 'mob') this._flash = { c: '#ff2d55', a: 0.22 };
+    }
+    if (ev.killed && this._battleMob) {
+      this._poof = { x: tx, y: ty, life: 1 };
+      this.pulse('death'); this._flash = { c: '#ff2d55', a: 0 };
+    }
+  }
+  _drawBattleFx(ctx) {
+    const now = this.tt;
+    for (const s of (this._slashes || [])) {
+      s.life -= 0.06;
+      if (s.life <= 0) continue;
+      ctx.save(); ctx.globalAlpha = s.life;
+      const R = this.T * 0.5;
+      if (s.miss) { ctx.strokeStyle = '#8b90b2'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(s.x, s.y, R * (1 - s.life) + 4, 0, 6); ctx.stroke(); }
+      else if (s.kind === 'gun') {
+        ctx.fillStyle = '#ffd76a'; ctx.shadowColor = '#ffcf4a'; ctx.shadowBlur = 12;
+        for (let i = 0; i < 6; i++) { const a = (i / 6) * 7 + now / 50; ctx.fillRect(s.x + Math.cos(a) * R * (1 - s.life) * 1.5, s.y + Math.sin(a) * R * (1 - s.life) * 1.5, 3, 3); }
+      } else {
+        ctx.strokeStyle = s.kind === 'blade' ? '#e8f0ff' : '#ff6a88'; ctx.lineWidth = 3; ctx.shadowColor = ctx.strokeStyle; ctx.shadowBlur = 10;
+        ctx.beginPath(); ctx.arc(s.x, s.y, R, -1 + (1 - s.life) * 3, 1.6 + (1 - s.life) * 3); ctx.stroke();
+      }
+      ctx.restore();
+    }
+    this._slashes = (this._slashes || []).filter(s => s.life > 0);
+    if (this._poof) {
+      this._poof.life -= 0.04;
+      if (this._poof.life > 0) {
+        ctx.save(); ctx.globalAlpha = this._poof.life; ctx.fillStyle = '#9aa0c0';
+        const n = 10, rad = this.T * (1 - this._poof.life) * 0.9;
+        for (let i = 0; i < n; i++) { const a = i / n * 7; ctx.fillRect(this._poof.x + Math.cos(a) * rad, this._poof.y + Math.sin(a) * rad, 3, 3); }
+        ctx.restore();
+      } else this._poof = null;
+    }
+  }
+
   _spawnParticles() {
     this.particles = [];
     const outdoor = !this.room.indoors && !this.room.dark;
@@ -266,17 +390,24 @@ export class Scene {
     const dt = Math.min(50, t - (this._last || t)); this._last = t; this.tt += dt;
     this._raf = requestAnimationFrame(tt => this._loop(tt));
     if (!this.room || !this.pc) { this._clear(); return; }
+    this._stepBattle(dt);
+    if (this._lunge) { this._lunge.life -= 0.12; if (this._lunge.life <= 0) this._lunge = null; }
 
     // auto-walk toward moveTarget
     if (this.moveTarget && !this.busy) {
       const [tx, ty] = this.moveTarget;
-      if (tx === this.pc.gx && ty === this.pc.gy) this.moveTarget = null;
-      else {
+      if (tx === this.pc.gx && ty === this.pc.gy) {
+        this.moveTarget = null;
+        if (this._pendingInteract) {
+          const pi = this._pendingInteract; this._pendingInteract = null;
+          const ent = this._entAt(pi.gx, pi.gy);
+          if (ent) { this.pc.face = this._dirTo(Math.sign(pi.gx - this.pc.gx), Math.sign(pi.gy - this.pc.gy)); this._bump(ent); }
+        }
+      } else {
         const dx = Math.sign(tx - this.pc.gx), dy = Math.sign(ty - this.pc.gy);
-        const dir = this._dirTo(dx, dy);
         const before = [this.pc.gx, this.pc.gy];
-        this.step(dir);
-        if (before[0] === this.pc.gx && before[1] === this.pc.gy) this.moveTarget = null; // stuck
+        this.step(this._dirTo(dx, dy));
+        if (before[0] === this.pc.gx && before[1] === this.pc.gy) { this.moveTarget = null; this._pendingInteract = null; }
       }
     }
 
@@ -297,10 +428,17 @@ export class Scene {
     ctx.translate(this.ox + sx, this.oy + sy);
 
     const th = THEME[this.theme] || THEME.street;
-    // floor + walls
+    // ground / roads first, then the building border on top so facades overlap
     for (let y = 0; y < GH; y++) for (let x = 0; x < GW; x++) {
       const c = this.grid[y][x];
-      drawTile(ctx, x * this.T, y * this.T, this.T, this.theme, c.seed, c.wall && !c.exit);
+      if (c.wall && !c.exit) continue;
+      drawTile(ctx, x * this.T, y * this.T, this.T, this.theme, c.seed, c.role || 'floor');
+    }
+    for (let y = 0; y < GH; y++) for (let x = 0; x < GW; x++) {
+      const c = this.grid[y][x];
+      if (!c.wall || c.exit) continue;
+      drawTile(ctx, x * this.T, y * this.T, this.T, this.theme, c.seed, c.role || 'building');
+      if (c.dress) drawProp(ctx, x * this.T, y * this.T, this.T, this.theme, c.dress, c.seed);
     }
     // exit glows
     for (const ex of this.room.exits || []) {
@@ -309,14 +447,16 @@ export class Scene {
       const [ex_, ey_] = spot;
       const cx = ex_ * this.T + this.T / 2, cy = ey_ * this.T + this.T / 2;
       ctx.save();
-      ctx.globalAlpha = 0.5 + 0.3 * Math.sin(this.tt / 400);
-      ctx.fillStyle = ex.locked ? '#ff2d55' : th.glow;
-      ctx.shadowColor = ctx.fillStyle; ctx.shadowBlur = 16;
-      ctx.fillRect(ex_ * this.T + 4, ey_ * this.T + 4, this.T - 8, this.T - 8);
-      ctx.restore();
-      ctx.fillStyle = '#000a'; ctx.font = `bold ${Math.round(this.T * 0.34)}px ui-monospace,monospace`;
+      const col = ex.locked ? '#ff2d55' : th.glow;
+      ctx.globalAlpha = 0.35 + 0.35 * Math.sin(this.tt / 400);
+      ctx.strokeStyle = col; ctx.lineWidth = 3; ctx.shadowColor = col; ctx.shadowBlur = 14;
+      ctx.strokeRect(ex_ * this.T + 3, ey_ * this.T + 3, this.T - 6, this.T - 6);
+      ctx.globalAlpha = 1;
+      const chev = { n: '▲', s: '▼', e: '▶', w: '◀' }[ex.dir] || '◆';
+      ctx.fillStyle = col; ctx.font = `bold ${Math.round(this.T * 0.4)}px sans-serif`;
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillStyle = '#05060c'; ctx.fillText(ex.locked ? '\u{1F512}' : ex.dir.toUpperCase(), cx, cy);
+      ctx.fillText(ex.locked ? '\u{1F512}' : chev, cx, cy);
+      ctx.restore();
     }
     // props
     for (let y = 0; y < GH; y++) for (let x = 0; x < GW; x++) {
@@ -335,7 +475,9 @@ export class Scene {
     drawList.sort((a, b) => a.y - b.y);
     for (const d of drawList) {
       if (d.pc) {
-        drawActor(ctx, this.pc.px + this.T / 2, this.pc.py + this.T * 0.9, this.T * 1.15,
+        const lx = this._lunge ? this._lunge.dx * this._lunge.life : 0;
+        const ly = this._lunge ? this._lunge.dy * this._lunge.life : 0;
+        drawActor(ctx, this.pc.px + this.T / 2 + lx, this.pc.py + this.T * 0.9 + ly, this.T * 1.15,
           this.player?.archetype || 'netrunner', { tt: this.tt, facing: this.pc.face, walk: this.pc.walk, boss: false });
       } else {
         const e = d.e;
@@ -357,7 +499,8 @@ export class Scene {
         }
       }
     }
-    // particles
+    // battle fx + particles
+    this._drawBattleFx(ctx);
     this._drawParticles(ctx);
     // floating text
     for (const f of this.floats) {

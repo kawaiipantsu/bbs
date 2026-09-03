@@ -1,6 +1,7 @@
-/* sprites.js - procedural pixel-art draw kit (no external assets).
-   Structured so a real CC0 atlas could replace the draw fns later:
-   swap drawActor/drawItem/drawTile with atlas blits keyed by the same names. */
+/* sprites.js - draw kit. Tiles + props come from the bundled Kenney CC0
+   sheets (atlas.js) with a procedural fallback; actors and item icons are
+   drawn procedurally in a cohesive cyberpunk style. */
+import { city, CITY, blit, atlasReady } from './atlas.js';
 
 /* ---- palettes ---- */
 export const THEME = {
@@ -16,50 +17,80 @@ export const THEME = {
 /* deterministic PRNG */
 function rng(seed) { let s = seed >>> 0 || 1; return () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296; }
 
-/* ---- tiles ---- */
-export function drawTile(ctx, px, py, T, themeKey, seed, isWall) {
+/* ---- tiles (Kenney city sheet, per theme + role) ---- */
+/* roles: floor road roadline sidewalk grass wall building door */
+const TILEMAP = {
+  street:  { floor: 'road', road: 'road', roadline: 'road_dash', sidewalk: 'sidewalk', grass: 'grass', wall: 'wall_glass', building: 'roof_grey', door: 'door_glass' },
+  corpo:   { floor: 'sidewalk_tan', road: 'road', roadline: 'road_yellow', sidewalk: 'sidewalk_tan', grass: 'grass', wall: 'wall_grey', building: 'roof_grey', door: 'door_glass' },
+  ruin:    { floor: 'dirt', road: 'road', roadline: 'road_dash', sidewalk: 'sidewalk', grass: 'grass', wall: 'wall_brick', building: 'roof_red', door: 'door_wood' },
+  tunnel:  { floor: 'dirt', road: 'dirt', roadline: 'dirt', sidewalk: 'sidewalk', grass: 'grass', wall: 'wall_grey', building: 'wall_grey', door: 'door_wood' },
+  arcade:  { floor: 'sidewalk', road: 'road', roadline: 'road_dash', sidewalk: 'sidewalk', grass: 'grass', wall: 'wall_glasslit', building: 'roof_grey', door: 'door_arch' },
+  desert:  { floor: 'dirt', road: 'road', roadline: 'road_dash', sidewalk: 'sidewalk_tan', grass: 'grass', wall: 'wall_tan', building: 'roof_red', door: 'door_wood' },
+  grid:    { floor: 'road', road: 'road', roadline: 'road_dash', sidewalk: 'sidewalk', grass: 'grass', wall: 'wall_glass', building: 'roof_grey', door: 'door_glass' },
+};
+
+export function drawTile(ctx, px, py, T, themeKey, seed, role) {
+  if (role === true) role = 'wall';
+  if (!role) role = 'floor';
   const p = THEME[themeKey] || THEME.street;
-  const r = rng(seed * 131 + (isWall ? 7 : 3));
-  ctx.fillStyle = isWall ? p.wall : (r() < 0.5 ? p.floor : p.floor2);
-  ctx.fillRect(px, py, T, T);
-  // grout / seams
-  ctx.strokeStyle = p.grout; ctx.lineWidth = 1;
-  ctx.strokeRect(px + 0.5, py + 0.5, T - 1, T - 1);
-  if (isWall) {
-    ctx.fillStyle = 'rgba(255,255,255,.03)'; ctx.fillRect(px, py, T, 2);
-    if (r() < 0.25) { ctx.fillStyle = p.edge + '22'; ctx.fillRect(px + 2, py + T * 0.3, T - 4, 2); }
+  const tm = TILEMAP[themeKey] || TILEMAP.street;
+  const name = tm[role] || tm.floor;
+
+  if (atlasReady() && city(name, ctx, px, py, T)) {
+    // subtle theme tint + grime so different districts read differently
+    const r = rng(seed * 131 + 5);
+    if (role === 'floor' || role === 'road' || role === 'sidewalk') {
+      ctx.fillStyle = 'rgba(0,0,0,.18)';
+      for (let i = 0; i < 2; i++) ctx.fillRect(px + (r() * T) | 0, py + (r() * T) | 0, 1, 1);
+      if (themeKey === 'grid') { ctx.strokeStyle = p.glow + '30'; ctx.strokeRect(px + 0.5, py + 0.5, T - 1, T - 1); }
+      else if (themeKey === 'tunnel' || themeKey === 'ruin') { ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(px, py, T, T); }
+      else if (r() < 0.12) { ctx.fillStyle = p.glow + '14'; ctx.fillRect(px + 3, py + T * 0.6, T - 6, 2); }
+    }
+    if (role === 'wall' || role === 'building') { ctx.fillStyle = 'rgba(0,0,0,.15)'; ctx.fillRect(px, py, T, T); ctx.fillStyle = p.edge + '18'; ctx.fillRect(px, py + T - 2, T, 2); }
     return;
   }
-  // speckle / grime
+
+  // ---- procedural fallback ----
+  const r = rng(seed * 131 + (role === 'wall' ? 7 : 3));
+  const isWall = role === 'wall' || role === 'building';
+  ctx.fillStyle = isWall ? p.wall : (role === 'grass' ? '#1f3a1f' : (r() < 0.5 ? p.floor : p.floor2));
+  ctx.fillRect(px, py, T, T);
+  ctx.strokeStyle = p.grout; ctx.lineWidth = 1; ctx.strokeRect(px + 0.5, py + 0.5, T - 1, T - 1);
+  if (isWall) { ctx.fillStyle = 'rgba(255,255,255,.03)'; ctx.fillRect(px, py, T, 2); return; }
   ctx.fillStyle = 'rgba(0,0,0,.25)';
   for (let i = 0; i < 3; i++) ctx.fillRect(px + (r() * T) | 0, py + (r() * T) | 0, 1, 1);
-  if (themeKey === 'grid') {
-    ctx.strokeStyle = p.glow + '22';
-    ctx.strokeRect(px + 0.5, py + 0.5, T - 1, T - 1);
-  } else if (r() < 0.16) {
-    // neon puddle / reflection
-    ctx.fillStyle = p.wet + 'cc';
-    ctx.fillRect(px + (T * 0.2) | 0, py + (T * 0.55) | 0, (T * 0.55) | 0, (T * 0.3) | 0);
-    ctx.fillStyle = p.glow + '18';
-    ctx.fillRect(px + (T * 0.25) | 0, py + (T * 0.58) | 0, (T * 0.4) | 0, 2);
-  }
+  if (role === 'road' || role === 'roadline') { ctx.fillStyle = '#0c0d12'; ctx.fillRect(px, py, T, T); if (role === 'roadline') { ctx.fillStyle = '#c9a94a'; ctx.fillRect(px + T / 2 - 1, py, 2, T); } }
 }
+
+/* prop kind -> Kenney city frame name (scale multiplier optional) */
+const PROP_FRAME = {
+  crate: 'barrier', barrel: 'dumpster_g', sign: 'neon_o', trash: 'dumpster_o',
+  plant: 'bush', terminal: 'vending', pipe: null, rubble: 'cone', car: 'car_side',
+  neon: 'neon_t', tree: 'tree', tree_a: 'tree_a', dumpster: 'dumpster_g',
+  hydrant: 'pole', cone: 'cone', vending: 'vending', barrier: 'barrier',
+  awning: 'awning_g', acbox: 'acbox', window: 'window', door: 'door_glass',
+};
 
 export function drawProp(ctx, px, py, T, themeKey, kind, seed) {
   const p = THEME[themeKey] || THEME.street;
+  const frame = PROP_FRAME[kind];
+  if (frame && atlasReady()) {
+    ctx.save();
+    ctx.shadowColor = /neon|vending|awning/.test(frame) ? p.glow : 'transparent';
+    ctx.shadowBlur = /neon/.test(frame) ? 10 : 0;
+    city(frame, ctx, px, py, T);
+    ctx.restore();
+    return;
+  }
+  // fallback
   ctx.save(); ctx.translate(px, py);
   const u = T / 16;
   const box = (x, y, w, h, c) => { ctx.fillStyle = c; ctx.fillRect(x * u, y * u, w * u, h * u); };
-  if (kind === 'crate') { box(3, 7, 10, 8, '#2a241a'); box(3, 7, 10, 2, '#3a3222'); box(7, 7, 2, 8, '#1c180f'); }
-  else if (kind === 'barrel') { box(4, 5, 8, 10, '#20242c'); box(4, 5, 8, 2, '#333a46'); box(4, 9, 8, 1, p.edge + '66'); }
-  else if (kind === 'sign') { box(7, 2, 2, 9, '#111'); box(2, 1, 12, 5, p.wall); ctx.fillStyle = p.edge; ctx.fillRect(3 * u, 2 * u, 10 * u, 1); ctx.fillStyle = p.glow; ctx.fillRect(4 * u, 3.5 * u, 6 * u, 1); }
-  else if (kind === 'trash') { box(4, 8, 9, 7, '#161616'); box(4, 8, 9, 1.5, '#242424'); box(6, 5, 2, 3, '#333'); }
-  else if (kind === 'plant') { box(6, 10, 5, 5, '#1c150c'); ctx.fillStyle = '#2f5a2a'; for (let i = 0; i < 5; i++) ctx.fillRect((5 + i) * u, (5 + (i % 2) * 2) * u, 1.4 * u, 5 * u); }
-  else if (kind === 'terminal') { box(4, 4, 8, 11, '#0c0f14'); ctx.fillStyle = p.glow; ctx.fillRect(5 * u, 5 * u, 6 * u, 4 * u); ctx.fillStyle = '#000'; ctx.fillRect(6 * u, 6 * u, 4 * u, 1); ctx.fillRect(6 * u, 7.5 * u, 3 * u, 1); }
-  else if (kind === 'pipe') { box(0, 6, 16, 3, '#1a1d22'); box(0, 6, 16, 1, '#2a2f36'); }
-  else if (kind === 'rubble') { box(3, 11, 4, 4, '#26221a'); box(8, 12, 5, 3, '#2c281f'); box(6, 10, 3, 3, '#222'); }
-  else if (kind === 'car') { box(1, 7, 14, 6, '#1a1a22'); box(3, 4, 10, 4, '#20202a'); ctx.fillStyle = p.edge + '55'; ctx.fillRect(1 * u, 8 * u, 14 * u, 1); box(3, 12, 3, 3, '#000'); box(10, 12, 3, 3, '#000'); }
-  else if (kind === 'neon') { ctx.fillStyle = p.edge; ctx.shadowColor = p.edge; ctx.shadowBlur = 8 * u; ctx.fillRect(2 * u, 3 * u, 12 * u, 1.5 * u); ctx.fillStyle = p.glow; ctx.fillRect(2 * u, 6 * u, 8 * u, 1.5 * u); ctx.shadowBlur = 0; }
+  if (kind === 'terminal' || kind === 'vending') { box(4, 3, 8, 12, '#0c0f14'); ctx.fillStyle = p.glow; ctx.fillRect(5 * u, 4 * u, 6 * u, 4 * u); }
+  else if (kind === 'tree' || kind === 'plant' || kind === 'bush') { box(6, 9, 4, 6, '#3a2a18'); ctx.fillStyle = '#2f5a2a'; ctx.beginPath(); ctx.arc(8 * u, 6 * u, 5 * u, 0, 7); ctx.fill(); }
+  else if (kind === 'car') { box(1, 5, 14, 8, '#242430'); box(3, 3, 10, 4, '#2c2c3a'); ctx.fillStyle = p.edge + '66'; ctx.fillRect(1 * u, 7 * u, 14 * u, 1); }
+  else if (kind === 'pipe') { box(0, 6, 16, 3, '#1a1d22'); }
+  else { box(4, 6, 8, 9, '#20242c'); box(4, 6, 8, 2, '#333a46'); }
   ctx.restore();
 }
 

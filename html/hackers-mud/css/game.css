@@ -189,3 +189,20 @@ kbd { font-family:var(--mono); background:#0c0d16; border:1px solid var(--line2)
 #toast.show { opacity:1; }
 
 .loading { position:absolute; inset:0; display:grid; place-items:center; color:var(--mut); font-family:var(--mono); }
+
+/* paper-doll wear/gear screen */
+.doll { display:grid; grid-template-columns:120px 1fr 120px; gap:14px; align-items:start; }
+.doll .dcol { display:flex; flex-direction:column; gap:8px; }
+.doll .dmid { display:flex; flex-direction:column; align-items:center; gap:10px; }
+.doll .dmid canvas { image-rendering:pixelated; background:radial-gradient(circle at 50% 35%,#1a2233,#0b0c15); border:1px solid var(--line2); border-radius:10px; }
+.doll .dhand { display:flex; gap:8px; }
+.dslot { position:relative; border:1px solid var(--line2); border-radius:var(--r-s); background:#0b0c15;
+  min-height:58px; padding:16px 6px 6px; text-align:center; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+.dslot.big { min-width:74px; }
+.dslot.on { border-color:var(--grn); box-shadow:0 0 14px -6px var(--grn); cursor:pointer; }
+.dslot.on:hover { border-color:var(--red); box-shadow:0 0 14px -4px var(--red); }
+.dslot .dl { position:absolute; top:3px; left:0; right:0; font-size:8px; letter-spacing:.14em; text-transform:uppercase; color:var(--dim); }
+.dslot canvas { width:40px; height:40px; image-rendering:pixelated; }
+.dslot .dn { font-size:9.5px; line-height:1.2; margin-top:3px; color:var(--ink); }
+.dslot .de { color:#2a3050; font-size:18px; }
+@media (max-width:640px){ .doll { grid-template-columns:1fr; } }

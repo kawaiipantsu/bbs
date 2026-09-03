@@ -66,9 +66,31 @@ broadcasts, other players) show up without input.
 
 ## Assets
 
-All in-world graphics are drawn at runtime in `sprites.js` (original,
-procedural, CC0) - no binary sprite files. `scene.js` is structured so a real
-CC0 atlas (Kenney / LPC / etc.) could replace the `drawTile` / `drawActor` /
-`drawItem` functions with atlas blits keyed by the same names. The share card
-(`og.png`, 1200x630) and social `banner.png` (1500x500) are drawn by GD in
+**Tiles & props** use bundled **Kenney (kenney.nl) CC0** sheets -
+`html/hackers-mud/assets/kenney/` (Roguelike Modern City / RPG / Characters /
+Indoors, ~160 KB total, public domain, no attribution required). `atlas.js`
+loads them and blits 16x16 frames by name; `sprites.js` maps a per-theme
+role (`road` / `sidewalk` / `wall` / `building` / `door` / `grass`) to a
+frame, with a procedural fallback if a sheet fails to load.
+
+**Room layout** (`scene.js` `_buildGrid`): outdoor districts render as a
+crossroads - a road strip on the exit axes, sidewalk in the quadrants,
+building facades (with window/door dressing) on the non-exit borders, and
+street props (dumpsters, vending machines, trees, cars, neon) scattered on the
+pavement. Indoor rooms get a wall ring + floor + furniture.
+
+**Actors & item icons** stay procedural (`sprites.js` `drawActor` /
+`drawItemGlyph`) - cohesive cyberpunk pixel style, faction palettes, per-type
+weapon/armour/chip/deck/food glyphs shown in the ground view, right panel,
+inventory grid and the paper-doll.
+
+**Graphic battle**: `app.js` parses the combat lines returned by a `kill`
+command into rounds and calls `scene.playBattle()` - lunge, slash / muzzle-
+flash FX, floating damage numbers, screen shake, death poof.
+
+**Screens**: the **Wear & Gear** paper-doll (`ui.gear`, key `G`) shows every
+equipment slot around a portrait; click a worn item to take it off (chrome
+routes through a ripperdoc). The **Character sheet** (`C`) gained a portrait.
+
+Share card (`og.png`, 1200x630) and `banner.png` (1500x500) are GD-drawn in
 `HackersMudController`; favicons come from `php assets/hackers-mud/gen.php`.

@@ -133,27 +133,55 @@ function startGame(state) {
 
 let lastState = null;
 
-function applyState(state, first) {
+function applyState(state, first, combat) {
   if (!state || !state.ok) return;
   const prev = lastState;
   lastState = state;
   ui.render(state);
   scene.setRoom(state.room, state.player);
   audio.ambient(state.ambient);
-  // damage / level feedback
   if (prev && prev.player) {
     const dh = state.player.hp - prev.player.hp;
-    if (dh < 0) { scene.float(dh + '', '#ff3b57'); scene.shake(Math.min(14, -dh)); }
-    else if (dh > 6) scene.float('+' + dh, '#3ce88b');
+    if (!combat) {   // playBattle shows per-hit numbers itself
+      if (dh < 0) { scene.float(dh + '', '#ff3b57'); scene.shake(Math.min(14, -dh)); }
+      else if (dh > 6) scene.float('+' + dh, '#3ce88b');
+    }
     if (state.player.level > prev.player.level) { ui.toast('LEVEL ' + state.player.level); scene.pulse('levelup'); }
-    if (state.player.state === 'idle' && prev.player.state === 'fighting') { /* fight ended */ }
   }
   if (first) ui.log(state.log.slice(-40));
+}
+
+function parseCombat(lines) {
+  const ev = [];
+  for (const l of lines) {
+    const p = l.replace(/\|\d\d/g, '');
+    let m;
+    if ((m = p.match(/^You (strike|shoot|punch|slam) .* for (\d+) damage(.*)$/)))
+      ev.push({ src: 'you', kind: m[1] === 'shoot' ? 'gun' : (m[1] === 'punch' ? 'swing' : 'blade'), dmg: +m[2], crit: /CRIT/i.test(m[3]) });
+    else if (/^You (strike|shoot|punch) at .* and miss/.test(p))
+      ev.push({ src: 'you', miss: true, kind: /shoot/.test(p) ? 'gun' : 'blade' });
+    else if ((m = p.match(/(?:hits|ambushes|attacks) you for (\d+)/)))
+      ev.push({ src: 'mob', dmg: +m[1] });
+    else if (/lunges and misses|takes a swing at you and misses/.test(p))
+      ev.push({ src: 'mob', miss: true });
+    else if (/is dropped\. It stops twitching|flatline|breaks and runs/.test(p))
+      { if (ev.length) ev[ev.length - 1].killed = true; }
+  }
+  return ev;
 }
 
 async function sendCmd(cmd) {
   if (!cmd || inflight) return;
   inflight = true;
+  // remember the likely combat target before state refreshes
+  let targetId = null;
+  const kw = /^(k|kill|attack|hit|fight)\b\s*(.*)$/i.exec(cmd);
+  if (kw && lastState) {
+    const hits = lastState.room.mobs.filter(x => !kw[2] || (x.kw && x.kw.includes(kw[2].trim().split(' ')[0])) || x.name.toLowerCase().includes(kw[2].trim()));
+    targetId = (hits.find(x => x.hostile) || hits[0] || lastState.room.mobs.find(x => x.state === 'fighting') || {}).id || null;
+  } else if (lastState && lastState.player.state === 'fighting') {
+    targetId = (lastState.room.mobs.find(x => x.state === 'fighting') || {}).id || null;
+  }
   const r = await api.cmd(cmd);
   inflight = false;
   if (r && r.stale) return relogin('Session expired. Sign in again.');
@@ -162,7 +190,9 @@ async function sendCmd(cmd) {
   if (!r || !r.ok) { ui.log(['|09' + ((r && r.error) || 'CARRIER LOST')]); return; }
   ui.log(r.lines || []);
   (r.sfx || []).forEach((n, i) => setTimeout(() => audio.sfx(n), i * 80));
-  applyState(r.state);
+  const events = parseCombat(r.lines || []);
+  applyState(r.state, false, events.length > 0);
+  if (events.length && scene) scene.playBattle(targetId, events);
 }
 
 async function refresh() {
@@ -188,6 +218,7 @@ function handleAct(v) {
 function openModal(m) {
   audio.ui('open');
   if (m === 'inv') ui.inventory(lastState);
+  else if (m === 'gear') ui.gear(lastState);
   else if (m === 'sheet') ui.sheet(lastState);
   else if (m === 'map') ui.mapModal(lastState);
   else if (m === 'help') ui.helpModal();

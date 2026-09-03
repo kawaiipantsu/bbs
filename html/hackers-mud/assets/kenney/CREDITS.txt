@@ -1,0 +1,8 @@
+2D art in this folder is from Kenney (kenney.nl), released under CC0 1.0
+(Creative Commons Zero - public domain). No attribution is required; it is
+credited here anyway.
+
+  chars.png   - Roguelike Characters      (16x16, 1px gap, 54x12)
+  rpg.png     - Roguelike/RPG pack        (16x16, 1px gap, 57x31)
+  city.png    - Roguelike Modern City     (16x16, packed no gap, 37x28)
+  indoor.png  - Roguelike Indoors         (16x16, 1px gap, 27x18)

@@ -41,6 +41,7 @@ export class UI {
         <div class="wanted" id="uWant" title="NCPD heat"><i class="a"></i><i class="a"></i><i></i></div>
         <div class="icons">
           <button class="btn" data-modal="inv" title="Inventory (I)">\u{1F392}</button>
+          <button class="btn" data-modal="gear" title="Wear / Gear (G)">\u{1F9E5}</button>
           <button class="btn" data-modal="sheet" title="Character (C)">\u{1F464}</button>
           <button class="btn" data-modal="map" title="Map (M)">\u{1F5FA}️</button>
           <button class="btn" data-modal="help" title="Help">?</button>
@@ -97,6 +98,7 @@ export class UI {
       if (e.key === 'i' || e.key === 'I') this.emit('modal', 'inv');
       else if (e.key === 'm' || e.key === 'M') this.emit('modal', 'map');
       else if (e.key === 'c' || e.key === 'C') this.emit('modal', 'sheet');
+      else if (e.key === 'g' || e.key === 'G') this.emit('modal', 'gear');
       else if (e.key === 'Enter') { e.preventDefault(); this.el('cmdIn').focus(); }
       else if (e.key === 'Escape') this.closeModal();
     });
@@ -305,7 +307,14 @@ export class UI {
     }).join('');
     const sk = Object.entries(p.skills).map(([k, v]) => `<div class="statline"><span class="k">${k}</span><b>${v}</b></div>`).join('');
     const ef = p.effects.map(e => `<span class="chip">${this._esc(e.name)} ${e.secs}s</span>`).join(' ') || '<span style="color:var(--dim)">none</span>';
-    this._modal('Character Sheet', `<div class="sheet">
+    this._modal('Character Sheet', `
+      <div style="display:flex;gap:16px;align-items:center;margin-bottom:14px">
+        <canvas id="portrait" width="96" height="96" style="image-rendering:pixelated;background:#0b0c15;border:1px solid var(--line2);border-radius:8px"></canvas>
+        <div><div style="font-size:17px;font-weight:800">${this._esc(p.name)}</div>
+          <div style="color:var(--cyan);font-family:var(--mono);font-size:12px">lv ${p.level} ${this._esc(p.archetype)}${p.title ? ' · ' + this._esc(p.title) : ''}</div>
+          <div style="color:var(--dim);font-size:11px;margin-top:3px">XP ${p.xp} / ${p.xpNext}  ·  ¥${p.money.toLocaleString()} on hand</div></div>
+      </div>
+      <div class="sheet">
       <div><div class="sect">Attributes ${p.unspent ? `<span class="chip" style="color:var(--yel)">${p.unspent} to spend — type <kbd>spend body</kbd></span>` : ''}</div>${st}
         <div class="sect" style="margin-top:14px">Vitals</div>
         <div class="statline"><span class="k">HP</span><b>${p.hp}/${p.maxHp}</b></div>
@@ -322,6 +331,42 @@ export class UI {
         <div class="statline"><span class="k">DEATHS</span><b>${p.deaths}</b></div>
         <div class="statline"><span class="k">HUNGER / THIRST</span><b>${p.hunger} / ${p.thirst}</b></div>
       </div></div>`);
+    const c = this.el('modalRoot').querySelector('#portrait');
+    if (c) c.getContext('2d').drawImage(actorCanvas(p.archetype, 96), 0, 0);
+  }
+
+  /* paper-doll wear / gear screen */
+  gear(state) {
+    const eq = state.equipment || {};
+    const p = state.player;
+    const WEAR = ['head', 'eyes', 'face', 'neck', 'torso', 'back', 'arms', 'hands', 'waist', 'legs', 'feet'];
+    const HOLD = ['wield', 'held'];
+    const IMPL = ['implant_neural', 'implant_ocular', 'implant_arm', 'implant_skeleton', 'implant_dermal'];
+    const slot = (s, big) => {
+      const it = eq[s];
+      const label = s.replace('implant_', '');
+      const cmd = it ? (s.startsWith('implant_') ? 'uninstall ' + it.kw : 'remove ' + it.kw) : '';
+      return `<div class="dslot ${it ? 'on' : ''} ${big ? 'big' : ''}" ${it ? `data-cmd="${cmd}" title="click to ${s.startsWith('implant_') ? 'have removed at a ripperdoc' : 'take off'}"` : ''}>
+        <span class="dl">${label}</span>
+        ${it ? `<canvas width="40" height="40" data-icon="${it.icon}"></canvas><span class="dn">${this._esc(it.name)}</span>`
+             : `<span class="de">—</span>`}</div>`;
+    };
+    const root = this._modal(`Wear &amp; Gear  <span class="chip">AC ${p.ac}</span>`, `
+      <div class="doll">
+        <div class="dcol">${WEAR.slice(0, 6).map(s => slot(s)).join('')}</div>
+        <div class="dmid">
+          <canvas id="dollportrait" width="130" height="150"></canvas>
+          <div class="dhand">${HOLD.map(s => slot(s, 1)).join('')}</div>
+        </div>
+        <div class="dcol">${WEAR.slice(6).map(s => slot(s)).join('')}</div>
+      </div>
+      <div class="sect" style="margin-top:14px">Cyberware</div>
+      <div class="grid">${IMPL.map(s => slot(s)).join('')}</div>
+      <p style="color:var(--dim);font-size:11px;margin-top:10px">Equip from your <b>inventory</b> (I). Click a worn item to take it off; chrome needs a ripperdoc — walk into one and it's handled.</p>`);
+    root.querySelectorAll('canvas[data-icon]').forEach(c => c.getContext('2d').drawImage(iconCanvas(c.dataset.icon, 40), 0, 0));
+    const dp = root.querySelector('#dollportrait');
+    if (dp) dp.getContext('2d').drawImage(actorCanvas(p.archetype, 130), 0, 10);
+    root.querySelectorAll('.dslot[data-cmd]').forEach(s => s.onclick = () => this.emit('act', s.dataset.cmd));
   }
 
   mapModal(state) {
