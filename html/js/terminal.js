@@ -1,7 +1,7 @@
 /* terminal.js - renders server "frames" onto the CRT grid and turns keystrokes
    into /api/action calls. Modes: menu, pager, screen, line, form, game, chat. */
 
-import { sound } from './audio.js?v=6';
+import { sound } from './audio.js?v=7';
 
 /* xterm-256 palette for foreground indices > 15 (games / imported ANSI) */
 function xterm256(i) {
@@ -335,7 +335,13 @@ export class Terminal {
 
   /* ---- keyboard --------------------------------------------------- */
   key(ev) {
-    if (this.busy) return;
+    if (this.busy) {
+      // a real keystroke means we're foregrounded again; if `busy` has been
+      // stuck longer than the guard should have allowed, the request is dead -
+      // clear it and take this key rather than swallow input.
+      if (Date.now() - (this._busySince || 0) > 8000) this.unstick();
+      else return;
+    }
     const k = this._norm(ev);
     if (k === null) return;
 
@@ -365,8 +371,11 @@ export class Terminal {
 
   _send(payload) {
     this.busy = true;
+    this._busySince = Date.now();
     // hard safety net: never let `busy` stay stuck if the promise hangs
-    // (e.g. a fetch left in flight while the tab was backgrounded).
+    // (e.g. a fetch left in flight while the tab was backgrounded). The
+    // timer is unreliable in a background tab, so key() also checks the
+    // wall-clock age of `busy` on every keystroke.
     clearTimeout(this._busyGuard);
     this._busyGuard = setTimeout(() => { this.busy = false; }, 8000);
     const clear = () => { clearTimeout(this._busyGuard); this.busy = false; };

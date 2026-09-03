@@ -205,6 +205,16 @@ final class ChiptuneModule extends Module
             }
         }
 
+        // a cats-screen ENTER / digit may have just switched category - re-resolve
+        // $curCat from $catId so THIS frame already shows the right crate
+        $curCat = $cats[0] ?? ['id' => '', 'name' => '', 'idx' => []];
+        foreach ($cats as $c) {
+            if ($c['id'] === $catId) {
+                $curCat = $c;
+                break;
+            }
+        }
+
         // ---- persist --------------------------------------------------
         $st['screen']   = $screen;
         $st['cat']      = $catId;

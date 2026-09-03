@@ -1,8 +1,8 @@
 /* chat.js - node chat client. Activated when a frame arrives with mode "chat".
    Long-polls /api/chat/poll and posts to /api/chat/say. */
 
-import { chat } from './net.js?v=6';
-import { sound } from './audio.js?v=6';
+import { chat } from './net.js?v=7';
+import { sound } from './audio.js?v=7';
 
 export function installChat(term) {
   const st = {

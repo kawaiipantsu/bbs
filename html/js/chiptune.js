@@ -25,7 +25,7 @@
  * instance with its own (null) AudioContext. Parent bumps the pack to ?v=6.
  */
 
-import { sound } from './audio.js?v=6';
+import { sound } from './audio.js?v=7';
 
 const VENDOR_ENTRY = '/js/vendor/chiptune3.js';
 const MANIFEST_URL = '/media/tracks/manifest.json';

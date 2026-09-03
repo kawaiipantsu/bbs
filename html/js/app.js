@@ -1,12 +1,12 @@
 /* app.js - wires the CRT, terminal, audio, boot sequence and HUD together. */
 
-import { Terminal } from './terminal.js?v=6';
-import { runBoot, skipBoot } from './boot.js?v=6';
-import { sound } from './audio.js?v=6';
-import { action, ticker, state } from './net.js?v=6';
-import { installChat } from './chat.js?v=6';
-import { installControls } from './controls.js?v=6';
-import { chiptune } from './chiptune.js?v=6';
+import { Terminal } from './terminal.js?v=7';
+import { runBoot, skipBoot } from './boot.js?v=7';
+import { sound } from './audio.js?v=7';
+import { action, ticker, state } from './net.js?v=7';
+import { installChat } from './chat.js?v=7';
+import { installControls } from './controls.js?v=7';
+import { chiptune } from './chiptune.js?v=7';
 
 const $ = sel => document.querySelector(sel);
 const LS = {
@@ -282,15 +282,17 @@ function keyboard() {
     if (!term.frame) { skipBoot(); return; }
 
     ev.preventDefault();
-    sound.resume?.();          // iOS re-suspends the context; nudge it back
-    sound.stopErrorLoop?.();   // a keystroke silences any looping error tone
-    sound.key();
+    // never let an audio hiccup swallow the keystroke
+    try { sound.resume?.(); sound.stopErrorLoop?.(); sound.key(); } catch (_) {}
     term.key(ev);
   }, { passive: false });
 
   window.addEventListener('click', () => {
-    if (!started) start(false);
-    else screenEl.focus();
+    if (!started) { start(false); return; }
+    screenEl.focus();
+    // a click after returning to the tab also clears a wedged request
+    if (term && typeof term.unstick === 'function' && term.busy &&
+        Date.now() - (term._busySince || 0) > 3000) term.unstick();
   });
 
   // Returning from another tab / minimised window can leave a request in
